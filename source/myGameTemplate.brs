@@ -7,7 +7,12 @@ function rg2dSetGameParameters() as void
     
     g.highScoreRegister = "myGameHighScores"
     
-
+    g.menuArray = rg2dMenuItemList()
+    g.menuArray.addItem("New Game", "new_game")
+    g.menuArray.addItem("Continue Game", "continue_game")
+    g.menuArray.addItem("Options", "options")
+    g.menuArray.addItem("High Scores", "high_scores")
+    g.menuArray.addItem("About", "about")
 
 end function
 
@@ -45,6 +50,41 @@ function rg2dLoadSounds() as void
     '?"Max Streams ";g.sounds.astroid_blast.maxSimulStreams()
     g.audioStream = 1
     g.maxAudioStreams = 1 'g.sounds.astroid_blast.maxSimulStreams()
+
+end function
+
+
+function rg2dMenuItemSelected() as void
+
+    g = GetGlobalAA()
+
+    selectedMenuOption = g.menuArray.selectedIndex
+    
+    shortName = g.menuArray.getSelectedItemShortName()
+
+    if(shortName = "play_game") then ' New Game
+        
+        stat = playGame()
+        
+    else if(shortName = "options") then ' Settings
+        '?"Going to settings screen"
+        'rg2dPlaySound(m.sounds.warp_out)
+        stat = rg2dOpenSettingsScreen(m.screen, m.port)
+        'rg2dPlaySound(m.sounds.warp_in)
+    
+    else if(shortName = "high_scores") then
+        
+        'rg2dPlaySound(m.sounds.warp_out)
+        stat = rg2dOpenHighScoresScreen(m.screen, m.port)
+        'rg2dPlaySound(m.sounds.warp_in)
+    
+    else if(shortName = "about") then
+    
+        'rg2dPlaySound(m.sounds.warp_out)
+        stat = rg2dOpenCreditScreen(m.screen, m.port) 
+        'rg2dPlaySound(m.sounds.warp_in)
+    end if
+
 
 end function
 

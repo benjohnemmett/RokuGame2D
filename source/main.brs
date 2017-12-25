@@ -30,25 +30,14 @@ function Main() as void
     ' Load images
     rg2dLoadSprites()
     
-    menuArray = ["New Game",
-                    "Options",
-                    "High Scores",
-                    "About"]
-    numMenuOptions = menuArray.Count()
-    
     m.screen = CreateObject("roScreen", true, m.sWidth, m.sHeight)
     m.screen.SetAlphaEnable(true)
     m.screen.SetMessagePort(m.port)
-    selectedMenuOption = 0
     
     m.compositor = CreateObject("roCompositor")
     m.compositor.SetDrawTo(m.screen, &h000000FF)
                     
-    menu_indent = 300
-    menu_top = 300
-    menu_spacing = 100
-                    
-    rg2dSetupMainScreen(menuArray, selectedMenuOption)
+    rg2dSetupMainScreen()
     
     while true        
         event = m.port.GetMessage()
@@ -60,45 +49,24 @@ function Main() as void
                 
                 rg2dPlaySound(m.sounds.navSingle)
                 
-                selectedMenuOption = selectedMenuOption - 1
-                if(selectedMenuOption < 0) then
-                    selectedMenuOption = numMenuOptions -1
-                end if
+                m.menuArray.moveSelectionUp()
                 
-                rg2dSetupMainScreen(menuArray, selectedMenuOption)
+                rg2dSetupMainScreen()
             
             else if(id = myCodes.MENU_DOWN_A) or (id = myCodes.MENU_DOWN_B)then
                 
                 rg2dPlaySound(m.sounds.navSingle)
-                selectedMenuOption = (selectedMenuOption + 1) MOD numMenuOptions
-                rg2dSetupMainScreen(menuArray, selectedMenuOption)
+                
+                m.menuArray.moveSelectionDown()
+                
+                rg2dSetupMainScreen()
                 
             else if(id = myCodes.SELECT1A_PRESSED) or (id = myCodes.SELECT1B_PRESSED) or (id = myCodes.SELECT2_PRESSED)
                 
-                if(selectedMenuOption = 0) then ' New Game
-                    
-                    stat = playGame()
-                    
-                else if(selectedMenuOption = 1) then ' Settings
-                    '?"Going to settings screen"
-                    'rg2dPlaySound(m.sounds.warp_out)
-                    stat = rg2dOpenSettingsScreen(m.screen, m.port)
-                    'rg2dPlaySound(m.sounds.warp_in)
-                
-                else if(selectedMenuOption = 2) then
-                    
-                    'rg2dPlaySound(m.sounds.warp_out)
-                    stat = rg2dOpenHighScoresScreen(m.screen, m.port)
-                    'rg2dPlaySound(m.sounds.warp_in)
-                
-                else if(selectedMenuOption = 3) then
-                
-                    'rg2dPlaySound(m.sounds.warp_out)
-                    stat = rg2dOpenCreditScreen(m.screen, m.port) 
-                    'rg2dPlaySound(m.sounds.warp_in)
-                end if
+                rg2dMenuItemSelected()
 
-                rg2dSetupMainScreen(menuArray, selectedMenuOption)
+                rg2dSetupMainScreen()
+                
             else if(id = myCodes.BACK_PRESSED) then
                 ' Exit Game
                 return
@@ -111,15 +79,15 @@ function Main() as void
     
 end function
 
-function rg2dSetupMainScreen(menuArray, selectedMenuOption) as void
+function rg2dSetupMainScreen() as void
 
     g = GetGlobalAA()
     
     m.screen.clear(0)
     g.compositor.DrawAll()
     
-    numMenuOptions = menuArray.count() 
-    
+    numMenuOptions = g.menuArray.getCount()
+    selectedMenuOption = g.menuArray.selectedIndex
     
     g.font_registry = CreateObject("roFontRegistry")
     font = g.font_registry.GetDefaultFont(56, True, false) 
@@ -130,17 +98,16 @@ function rg2dSetupMainScreen(menuArray, selectedMenuOption) as void
     topIndent = 320
     leftIndent = 400
     vertSpace = font.GetOneLineHeight() + 10
-
     
     for t = 0 to (numMenuOptions -1)
         if(t = selectedMenuOption) then
-            m.screen.DrawText(menuArray[t],leftIndent + 20,topIndent + t*vertSpace,selColor,font)
+            g.screen.DrawText(g.menuArray.getItemName(t),leftIndent + 20,topIndent + t*vertSpace,selColor,font)
         else
-            m.screen.DrawText(menuArray[t],leftIndent,topIndent + t*vertSpace,regColor,font)
+            g.screen.DrawText(g.menuArray.getItemName(t),leftIndent, topIndent + t*vertSpace,regColor,font)
         end if
     
     end for
     
-    m.screen.swapBuffers()
+    g.screen.swapBuffers()
 
 end function

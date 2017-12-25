@@ -18,6 +18,50 @@ function rg2dGameSettings() as object
 
 end function
 
+function rg2dMenuItemList() as object
+
+    return {
+        selectedIndex : 0, ' top is 0, increasing downward
+        itemNameList : [],
+        itemShortNameList : [],
+        
+        addItem : function(Name as string, shortName as string) as void
+            m.itemNameList.Push(Name)
+            m.itemShortNameList.Push(shortName)
+        end function,
+        
+        getItemName : function(idx) as string
+            return m.itemNameList[idx]
+        end function,
+        
+        getItemShortName : function(idx) as string
+            return m.itemShortNameList[idx]
+        end function,
+        
+        getCount : function()
+            return m.itemNameList.count()
+        end function,
+        
+        moveSelectionUp : function() as void
+            m.selectedIndex = m.selectedIndex - 1
+            
+            if(m.selectedIndex < 0) then
+                m.selectedIndex = m.getCount() -1
+            end if
+        end function,
+        
+        moveSelectionDown  : function() as void
+            m.selectedIndex = (m.selectedIndex + 1) MOD m.getCount()
+        end function,
+        
+        getSelectedItemShortName : function() as string
+            return m.itemShortNameList.GetEntry(m.selectedIndex)
+        end function,
+        
+    }
+
+end function
+
 function rg2dPlaySound(sound) as void
     g = GetGlobalAA()
     if(g.settings.soundEffects = "On") then
@@ -173,7 +217,7 @@ function rg2dScoreBoard() as object
             '?"Loading High Scores"
             g = GetGlobalAA()
             
-            json = GetRegistryString(g.highScoreRegister)
+            json = rg2dGetRegistryString(g.highScoreRegister)
 
             if json <> ""
                 obj = ParseJSON(json)
