@@ -2,14 +2,21 @@ Library "v30/bslDefender.brs"
 
 function Main() as void
 
+    'Load up custom game paramters
+    rg2dSetGameParameters()
+    
+    'Create Scoreboard, load saved scores if available
+    m.scoreBoard = rg2dScoreBoard()
+    m.scoreBoard.loadScoreBoard()
+
     m.sWidth = 1280    
     m.sHeight = 720
     
     m.port = CreateObject("roMessagePort")
     
     ' Settings
-    m.settings = gameSettings()
-    m.settings.setControls("H")
+    m.settings = rg2dGameSettings()
+    'm.settings.setControls("H") ' Change the controls to horizontal 
     myCodes = m.settings.controlCodes
     
     ' Audio
@@ -18,10 +25,10 @@ function Main() as void
     m.audioPlayer.SetMessagePort(m.audioPort)
     
     ' Load Sounds in to m.sounds array
-    loadSounds()
+    rg2dLoadSounds()
     
     ' Load images
-    loadSprites()
+    rg2dLoadSprites()
     
     menuArray = ["New Game",
                     "Options",
@@ -35,35 +42,36 @@ function Main() as void
     selectedMenuOption = 0
     
     m.compositor = CreateObject("roCompositor")
-    m.compositor.SetDrawTo(m.screen, &h11AA11FF)
+    m.compositor.SetDrawTo(m.screen, &h000000FF)
                     
     menu_indent = 300
     menu_top = 300
     menu_spacing = 100
                     
-    setupMainScreen(menuArray, selectedMenuOption)
+    rg2dSetupMainScreen(menuArray, selectedMenuOption)
     
     while true        
         event = m.port.GetMessage()
+        
         if (type(event) = "roUniversalControlEvent") then
             id = event.GetInt()
             '?id
             if (id = myCodes.MENU_UP_A) or (id = myCodes.MENU_UP_B) then
                 
-                playSound(m.sounds.navSingle)
+                rg2dPlaySound(m.sounds.navSingle)
                 
                 selectedMenuOption = selectedMenuOption - 1
                 if(selectedMenuOption < 0) then
                     selectedMenuOption = numMenuOptions -1
                 end if
                 
-                setupMainScreen(menuArray, selectedMenuOption)
+                rg2dSetupMainScreen(menuArray, selectedMenuOption)
             
             else if(id = myCodes.MENU_DOWN_A) or (id = myCodes.MENU_DOWN_B)then
                 
-                playSound(m.sounds.navSingle)
+                rg2dPlaySound(m.sounds.navSingle)
                 selectedMenuOption = (selectedMenuOption + 1) MOD numMenuOptions
-                setupMainScreen(menuArray, selectedMenuOption)
+                rg2dSetupMainScreen(menuArray, selectedMenuOption)
                 
             else if(id = myCodes.SELECT1A_PRESSED) or (id = myCodes.SELECT1B_PRESSED) or (id = myCodes.SELECT2_PRESSED)
                 
@@ -73,25 +81,24 @@ function Main() as void
                     
                 else if(selectedMenuOption = 1) then ' Settings
                     '?"Going to settings screen"
-                    'playSound(m.sounds.warp_out)
-                    stat = openSettingsScreen(m.screen, m.port)
-                    'playSound(m.sounds.warp_in)
+                    'rg2dPlaySound(m.sounds.warp_out)
+                    stat = rg2dOpenSettingsScreen(m.screen, m.port)
+                    'rg2dPlaySound(m.sounds.warp_in)
                 
                 else if(selectedMenuOption = 2) then
                     
-                    'playSound(m.sounds.warp_out)
-                    stat = openHighScoresScreen(m.screen, m.port)
-                    'playSound(m.sounds.warp_in)
+                    'rg2dPlaySound(m.sounds.warp_out)
+                    stat = rg2dOpenHighScoresScreen(m.screen, m.port)
+                    'rg2dPlaySound(m.sounds.warp_in)
                 
                 else if(selectedMenuOption = 3) then
                 
-                    'playSound(m.sounds.warp_out)
-                    stat = openCreditScreen(m.screen, m.port) 
-                    'playSound(m.sounds.warp_in)
+                    'rg2dPlaySound(m.sounds.warp_out)
+                    stat = rg2dOpenCreditScreen(m.screen, m.port) 
+                    'rg2dPlaySound(m.sounds.warp_in)
                 end if
 
-                setupMainScreen(menuArray, selectedMenuOption)
-'                setupMainScreenSprites(menuArray, selectedMenuOption, m.screen, compositor, menuSprites)
+                rg2dSetupMainScreen(menuArray, selectedMenuOption)
             else if(id = myCodes.BACK_PRESSED) then
                 ' Exit Game
                 return
@@ -104,7 +111,7 @@ function Main() as void
     
 end function
 
-function setupMainScreen(menuArray, selectedMenuOption) as void
+function rg2dSetupMainScreen(menuArray, selectedMenuOption) as void
 
     g = GetGlobalAA()
     

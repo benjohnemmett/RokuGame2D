@@ -1,6 +1,18 @@
 ' TODO should these all be subs, not returning anything? Any advantage to subs?
 
-function loadSprites() as void
+' Set global game parameters here. 
+function rg2dSetGameParameters() as void
+
+    g = GetGlobalAA()
+    
+    g.highScoreRegister = "myGameHighScores"
+    
+
+
+end function
+
+
+function rg2dLoadSprites() as void
     g = GetGlobalAA()
     
     bmScore = CreateObject("roBitmap", "pkg:/assets/Asteroid_Numbers_Spritesheet_32.png")
@@ -23,7 +35,7 @@ function loadSprites() as void
 
 end function
 
-function loadSounds() as void
+function rg2dLoadSounds() as void
     g = GetGlobalAA()
     
     g.sounds ={}
@@ -38,16 +50,13 @@ end function
 
 
 
-function gameInit() as void
+function rg2dGameInit() as void
     g = GetGlobalAA()
     
     ' Create Truck
     'sTruck = g.compositor.NewSprite(100, 100, g.rTruck, 0)
     'g.truck = physObj(sTruck, )
-    g.truck = g.pm.createPhysObj( 100, 100, 49, 36, "pkg:/components/sprites/firetruck_spritesheetII.png")
-    
-    
-
+    g.truck = g.pm.createPhysObj( 100, 100, 49, 36, "pkg:/components/sprites/firetruck_spritesheetII.png")    
 
 end function
 
@@ -55,14 +64,14 @@ end function
 '''''''''' OUTER LOOP STUFF
 
 ' Load up level specified by input argument
-function loadLevel(level as integer) as void
+function rg2dLoadLevel(level as integer) as void
     g = GetGlobalAA()
     ' 
 
 
 end function
 
-function innerGameLoopUpdate(button) as void
+function rg2dInnerGameLoopUpdate(button) as void
     g = GetGlobalAA()
 
     if(button.bUp) then

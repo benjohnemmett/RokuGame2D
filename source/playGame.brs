@@ -1,4 +1,4 @@
-function playGame() as object
+function rg2dPlayGame() as object
     g = GetGlobalAA()
     
     ?"Play Ball!"
@@ -7,8 +7,9 @@ function playGame() as object
     port = g.port
     compositor = g.compositor
     
-    g.screenWidth = screen.GetWidth()
-    g.screenHeight= screen.GetHeight()
+    ' TODO Are these used? m.sWidth is set in main...
+    g.screenWidth  = screen.GetWidth()
+    g.screenHeight = screen.GetHeight()
     
     'Load screen
     screen.clear(0)
@@ -38,7 +39,7 @@ function playGame() as object
         g.audioPlayer.Stop()
     end if
 
-    refreshPeriod = 20
+    refreshPeriod = 20 ' ms
 
     'Button Stuff
     button = {}
@@ -59,11 +60,6 @@ function playGame() as object
     clock.Mark() 
     
     g.pm = physModel(compositor)
-
-    'g.asteroidGroup = physObjGroup()
-    'g.pm.addPhysObj(g.asteroidGroup)
-    
-    'astroBlastCP = g.pm.createCollisionPair(g.asteroidGroup,g.laserPulseGroup)
     
     '''''''''''''' Header stuff
     header_level = 50
@@ -169,7 +165,7 @@ function playGame() as object
                         end if
                         
                         compositor.DrawAll()
-                        playGameAddPauseMenu(screen)
+                        'playGameAddPauseMenu(screen) ' TODO, Not sure what this was doing, determine if something is needed here
                         screen.SwapBuffers()
                     
                     end while
@@ -184,7 +180,7 @@ function playGame() as object
         
                 ' Do Controls
 
-                innerGameLoopUpdate(button)
+                rg2dInnerGameLoopUpdate(button)
                 
                 dt = ticks/1000
                 '?dt
@@ -220,7 +216,7 @@ end function
 
 
 ''''''''''''''''' Level Gen
-function setupWave(waveNum, screen) as void
+function rg2dSetupLevel(waveNum, screen) as void
 
     g = GetGlobalAA()
     
@@ -229,7 +225,7 @@ function setupWave(waveNum, screen) as void
 end function
 
 ''' Display game stats
-function updateScore(screen) as void
+function rg2dUpdateScore(screen) as void
     g = GetGlobalAA()
     
     ' SCORE

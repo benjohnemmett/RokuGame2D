@@ -1,9 +1,9 @@
-function gameSettings() as object
+function rg2dGameSettings() as object
     return {
         controls : "V",
         music : "On",
         soundEffects : "On",
-        controlCodes : gameControlCodes("V"),
+        controlCodes : rg2dGameControlCodes("V"),
         
         setControls : function(mode as string) as void
             if(mode = "V") then
@@ -18,7 +18,7 @@ function gameSettings() as object
 
 end function
 
-function playSound(sound) as void
+function rg2dPlaySound(sound) as void
     g = GetGlobalAA()
     if(g.settings.soundEffects = "On") then
         '?"Audio Stream ";g.audioStream
@@ -29,7 +29,7 @@ function playSound(sound) as void
 
 end function
 
-function gameControlCodes(mode as string) as object
+function rg2dGameControlCodes(mode as string) as object
 
     codes = bslUniversalControlEventCodes()
 
@@ -105,7 +105,7 @@ function gameControlCodes(mode as string) as object
 
 end function
 
-function gameStats(score, wave) as object
+function rg2dGameStats(score, wave) as object
     return {
         score: score,
         wave: wave,
@@ -113,7 +113,7 @@ function gameStats(score, wave) as object
     }
 end function
 
-function scoreBoard() as object
+function rg2dScoreBoard() as object
     return {
     
         ' Return true if input arg gameStats is high enough to reach the scoreboard
@@ -161,16 +161,19 @@ function scoreBoard() as object
         
         saveScoreBoard : function() as void
             '?"Saving High Scores"
+            g = GetGlobalAA()
+            
             json = FormatJSON({topGames: m.topGames}, 1)
             sec = CreateObject("roRegistrySection", "PoP")
-            sec.Write("AstroBlastScoreBoard", json)
+            sec.Write(g.highScoreRegister, json)
             sec.Flush()
         end function,
         
         loadScoreBoard : function() as void
-        
             '?"Loading High Scores"
-            json = GetRegistryString("AstroBlastScoreBoard")
+            g = GetGlobalAA()
+            
+            json = GetRegistryString(g.highScoreRegister)
 
             if json <> ""
                 obj = ParseJSON(json)
@@ -200,7 +203,7 @@ function scoreBoard() as object
     }
 end function  
 
-Function GetRegistryString(key as String, default = "") As String
+Function rg2dGetRegistryString(key as String, default = "") As String
     sec = CreateObject("roRegistrySection", "PoP")
     if sec.Exists(key)
         return sec.Read(key)
