@@ -64,7 +64,7 @@ function rg2dMenuItemSelected() as void
 
     if(shortName = "play_game") then ' New Game
         
-        stat = playGame()
+        stat = rg2dPlayGame()
         
     else if(shortName = "options") then ' Settings
         '?"Going to settings screen"
