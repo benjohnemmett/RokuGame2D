@@ -19,7 +19,7 @@ function rg2dPlayGame() as object
     screen.SwapBuffers()
     
     ' Score, (wave) level
-    gs = gameStats(0, 1)
+    gs = rg2dGameStats(0, 1)
  
     level_state = "Normal"
     g.game_sore = 0
@@ -69,7 +69,7 @@ function rg2dPlayGame() as object
     scoreSpaces = 7
     
 
-    gameInit()
+    rg2dGameInit()
     ''''''''''''''''''''''''''''''''''''''''''''''
     ' Main Game Loop
     ''''''''''''''''''''''''''''''''''''''''''''''

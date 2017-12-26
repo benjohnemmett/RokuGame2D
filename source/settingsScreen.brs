@@ -63,7 +63,6 @@ function rg2dOpenSettingsScreen(subScreen, subPort) as void
                     
                 end if
                 
-                playSound(g.sounds.laser_shot)
             else if(id = myCodes.BACK_PRESSED)
                 
                 return

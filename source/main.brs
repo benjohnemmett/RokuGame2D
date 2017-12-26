@@ -1,6 +1,13 @@
 Library "v30/bslDefender.brs"
 
+#const debug = true
+
 function Main() as void
+
+    #if debug
+        ?" *** Debug flag enabled ***"
+    #end if
+    
 
     'Load up custom game paramters
     rg2dSetGameParameters()
@@ -44,7 +51,9 @@ function Main() as void
         
         if (type(event) = "roUniversalControlEvent") then
             id = event.GetInt()
-            '?id
+            #if debug
+                ?id
+            #end if
             if (id = myCodes.MENU_UP_A) or (id = myCodes.MENU_UP_B) then
                 
                 rg2dPlaySound(m.sounds.navSingle)
