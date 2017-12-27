@@ -31,11 +31,59 @@ function checkOverlap(obj1, obj2, cb, pm) as void
     
     if (b1.type = "Circular") and (b2.type = "Circular") then
         checkOverlapCircular(obj1, obj2, cb, pm)
+    else if (b1.type = "AABB") and (b2.type = "AABB") then
+        checkOverlapAABB(obj1, obj2, cb, pm)
     else
         ?"Error: checkOverlap for ";b1.type;" and ";b2.type;" not supported."
         return
     end if
     
+end function
+
+function checkOverlapAABB(obj1, obj2, cb, pm) as void
+
+    ' Check if they overlap
+    x1 = (obj1.x < (obj2.x + obj2.size_x))
+    x2 = ((obj1.x + obj1.size_x) > obj2.x)
+    y1 = (obj1.y < (obj2.y + obj2.size_y))
+    y2 = ((obj1.y + obj1.size_y) > obj2.y)
+    
+    if x1 AND x2 AND y1 AND y2 then
+        
+        ' Call overlap callback function
+        '  If overlap returns 0 or invalid then continue with collisions as usual.
+        '  If overlap returns non-zero value then abort normal collisions
+        if(cb <> invalid) then
+            stat = cb(obj1,obj2)
+            if (stat <> 0) AND (stat <> invalid) then
+                return
+            end if
+        end if
+        
+        ' Get overlap area
+        area = 1 ' TODO implelment this
+        
+        'add overlap state to normal openOverlaps
+        if(obj1.isMovable) then ' TODO Change this to inv Mass later
+            if(obj1.overlapState = invalid):
+                obj1.overlapState = overlapState(obj2, area, cb)
+                pm.addOverlapToOpenList(obj1)
+            else if(area > obj1.overlapState.area):
+                obj1.overlapState = overlapState(obj2, area, cb)
+            end if
+        end if
+        
+        if(obj2.isMovable) then ' TODO Change this to inv Mass later
+            if(obj2.overlapState = invalid):
+                obj2.overlapState = overlapState(obj1, area, cb)
+                pm.addOverlapToOpenList(obj2)
+            else if(area > obj2.overlapState.area): 'Replace previous overlap if this one is bigger
+                obj2.overlapState = overlapState(obj1, area, cb)
+            end if
+        end if
+    
+    end if
+
 end function
 
 function checkOverlapCircular(obj1, obj2, cb, pm) as void
@@ -47,9 +95,9 @@ function checkOverlapCircular(obj1, obj2, cb, pm) as void
         return
     end if
     
-    ' Call collision callback function
-    '  If callback returns 0 or invalid then continue with collisions as usual.
-    '  If callback returns non-zero value then abort normal collisions
+    ' Call overlap callback function
+    '  If overlap returns 0 or invalid then continue with collisions as usual.
+    '  If overlap returns non-zero value then abort normal collisions
     if(cb <> invalid) then
         stat = cb(obj1,obj2)
         if (stat <> 0) AND (stat <> invalid) then
@@ -104,6 +152,7 @@ end function
 'TODO pull this into the physObj class
 'Checks & resolves collision if necessary
 function resolveCollision(obj1) as void
+    ?"Warning Deprecated global function resolveCollision() called!!!!"
 
     if (obj1.overlapState <> invalid) then
        

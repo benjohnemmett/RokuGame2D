@@ -74,7 +74,9 @@ function rg2dPlayGame() as object
     ' Main Game Loop
     ''''''''''''''''''''''''''''''''''''''''''''''
     while true
-
+        
+        rg2dLoadLevel(gs.wave)
+        
         ''''''''''''''''''''''''''''''''''''''''''''''
         ' Enter inner run loop
         ''''''''''''''''''''''''''''''''''''''''''''''

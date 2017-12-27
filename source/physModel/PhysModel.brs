@@ -42,7 +42,7 @@ Function physModel(compositor) as object
         
         '''''''''''''''''''''''''''''''''''''''''''''''''
         createCollisionPair : function(obj1,obj2) as object
-            cp = collisionPair(obj1,obj2,invalid,invalid)
+            cp = collisionPair(obj1,obj2, noCallback ,noCallback)
             m.addCollisionpair(cp)
             return cp
         end function,
@@ -75,6 +75,8 @@ Function physModel(compositor) as object
             
             for each cp in m.collisionPairList
             
+               ' ?cp.obj1
+                '?cp.obj2
                 if cp.obj1.isPhysObjGroup() then
                     if cp.obj2.isPhysObjGroup() then
                         ' Both are groups
@@ -86,7 +88,7 @@ Function physModel(compositor) as object
                 else ' Obj1 is a single object
                     if cp.obj2.isPhysObjGroup() then
                         'obj1 single, obj2 group
-                        checkOverlapGroupObj(cp.obj1, cp.obj2, cp.overlapCallback, m)
+                        checkOverlapObjGroup(cp.obj1, cp.obj2, cp.overlapCallback, m)
                     else
                         ' both single
                         checkOverlap(cp.obj1, cp.obj2, cp.overlapCallback, m)
@@ -113,6 +115,7 @@ Function physModel(compositor) as object
             m.openOverlaps.clear()
         end function,
         
+        ' Add object which is overlapping another objects to the open list
         addOverlapToOpenList : function(os) as void
             m.openOverlaps.push(os)
         end function,
@@ -128,6 +131,10 @@ Function physModel(compositor) as object
     
     }
 End Function '''' End physModel()
+
+function noCallback(obj1,obj2) as integer
+    return 0
+end function
 
 '''''' A physical object
 ' Implements kinematicObject Interface
@@ -186,6 +193,186 @@ Function physObj(sprite,bmap) as Object
             end if
         
         end function,
+
+        resolveCollision : function() as void
+        
+            if(m.overlapState = invalid) then
+                return
+            end if
+
+               os = m.overlapState
+                
+                obj2 = os.obj 'Get other object in collision
+                
+                'Magnitudes of overlap
+                xx1 = Abs(m.x - (obj2.x + obj2.size_x))
+                xx2 = Abs(obj2.x - (m.x + m.size_x))
+                yy1 = Abs(m.y - (obj2.y + obj2.size_y))
+                yy2 = Abs(obj2.y - (m.y + m.size_y))
+                
+                minX = MinFloat(xx1,xx2)
+                minY = MinFloat(yy1,yy2)
+                
+                ' Check that objects are converging, and get dominant direction
+                conv_x = (m.x - obj2.x) * (m.vx - obj2.vx)
+                conv_y = (m.y - obj2.y) * (m.vy - obj2.vy)
+        
+                if((conv_x < 0) AND (conv_y < 0)) then 'Both directions converging
+                    if(minX <= minY) then
+                        isXDirection = true ' x dominant
+                    else
+                        isXDirection = false ' y dominant
+                    end if 
+                else if(conv_x < 0) then 'Just x converging
+                    isXDirection = true ' x dominant
+                else if(conv_y < 0) 'Just y converging
+                    isXDirection = false ' x dominant
+                end if
+                
+                ' Resolve collision
+                if (isXDirection = true) then
+                
+                    if (m.isMovable AND obj2.isMovable) then
+                        'Equal & opposite recoil
+            '                ?" - X both movable"
+                        s = (Abs(m.vx) + Abs(obj2.vx))/(m.collisionRecoil + obj2.collisionRecoil)
+                        
+                        m.vx = -sgn(m.vx)*s*m.collisionRecoil 'Bounce back 
+                        'obj2.vx = -sgn(obj2.vx)*s*obj2.collisionRecoil
+                    else if (m.isMovable AND (obj2.isMovable = false)) then
+                        '?" - X obj1 movable"
+                        if(minX = xx1) then ' move object 1 back so it doesn't sink into immovable object 2
+                            ' | obj2 |<-| obj1 |
+                            m.x = obj2.x + obj2.size_x
+                            ' Bounce back if elasticity is enough, otherwise take on the x velocity of the collided object
+                            bounceVx0 = -m.vx*m.collisionRecoil
+                            ' Remove extra acceleration from traveling through obj2
+                            '             v0 +   ~time * acceleration
+                            if(bounceVx0 = 0) then
+                                bounceVx = bounceVx0
+                            else
+                                bounceVx = bounceVx0 + abs(minX/bounceVx0)*(m.ax + m.gx)
+                            end if
+                            m.vx = maxFloat(obj2.vx,bounceVx)
+            
+                        else 
+                            ' | obj1 |->| obj2 |
+                            m.x = obj2.x - m.size_x
+                            bounceVx0 = -m.vx*m.collisionRecoil
+                            if(bounceVx0 = 0) then
+                                bounceVx = bounceVx0
+                            else
+                                bounceVx = bounceVx0 + abs(minX/bounceVx0)*(m.ax + m.gx)
+                            end if
+                            m.vx = minFloat(obj2.vx,bounceVx)
+            
+                        end if
+                    else if ((m.isMovable = false) AND obj2.isMovable) then
+                        '?" - X obj2 movable"
+                        if(minX = xx1) then ' move object 1 back so it doesn't sink into immovable object 2
+                            ' | obj2 |->| obj1 |
+                            'obj2.x = m.x - obj2.size_x
+                            bounceVx0 = -obj2.vx*obj2.collisionRecoil
+                            if(bounceVx0 = 0) then
+                                bounceVx = bounceVx0
+                            else
+                                bounceVx = bounceVx0 + abs(minX/bounceVx0)*(obj2.ax + obj2.gx)
+                            end if
+                            'obj2.vx = minFloat(m.vx,bounceVx)
+                        else 
+                            ' | obj1 |<-| obj2 |
+                            'obj2.x = m.x + m.size_x
+                            bounceVx0 = -obj2.vx*obj2.collisionRecoil
+                            if(bounceVx0 = 0) then
+                                bounceVx = bounceVx0
+                            else
+                                bounceVx = bounceVx0 + abs(minX/bounceVx0)*(obj2.ax + obj2.gx)
+                            end if
+                            'obj2.vx = maxFloat(m.vx,bounceVx)
+                        end if
+                    end if
+                else ' Y dominant
+                    if (m.isMovable AND obj2.isMovable) then
+                        'Equal & opposite recoil
+                        'TODO this is  wrong
+            '                ?" - Y both movable"
+                        s = (Abs(m.vy) + Abs(obj2.vy))/(m.collisionRecoil + obj2.collisionRecoil)
+                        m.vy = -sgn(m.vy)*s*m.collisionRecoil 'Bounce back 
+                        obj2.vy = -sgn(obj2.vy)*s*obj2.collisionRecoil
+                    else if (m.isMovable AND (obj2.isMovable = false)) then
+            '                ?" - Y obj1 movable"
+                        if(minY = yy1) then
+                            '_
+                            'obj2
+                            '_
+                            'obj1 ^
+                            '_
+                            m.y = obj2.y + obj2.size_y
+                            bounceVy0 = -m.vy*m.collisionRecoil
+                            if(bounceVy0 = 0.0) then
+                                bounceVy = bounceVy0
+                            else
+                                bounceVy = bounceVy0 + abs(minY/bounceVy0)*(m.ay + m.gy)
+                            end if
+                            m.vy = maxFloat(obj2.vy,bounceVy)
+                        else 
+                            '_
+                            'obj1 V
+                            '_
+                            'obj2
+                            '_
+                            m.y = obj2.y - m.size_y
+                            bounceVy0 = -m.vy*m.collisionRecoil
+                            if(bounceVy0 = 0.0) then
+                                bounceVy = bounceVy0
+                            else
+                                bounceVy = bounceVy0 + abs(minY/bounceVy0)*(m.ay + m.gy)
+                            end if
+                            m.vy = minFloat(obj2.vy,bounceVy)
+                        end if
+                    else if ((m.isMovable = false) AND obj2.isMovable) then
+            '                ?" - Y obj1 movable"
+                        if(minY = yy1) then
+                            '_
+                            'obj2 V
+                            '_
+                            'obj1 
+                            '_
+                            'obj2.y = m.y - obj2.size_y
+                            bounceVy0 = -obj2.vy*obj2.collisionRecoil
+                            if(bounceVy0 = 0.0) then
+                                bounceVy = bounceVy0
+                            else
+                                bounceVy = bounceVy0 + abs(minY/bounceVy0)*(obj2.ay + obj2.gy)
+                            end if
+                            'obj2.vy = minFloat(m.vy,bounceVy)
+                        else 
+                            '_
+                            'obj1 
+                            '_
+                            'obj2 ^
+                            '_
+                            'obj2.y = m.y + m.size_y
+                            bounceVy0 = -obj2.vy*obj2.collisionRecoil
+                            if(bounceVy0 = 0.0) then
+                                bounceVy = bounceVy0
+                            else
+                                bounceVy = bounceVy0 + abs(minY/bounceVy0)*(obj2.ay + obj2.gy)
+                            end if
+                            'obj2.vy = maxFloat(m.vy,bounceVy)
+                        end if
+                    end if
+                end if
+            
+                m.overlapState = invalid ' Set back to invalid after resolution
+        
+        end function,
+        
+        '' From the collidable interface
+        getBoundaryDefinition : function() as object
+            '?"BoundsDef call ";m
+            return boundaryAABB(m.x, m.y, m.size_x, m.size_y)        
+        end function,
         
         '' From displayable interface
         updateDisplay : function() as void
@@ -222,13 +409,13 @@ Function physObj(sprite,bmap) as Object
     maxVy: 1000,
     zeroVx: 1.0,     'Velocity magnitude under which, velocity is rounded to 0.0
     zeroVy: 1.0,
-    wallEnable: 0.0, ' -1 no walls, 0 inelastic walls, 1 perfectly elastic walls, (0 to 1 is in between)
+    wallEnable: invalid, ' -1 no walls, 0 inelastic walls, 1 perfectly elastic walls, (0 to 1 is in between)
     'wall_x_min: 10,
     'wall_y_min: 10,
     'wall_x_max: 1280,
     'wall_y_max: 720,
-    size_x: invalid, 
-    size_y: invalid,
+    size_x: sprite.getRegion().GetWidth(), 
+    size_y: sprite.getRegion().GetHeight(),
     isMovable: false, 'Option to consider this object movable in the context of collisions (i.e. is not massive/fixed in place compared to other objects)
     collisionRecoil: 0.5, 'Amount of "bounce" #TODO verify correct terminology here
     overlapState: invalid, 'Overlapping state to hold the overlap of greatest area
