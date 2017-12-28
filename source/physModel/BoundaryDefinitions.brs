@@ -5,7 +5,8 @@ function boundaryAABB(x, y, w, h) as object
         x: x,
         y: y,
         w: w,
-        h: h        
+        h: h,
+        radius: 2*maxFloat(h,w)   
     }
 
 end function

@@ -29,6 +29,13 @@ function checkOverlap(obj1, obj2, cb, pm) as void
     b1 = obj1.getBoundaryDefinition()
     b2 = obj2.getBoundaryDefinition()
     
+    ' Quick check for 
+    d = minfloat(abs(obj1.x - obj2.x), abs(obj1.y - obj2.y))
+    rad = maxfloat(b1.radius, b2.radius)
+    if(d > 2*rad)
+        return
+    end if
+    
     if (b1.type = "Circular") and (b2.type = "Circular") then
         checkOverlapCircular(obj1, obj2, cb, pm)
     else if (b1.type = "AABB") and (b2.type = "AABB") then
