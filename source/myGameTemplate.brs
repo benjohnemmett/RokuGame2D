@@ -96,18 +96,19 @@ function rg2dGameInit() as void
     ' Create Truck
     'sTruck = g.compositor.NewSprite(100, 100, g.rTruck, 0)
     'g.truck = physObj(sTruck, )
-    g.truck = g.pm.createPhysObj( 100, 100, 49, 36, "pkg:/components/sprites/firetruck_spritesheetII.png")    
+    g.truck = g.pm.createPhysObj( 100, 100, 49, 36, "pkg:/components/sprites/firetruck_spritesheetII.png")
+    
+    rg2dMakeLBGroups()  ' Make
 
 end function
 
 
 '''''''''' OUTER LOOP STUFF
-
 ' Load up level specified by input argument
 function rg2dLoadLevel(level as integer) as void
     g = GetGlobalAA()
-    ' 
 
+    rg2dLBLevelSetup(level) ' Run any level builder code
 
 end function
 
