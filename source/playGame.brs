@@ -48,8 +48,8 @@ function rg2dPlayGame() as object
     button.bLeft = false
     button.bRight = false
     button.bPlay = false
-    button.bGreen = false
-    button.bBlue = false
+    button.bSelect1 = false
+    button.bSelect2 = false
     codes = bslUniversalControlEventCodes()
     myCodes = g.settings.controlCodes
     
@@ -59,7 +59,7 @@ function rg2dPlayGame() as object
     
     clock.Mark() 
     
-    g.pm = physModel(compositor)
+    'g.pm = physModel(compositor)
     
     '''''''''''''' Header stuff
     header_level = 50
@@ -104,11 +104,11 @@ function rg2dPlayGame() as object
                     holdButtonClock.Mark()
                 else if (id = myCodes.SELECT2_PRESSED) then
                     '?"Green Button Down"
-                    button.bGreen = true
+                    button.bSelect2 = true
                     holdButtonClock.Mark()
                 else if (id = myCodes.SELECT1A_PRESSED) or (id = myCodes.SELECT1B_PRESSED) then
                     '?"Blue Button Down"
-                    button.bBlue = true
+                    button.bSelect1 = true
                     holdButtonClock.Mark()
                 else if (id = myCodes.RIGHT_RELEASED) then
                     '?"Right Button Released"
@@ -127,10 +127,10 @@ function rg2dPlayGame() as object
                     button.bPlay = false
                 else if (id = myCodes.SELECT2_RELEASED) then
                     '?"Green Button Released"
-                    button.bGreen = false
+                    button.bSelect2 = false
                 else if (id = myCodes.SELECT1A_RELEASED) or (id = myCodes.SELECT1B_RELEASED)  then
                     '?"Blue Button Released"
-                    button.bBlue = false
+                    button.bSelect1 = false
                 else if (id = myCodes.BACK_PRESSED) or (id = myCodes.PLAY_PRESSED) then
                 
                     'Pause game

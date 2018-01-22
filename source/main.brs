@@ -1,25 +1,29 @@
 Library "v30/bslDefender.brs"
 
-#const debug = true
-
 function Main() as void
-
-    #if debug
-        ?" *** Debug flag enabled ***"
-    #end if
+        
+    '''''''''''''''''''''''''''''''''
+    '''' GENERAL SETUP 
+    m.sWidth = 1280    
+    m.sHeight = 720
     
-
     'Load up custom game paramters
     rg2dSetGameParameters()
     
     'Create Scoreboard, load saved scores if available
     m.scoreBoard = rg2dScoreBoard()
     m.scoreBoard.loadScoreBoard()
-
-    m.sWidth = 1280    
-    m.sHeight = 720
     
     m.port = CreateObject("roMessagePort")
+    
+    m.screen = CreateObject("roScreen", true, m.sWidth, m.sHeight)
+    m.screen.SetAlphaEnable(true)
+    m.screen.SetMessagePort(m.port)
+    
+    m.compositor = CreateObject("roCompositor")
+    m.compositor.SetDrawTo(m.screen, &h000000FF)
+    
+    m.pm = physModel(m.compositor)
     
     ' Settings
     m.settings = rg2dGameSettings()
@@ -37,13 +41,9 @@ function Main() as void
     ' Load images
     rg2dLoadSprites()
     
-    m.screen = CreateObject("roScreen", true, m.sWidth, m.sHeight)
-    m.screen.SetAlphaEnable(true)
-    m.screen.SetMessagePort(m.port)
     
-    m.compositor = CreateObject("roCompositor")
-    m.compositor.SetDrawTo(m.screen, &h000000FF)
-                    
+    '''''''''''''''''''''''''''''''''
+    '''' MENU STUFF       
     rg2dSetupMainScreen()
     
     while true        
@@ -51,9 +51,7 @@ function Main() as void
         
         if (type(event) = "roUniversalControlEvent") then
             id = event.GetInt()
-            #if debug
-                ?id
-            #end if
+
             if (id = myCodes.MENU_UP_A) or (id = myCodes.MENU_UP_B) then
                 
                 rg2dPlaySound(m.sounds.navSingle)
@@ -88,6 +86,7 @@ function Main() as void
     
 end function
 
+'' Main Menu helper function
 function rg2dSetupMainScreen() as void
 
     g = GetGlobalAA()
