@@ -5,6 +5,8 @@ function rg2dSetGameParameters() as void
 
     g = GetGlobalAA()
     
+    g.USING_LB_CODE = false
+    
     g.highScoreRegister = "myGameHighScores"
     
     g.menuArray = rg2dMenuItemList()
@@ -16,7 +18,9 @@ function rg2dSetGameParameters() as void
 
 end function
 
-
+' 
+' Load all Sprites Used in the game
+'
 function rg2dLoadSprites() as void
     g = GetGlobalAA()
     
@@ -37,9 +41,16 @@ function rg2dLoadSprites() as void
     
     bmTruck = CreateObject("roBitmap", "pkg:/components/sprites/texture_brick01_60p.png")
     g.rTruck = CreateObject("roRegion", bmTruck, 0, 0, 60, 60)
+    
+    if(g.USING_LB_CODE) then
+        LBLoadSprites()
+    end if
 
 end function
 
+'
+' Load all sounds used in the game
+'
 function rg2dLoadSounds() as void
     g = GetGlobalAA()
     
@@ -53,7 +64,9 @@ function rg2dLoadSounds() as void
 
 end function
 
-
+'
+' Use this to set custom actions when a menu item is selected
+'
 function rg2dMenuItemSelected() as void
 
     g = GetGlobalAA()
@@ -98,7 +111,9 @@ function rg2dGameInit() as void
     'g.truck = physObj(sTruck, )
     g.truck = g.pm.createPhysObj( 100, 100, 49, 36, "pkg:/components/sprites/firetruck_spritesheetII.png")
     
-    rg2dMakeLBGroups()  ' Make
+    if(g.USING_LB_CODE) then
+        LBMakeGroups()
+    end if
 
 end function
 
@@ -108,7 +123,9 @@ end function
 function rg2dLoadLevel(level as integer) as void
     g = GetGlobalAA()
 
-    rg2dLBLevelSetup(level) ' Run any level builder code
+    if(g.USING_LB_CODE) then
+        LBLoadLevel(level)
+    end if
 
 end function
 

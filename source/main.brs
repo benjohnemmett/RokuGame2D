@@ -7,10 +7,14 @@ function Main() as void
     m.sWidth = 1280    
     m.sHeight = 720
     
+    '''''''''''''''''''''''''''''''''
     'Load up custom game paramters
     rg2dSetGameParameters()
     
-    'Create Scoreboard, load saved scores if available
+    '''''''''''''''''''''''''''''''''
+    ' Create Key Components 
+    
+    ' Scoreboard, load saved scores if available
     m.scoreBoard = rg2dScoreBoard()
     m.scoreBoard.loadScoreBoard()
     
@@ -27,6 +31,7 @@ function Main() as void
     
     ' Settings
     m.settings = rg2dGameSettings()
+    
     'm.settings.setControls("H") ' Change the controls to horizontal 
     myCodes = m.settings.controlCodes
     
@@ -43,7 +48,7 @@ function Main() as void
     
     
     '''''''''''''''''''''''''''''''''
-    '''' MENU STUFF       
+    '''' MAIN Menu       
     rg2dSetupMainScreen()
     
     while true        
@@ -55,23 +60,18 @@ function Main() as void
             if (id = myCodes.MENU_UP_A) or (id = myCodes.MENU_UP_B) then
                 
                 rg2dPlaySound(m.sounds.navSingle)
-                
                 m.menuArray.moveSelectionUp()
-                
                 rg2dSetupMainScreen()
             
             else if(id = myCodes.MENU_DOWN_A) or (id = myCodes.MENU_DOWN_B)then
                 
                 rg2dPlaySound(m.sounds.navSingle)
-                
                 m.menuArray.moveSelectionDown()
-                
                 rg2dSetupMainScreen()
                 
             else if(id = myCodes.SELECT1A_PRESSED) or (id = myCodes.SELECT1B_PRESSED) or (id = myCodes.SELECT2_PRESSED)
                 
                 rg2dMenuItemSelected()
-
                 rg2dSetupMainScreen()
                 
             else if(id = myCodes.BACK_PRESSED) then
@@ -79,8 +79,6 @@ function Main() as void
                 return
             end if
         end if
-        
-        
         
     end while
     
