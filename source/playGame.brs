@@ -59,7 +59,7 @@ function rg2dPlayGame() as object
 
     clock.Mark()
 
-    'g.pm = physModel(compositor)
+    'g.pm = physModel(compositor) ' Now created in main no in playGame'
 
     '''''''''''''' Header stuff
     header_level = 50

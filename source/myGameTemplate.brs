@@ -48,7 +48,9 @@ function rg2dLoadSprites() as void
 
     'bmTruck = CreateObject("roBitmap", "pkg:/components/sprites/texture_brick01_60p.png")
     'g.rTruck = CreateObject("roRegion", bmTruck, 0, 0, 60, 60)
-    g.rTruck = rg2dLoadRegion("pkg:/components/sprites/texture_brick01_60p.png", 0, 0, 60, 60)
+    g.rTruck = rg2dLoadRegion("pkg:/components/sprites/firetruck_spritesheetII.png", 0, 0, 49, 36)
+    g.rBricks = rg2dLoadRegion("pkg:/components/sprites/texture_brick01_60p.png", 0, 0, 60, 60)
+    g.rCircleFire16 = rg2dLoadRegion("pkg:/components/sprites/circle_fire_16p.png", 0, 0, 16, 16)
 
     if(g.USING_LB_CODE) then
         LBLoadSprites()
@@ -131,7 +133,22 @@ function rg2dGameInit() as void
     end if
 
     ' Create Truck
-    g.truck = g.pm.createPhysObj( g.sWidth/4, g.sHeight*0.9, 49, 36, "pkg:/components/sprites/firetruck_spritesheetII.png")
+    'g.truck = g.pm.createPhysObj( g.sWidth/4, g.sHeight*0.9, 49, 36, "pkg:/components/sprites/firetruck_spritesheetII.png")
+
+    g.tank1 = createTank(g.sWidth/4, g.sHeight*0.9, 0)
+    g.pogTanks = g.pm.createPhysObjGroup()
+    g.pogProjs = g.pm.createPhysObjGroup()
+
+    g.pogTanks.addPhysObj(g.tank1)
+
+    cpTankProj = g.pm.createCollisionPair(g.pogTanks,g.pogProjs)
+
+    cpTankProj.overlapCallback = function(t,p) as integer
+
+      ?"Projectile Hit Tank!"
+      return 1 ' Indicate not to perform normal collision
+
+    end function
 
     if(g.USING_LB_CODE) then
         LBMakeGroups()
@@ -151,14 +168,18 @@ function rg2dLoadLevel(level as integer) as void
         LBLoadLevel(level)
     end if
 
+    g.player_state = "IDLE"
+
 end function
 
 ' Stuff to be done at the start of each update loop goes here.
 function rg2dInnerGameLoopUpdate(dt as float, button) as void
     g = GetGlobalAA()
-    if(g.DEBUG) then
+    if(g.DEBUG and (dt > 0.040)) then
       ?"rg2dInnerGameLoopUpdate(";dt;")..."
     end if
+
+
 
     if(button.bUp) then
         ?"Trucking Up"
@@ -173,7 +194,19 @@ function rg2dInnerGameLoopUpdate(dt as float, button) as void
         ?"Trucking Right"
 
     else if(button.bSelect1) then
-        ?"Fire!"
+      ?"Fire!"
+      if g.player_state = "IDLE" then
+        g.player_state = "FIRE"
+        g.tank1.fireProjectile()
+      else
+
+      end if
+    else
+      if g.player_state <> "IDLE" then
+        ?"Back to IDLE"
+      end if
+      g.player_state = "IDLE"
+
     end if
 
 end function
