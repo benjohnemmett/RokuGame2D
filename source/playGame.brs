@@ -1,33 +1,33 @@
 function rg2dPlayGame() as object
     g = GetGlobalAA()
-    
+
     ?"Play Ball!"
-    
+
     screen = g.screen
     port = g.port
     compositor = g.compositor
-    
+
     ' TODO Are these used? m.sWidth is set in main...
     g.screenWidth  = screen.GetWidth()
     g.screenHeight = screen.GetHeight()
-    
+
     'Load screen
     screen.clear(0)
     g.font_registry = CreateObject("roFontRegistry")
-    font = g.font_registry.GetDefaultFont() 
+    font = g.font_registry.GetDefaultFont()
     screen.DrawText("Loading...",300, 300, &hFFFFFFFF, font)
     screen.SwapBuffers()
-    
+
     ' Score, (wave) level
     gs = rg2dGameStats(0, 1)
- 
+
     level_state = "Normal"
     g.game_sore = 0
-    
+
     game_paused = false
-    'sPauseMenu = compositor.NewSprite(300, 200, g.rPauseScreen, 50)
-    'sPauseMenu.SetDrawableFlag(false)
-    
+    sPauseMenu = compositor.NewSprite(300, 200, g.rPauseScreen, 50)
+    sPauseMenu.SetDrawableFlag(false)
+
     'Audio
     ' Play Background music
     if(g.settings.music = "On") then
@@ -35,7 +35,7 @@ function rg2dPlayGame() as object
         g.audioplayer.setContentList([{url:"pkg:/components/audio/happy_loop.mp3"}])
         g.audioplayer.setloop(true)
         g.audioPlayer.play()
-    else 
+    else
         g.audioPlayer.Stop()
     end if
 
@@ -52,36 +52,36 @@ function rg2dPlayGame() as object
     button.bSelect2 = false
     codes = bslUniversalControlEventCodes()
     myCodes = g.settings.controlCodes
-    
-    
+
+
     clock = CreateObject("roTimespan")
     holdButtonClock = CreateObject("roTimespan")
-    
-    clock.Mark() 
-    
+
+    clock.Mark()
+
     'g.pm = physModel(compositor)
-    
+
     '''''''''''''' Header stuff
     header_level = 50
-    
+
     scoreTopIndent = 20
     scoreLeftIndent = 80
     scoreSpaces = 7
-    
+
 
     rg2dGameInit()
     ''''''''''''''''''''''''''''''''''''''''''''''
     ' Main Game Loop
     ''''''''''''''''''''''''''''''''''''''''''''''
     while true
-        
+
         rg2dLoadLevel(gs.wave)
-        
+
         ''''''''''''''''''''''''''''''''''''''''''''''
         ' Enter inner run loop
         ''''''''''''''''''''''''''''''''''''''''''''''
-        while true   
-            
+        while true
+
             'Check for button events
             event = port.GetMessage()
             if (type(event) = "roUniversalControlEvent") then
@@ -132,88 +132,89 @@ function rg2dPlayGame() as object
                     '?"Blue Button Released"
                     button.bSelect1 = false
                 else if (id = myCodes.BACK_PRESSED) or (id = myCodes.PLAY_PRESSED) then
-                
+
                     'Pause game
                     game_paused = true
                     sPauseMenu.SetDrawableFlag(true)
-                    
+
                     if(g.settings.music = "On") then
                         g.audioPlayer.pause()
                     end if
-                    
+
                     while game_paused
-                    
+
                         event = port.GetMessage()
                         if (type(event) = "roUniversalControlEvent") then
                             id = event.GetInt()
                             if (id = myCodes.BACK_PRESSED) then
                             '   Exit game
                             'TODO add a confirmation message here
+                                sPauseMenu.SetDrawableFlag(false)
                                 gs.score = g.game_score
                                 gs.wave = g.game_wave
                                 return gs
-                                
+
                             else if (id = myCodes.PLAY_PRESSED)  then
                                 game_paused = false
                                 sPauseMenu.SetDrawableFlag(false)
-                                
+
                                 if(g.settings.music = "On") then
                                     g.audioPlayer.resume()
                                 end if
-                                
+
                                 clock.Mark()
-                                
+
                             end if
                         end if
-                        
+
                         compositor.DrawAll()
                         'playGameAddPauseMenu(screen) ' TODO, Not sure what this was doing, determine if something is needed here
                         screen.SwapBuffers()
-                    
+
                     end while
-                    
+
                 end if
-            
+
             end if
-            
+
             ticks = clock.TotalMilliseconds()
-        
+
             if (ticks > refreshPeriod)
-        
+
                 ' Do Controls
 
                 rg2dInnerGameLoopUpdate(button)
-                
+
                 dt = ticks/1000
                 '?dt
-        
+
                 ' Update game state
                 'ship.updateState(dt)
                 g.pm.runphysics(dt)
-                
+
                 ' Update game display
                 screen.clear(0)
-                
+
                 g.pm.updateDisplay()
-                
+
                 compositor.AnimationTick(ticks)
                 compositor.DrawAll()
                 'updateScore(screen)
-                
+
                 screen.SwapBuffers()
                 clock.Mark()
-                
-                
+
+
             end if  ' if time, Refresh
-        
+
         end while   ' While True
-                
+
     end while       ' while g.ships_left > 0
-    
+
     gs.score = g.game_score
     gs.wave = g.game_wave
     return gs
-    
+
 end function
 
 
@@ -221,24 +222,24 @@ end function
 function rg2dSetupLevel(waveNum, screen) as void
 
     g = GetGlobalAA()
-    
-    
+
+
 
 end function
 
 ''' Display game stats
 function rg2dUpdateScore(screen) as void
     g = GetGlobalAA()
-    
+
     ' SCORE
     score = g.game_score ' TODO add clever way to handle displaying extremely high scores... "You maniac!" Message or something
     if score > 9999999 then
         score = 9999999
     end if
-    
+
     place = 1000000
     ip = 6 ' zero-based
-    
+
     '?"Score Update";score
     while place >= 10
 
@@ -248,41 +249,39 @@ function rg2dUpdateScore(screen) as void
 
         place = place /10
         ip -= 1
-    
+
     end while
-    
+
     v = int(score)
     g.scoreSprites[0].setRegion(g.rScore[v])
-    
+
     'WAVE
     wave = g.game_wave
     if wave > 99 then
         wave = 99
     end if
-    
+
     if( wave > 10) then
         v = int(wave/10)
         g.waveSprites[1].setRegion(g.rScore[v])
     end if
-    
+
     v = int(wave) mod 10
     g.waveSprites[0].setRegion(g.rScore[v])
-    
-    'Num Ships 
+
+    'Num Ships
     nShips = g.ships_left + 1
     if nShips > 99 then
         nShips = 99
     end if
-    
+
     if( nShips > 10) then
         v = int(nShips/10)
         g.numShipSprites[1].setRegion(g.rScore[v])
     end if
-    
+
     v = int(nShips) mod 10
     g.numShipSprites[0].setRegion(g.rScore[v])
-    
+
 
 end function
-
-

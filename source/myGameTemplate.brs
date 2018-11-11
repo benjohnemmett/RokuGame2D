@@ -6,6 +6,7 @@ function rg2dSetGameParameters() as void
     g = GetGlobalAA()
 
     g.USING_LB_CODE = false
+    g.DEBUG = True
 
     g.highScoreRegister = "GameHighScores"
 
@@ -23,6 +24,10 @@ end function
 function rg2dLoadSprites() as void
     g = GetGlobalAA()
 
+    if(g.DEBUG) then
+      ?"Loading Sprites..."
+    end if
+
     bmScore = CreateObject("roBitmap", "pkg:/components/sprites/Numbers_Spritesheet_32.png")
 
     g.rScore = []
@@ -38,6 +43,9 @@ function rg2dLoadSprites() as void
     g.rScore[9] = CreateObject("roRegion", bmScore, 9*32, 0, 32, 32)
 
 
+    bmPauseScreen = CreateObject("roBitmap", "pkg:/components/sprites/Pause_Menu_Screen.png")
+    g.rPauseScreen = CreateObject("roRegion", bmPauseScreen, 0, 0, 640, 200)
+
     bmTruck = CreateObject("roBitmap", "pkg:/components/sprites/texture_brick01_60p.png")
     g.rTruck = CreateObject("roRegion", bmTruck, 0, 0, 60, 60)
 
@@ -52,6 +60,10 @@ end function
 '
 function rg2dLoadSounds() as void
     g = GetGlobalAA()
+
+    if(g.DEBUG) then
+      ?"Loading Sounds..."
+    end if
 
     g.sounds ={}
     'g.sounds.ship_engines = CreateObject("roAudioResource", "pkg:/assets/ship_engines.wav")
@@ -70,11 +82,19 @@ function rg2dMenuItemSelected() as void
 
     g = GetGlobalAA()
 
+    if(g.DEBUG) then
+      ?"Menu Item Selected ...";
+    end if
+
     selectedMenuOption = g.menuArray.selectedIndex
 
     shortName = g.menuArray.getSelectedItemShortName()
 
-    if(shortName = "play_game") then ' New Game
+    if(g.DEBUG) then
+      ?"->";shortName
+    end if
+
+    if(shortName = "new_game") then ' New Game
 
         stat = rg2dPlayGame()
 
@@ -101,14 +121,16 @@ function rg2dMenuItemSelected() as void
 end function
 
 
-
+' Stuff that needs to be done at the start of each game goes here.
 function rg2dGameInit() as void
     g = GetGlobalAA()
 
+    if(g.DEBUG) then
+      ?"rg2dGameInit()..."
+    end if
+
     ' Create Truck
-    'sTruck = g.compositor.NewSprite(100, 100, g.rTruck, 0)
-    'g.truck = physObj(sTruck, )
-    g.truck = g.pm.createPhysObj( 100, 100, 49, 36, "pkg:/components/sprites/firetruck_spritesheetII.png")
+    g.truck = g.pm.createPhysObj( g.sWidth/4, g.sHeight*0.9, 49, 36, "pkg:/components/sprites/firetruck_spritesheetII.png")
 
     if(g.USING_LB_CODE) then
         LBMakeGroups()
@@ -118,19 +140,25 @@ end function
 
 
 '''''''''' OUTER LOOP STUFF
-' Load up level specified by input argument
+' Stuff to be done at the start of each level goes here.
 function rg2dLoadLevel(level as integer) as void
     g = GetGlobalAA()
-
+    if(g.DEBUG) then
+      ?"rg2dLoadLevel()..."
+    end if
     if(g.USING_LB_CODE) then
         LBLoadLevel(level)
     end if
 
 end function
 
+' Stuff to be done at the start of each update loop goes here.
 function rg2dInnerGameLoopUpdate(button) as void
     g = GetGlobalAA()
-
+    if(g.DEBUG) then
+      ?"rg2dInnerGameLoopUpdate()..."
+    end if
+    
     if(button.bUp) then
         ?"Trucking Up"
 
