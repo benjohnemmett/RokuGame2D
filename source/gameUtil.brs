@@ -4,7 +4,7 @@ function rg2dGameSettings() as object
         music : "On",
         soundEffects : "On",
         controlCodes : rg2dGameControlCodes("V"),
-        
+
         setControls : function(mode as string) as void
             if(mode = "V") then
                 m.controlCodes = gameControlCodes("V")
@@ -24,40 +24,40 @@ function rg2dMenuItemList() as object
         selectedIndex : 0, ' top is 0, increasing downward
         itemNameList : [],
         itemShortNameList : [],
-        
+
         addItem : function(Name as string, shortName as string) as void
             m.itemNameList.Push(Name)
             m.itemShortNameList.Push(shortName)
         end function,
-        
+
         getItemName : function(idx) as string
             return m.itemNameList[idx]
         end function,
-        
+
         getItemShortName : function(idx) as string
             return m.itemShortNameList[idx]
         end function,
-        
+
         getCount : function()
             return m.itemNameList.count()
         end function,
-        
+
         moveSelectionUp : function() as void
             m.selectedIndex = m.selectedIndex - 1
-            
+
             if(m.selectedIndex < 0) then
                 m.selectedIndex = m.getCount() -1
             end if
         end function,
-        
+
         moveSelectionDown  : function() as void
             m.selectedIndex = (m.selectedIndex + 1) MOD m.getCount()
         end function,
-        
+
         getSelectedItemShortName : function() as string
             return m.itemShortNameList.GetEntry(m.selectedIndex)
         end function,
-        
+
     }
 
 end function
@@ -89,7 +89,7 @@ function rg2dGameControlCodes(mode as string) as object
             SELECT2_PRESSED : 17,   ' Green Button
             BACK_PRESSED : codes.BUTTON_BACK_PRESSED,
             PLAY_PRESSED : codes.BUTTON_PLAY_PRESSED,
-            
+
             UP_RELEASED : codes.BUTTON_UP_RELEASED,
             DOWN_RELEASED : codes.BUTTON_DOWN_RELEASED,
             RIGHT_RELEASED : codes.BUTTON_RIGHT_RELEASED,
@@ -99,7 +99,7 @@ function rg2dGameControlCodes(mode as string) as object
             SELECT2_RELEASED : 17,   ' Green Button
             BACK_RELEASED : codes.BUTTON_BACK_RELEASED,
             PLAY_RELEASED : codes.BUTTON_PLAY_RELEASED,
-            
+
             MENU_UP_A : codes.BUTTON_UP_PRESSED,
             MENU_DOWN_A : codes.BUTTON_DOWN_PRESSED,
             MENU_LEFT_A : codes.BUTTON_LEFT_PRESSED,
@@ -108,12 +108,12 @@ function rg2dGameControlCodes(mode as string) as object
             MENU_DOWN_B : codes.BUTTON_LEFT_PRESSED,
             MENU_LEFT_B : codes.BUTTON_UP_PRESSED,
             MENU_RIGHT_B : codes.BUTTON_DOWN_PRESSED,
-            
+
         }
     else
         'Horizontal controls
         return {
-            
+
             UP_PRESSED : codes.BUTTON_RIGHT_PRESSED,
             DOWN_PRESSED : codes.BUTTON_LEFT_PRESSED,
             LEFT_PRESSED : codes.BUTTON_DOWN_PRESSED,
@@ -123,7 +123,7 @@ function rg2dGameControlCodes(mode as string) as object
             SELECT2_PRESSED : 17,   ' Green Button
             BACK_PRESSED : codes.BUTTON_BACK_PRESSED,
             PLAY_PRESSED : codes.BUTTON_PLAY_PRESSED,
-            
+
             UP_RELEASED : codes.BUTTON_RIGHT_RELEASED,
             DOWN_RELEASED : codes.BUTTON_LEFT_RELEASED,
             LEFT_RELEASED : codes.BUTTON_DOWN_RELEASED,
@@ -133,7 +133,7 @@ function rg2dGameControlCodes(mode as string) as object
             SELECT2_RELEASED : 117,   ' Green Button
             BACK_RELEASED : codes.BUTTON_BACK_RELEASED,
             PLAY_RELEASED : codes.BUTTON_PLAY_RELEASED,
-            
+
             MENU_UP_A : codes.BUTTON_UP_PRESSED,
             MENU_DOWN_A : codes.BUTTON_DOWN_PRESSED,
             MENU_LEFT_A : codes.BUTTON_LEFT_PRESSED,
@@ -142,9 +142,9 @@ function rg2dGameControlCodes(mode as string) as object
             MENU_DOWN_B : codes.BUTTON_LEFT_PRESSED,
             MENU_LEFT_B : codes.BUTTON_UP_PRESSED,
             MENU_RIGHT_B : codes.BUTTON_DOWN_PRESSED,
-            
+
         }
-    
+
     end if
 
 end function
@@ -159,64 +159,64 @@ end function
 
 function rg2dScoreBoard() as object
     return {
-    
+
         ' Return true if input arg gameStats is high enough to reach the scoreboard
         checkHighScore : function(gs) as boolean
-            
+
             if(gs.score <= 0) then
                 return false
             end if
-            
+
             if(m.topGames.Count() < m.maxGames) then
                 return true
             end if
-            
+
             for each g in m.topGames
                 if gs.score > g.score then
                     return true
                 end if
-            end for 
-            
+            end for
+
             return false
-        
+
         end function,
-        ' 
+        '
         addGameStats: function(gs) as integer
             ' >> Insertion sort, keeping top N games
-            
+
                 ' INsert
             m.topGames.Push(gs)
                 ' sort
             m.topGames.SortBy("score","r")
-            
+
                 ' clip the end object
             if m.topGames.Count() > 10 then
                 for i = 10 to m.topGames.Count()-1
                     m.topGames.delete(i)
                 end for
             end if
-                
+
         end function,
-        
+
         clearScoreBoard : function() as void
             m.topGames = []
-        
+
         end function,
-        
+
         saveScoreBoard : function() as void
             '?"Saving High Scores"
             g = GetGlobalAA()
-            
+
             json = FormatJSON({topGames: m.topGames}, 1)
             sec = CreateObject("roRegistrySection", "PoP")
             sec.Write(g.highScoreRegister, json)
             sec.Flush()
         end function,
-        
+
         loadScoreBoard : function() as void
             '?"Loading High Scores"
             g = GetGlobalAA()
-            
+
             json = rg2dGetRegistryString(g.highScoreRegister)
 
             if json <> ""
@@ -225,27 +225,27 @@ function rg2dScoreBoard() as object
                 if obj <> invalid and obj.topGames <> invalid
                     m.topGames = obj.topGames
                 end if
-                
-            else 
+
+            else
                 '?"- No high scores registry found"
             end if
-        
+
         end function,
-        
+
         ' For debugging
         printHighScores : function() as void
             ?"--- High Scores ---"
             for each g in m.topGames
                 ?" * ";g.playerName;"   ";g.wave;"   ";g.score
             end for
-            
+
         end function,
-    
+
         topGames : [],
         maxGames : 10
-    
+
     }
-end function  
+end function
 
 Function rg2dGetRegistryString(key as String, default = "") As String
     sec = CreateObject("roRegistrySection", "PoP")
@@ -254,3 +254,12 @@ Function rg2dGetRegistryString(key as String, default = "") As String
     end if
     return default
 End Function
+
+function rg2dLoadRegion(path as String, x1,y1,x2,y2) as object
+
+  bm = CreateObject("roBitmap", path)
+  rObj = CreateObject("roRegion", bm, x1, y1, x2, y2)
+
+  return rObj
+
+end function

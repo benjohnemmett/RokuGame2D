@@ -183,10 +183,10 @@ function rg2dPlayGame() as object
 
                 ' Do Controls
 
-                rg2dInnerGameLoopUpdate(button)
 
                 dt = ticks/1000
-                '?dt
+
+                rg2dInnerGameLoopUpdate(dt, button)
 
                 ' Update game state
                 'ship.updateState(dt)

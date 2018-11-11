@@ -46,8 +46,9 @@ function rg2dLoadSprites() as void
     bmPauseScreen = CreateObject("roBitmap", "pkg:/components/sprites/Pause_Menu_Screen.png")
     g.rPauseScreen = CreateObject("roRegion", bmPauseScreen, 0, 0, 640, 200)
 
-    bmTruck = CreateObject("roBitmap", "pkg:/components/sprites/texture_brick01_60p.png")
-    g.rTruck = CreateObject("roRegion", bmTruck, 0, 0, 60, 60)
+    'bmTruck = CreateObject("roBitmap", "pkg:/components/sprites/texture_brick01_60p.png")
+    'g.rTruck = CreateObject("roRegion", bmTruck, 0, 0, 60, 60)
+    g.rTruck = rg2dLoadRegion("pkg:/components/sprites/texture_brick01_60p.png", 0, 0, 60, 60)
 
     if(g.USING_LB_CODE) then
         LBLoadSprites()
@@ -153,12 +154,12 @@ function rg2dLoadLevel(level as integer) as void
 end function
 
 ' Stuff to be done at the start of each update loop goes here.
-function rg2dInnerGameLoopUpdate(button) as void
+function rg2dInnerGameLoopUpdate(dt as float, button) as void
     g = GetGlobalAA()
     if(g.DEBUG) then
-      ?"rg2dInnerGameLoopUpdate()..."
+      ?"rg2dInnerGameLoopUpdate(";dt;")..."
     end if
-    
+
     if(button.bUp) then
         ?"Trucking Up"
 
@@ -171,6 +172,8 @@ function rg2dInnerGameLoopUpdate(button) as void
     else if(button.bLeft) then
         ?"Trucking Right"
 
+    else if(button.bSelect1) then
+        ?"Fire!"
     end if
 
 end function
