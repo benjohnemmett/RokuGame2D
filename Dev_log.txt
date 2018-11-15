@@ -1,0 +1,40 @@
+11/13/2018
+- Added turret with telescoping ability which aims the direction of fire
+
+TODO
+() Tank/Igloo/Whatever is throwing stuff
+DONE  Add second tank
+DONE  Check the tank flip angle flag
+DONE Redesign the angle controls
+* Gather sprites
+* Add sprites to game
+* Create power bar
+* Program power controls
+
+() Music
+* Find/Create Music for Levels (several tracks?)
+* " " Menus
+
+() Level
+* Get level sprites imported
+* Make level creator
+* Make random level generator
+* Background
+
+() Game Flow
+* Classic mode
+**
+* Lightning mode (Shoot as much as you can, reload with side buttons?)
+
+() Juice it up
+* Camera shakes
+* Particles (snow fall, breaking snowball particles)
+
+() Advertising
+* Determine what ad vendors are eligible
+* register
+* learn ad API
+* Consider including add free purchase
+
+() Bonus
+* Start documenting RG2D flow & usage

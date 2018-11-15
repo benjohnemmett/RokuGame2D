@@ -51,6 +51,7 @@ function rg2dLoadSprites() as void
     g.rTruck = rg2dLoadRegion("pkg:/components/sprites/firetruck_spritesheetII.png", 0, 0, 49, 36)
     g.rBricks = rg2dLoadRegion("pkg:/components/sprites/texture_brick01_60p.png", 0, 0, 60, 60)
     g.rCircleFire16 = rg2dLoadRegion("pkg:/components/sprites/circle_fire_16p.png", 0, 0, 16, 16)
+    g.rCircleGrey8 = rg2dLoadRegion("pkg:/components/sprites/circle_grey_8p.png", 0, 0, 8, 8)
 
     if(g.USING_LB_CODE) then
         LBLoadSprites()
@@ -120,7 +121,6 @@ function rg2dMenuItemSelected() as void
         'rg2dPlaySound(m.sounds.warp_in)
     end if
 
-
 end function
 
 
@@ -133,13 +133,14 @@ function rg2dGameInit() as void
     end if
 
     ' Create Truck
-    'g.truck = g.pm.createPhysObj( g.sWidth/4, g.sHeight*0.9, 49, 36, "pkg:/components/sprites/firetruck_spritesheetII.png")
+    g.tank1 = createTank(g.sWidth/4, g.sHeight*0.9, 0, true) ' TODO Flip this one
+    g.tank2 = createTank(3*g.sWidth/4, g.sHeight*0.9,0, false)
 
-    g.tank1 = createTank(g.sWidth/4, g.sHeight*0.9, 0)
     g.pogTanks = g.pm.createPhysObjGroup()
     g.pogProjs = g.pm.createPhysObjGroup()
 
     g.pogTanks.addPhysObj(g.tank1)
+    g.pogTanks.addPhysObj(g.tank2)
 
     cpTankProj = g.pm.createCollisionPair(g.pogTanks,g.pogProjs)
 
@@ -170,6 +171,18 @@ function rg2dLoadLevel(level as integer) as void
 
     g.player_state = "IDLE"
 
+    g.player_turn = 1
+
+end function
+
+function switchActivePlayer() as void
+    g = GetGlobalAA()
+    If g.player_turn = 1 then
+      g.player_turn = 2
+    else
+      g.player_turn = 1
+    End If
+
 end function
 
 ' Stuff to be done at the start of each update loop goes here.
@@ -179,25 +192,34 @@ function rg2dInnerGameLoopUpdate(dt as float, button) as void
       ?"rg2dInnerGameLoopUpdate(";dt;")..."
     end if
 
+    angle_inc = pi()/180
 
+    If g.player_turn = 1 then
+      active_player = g.tank1
+    else
+      active_player = g.tank2
+    End If
 
     if(button.bUp) then
-        ?"Trucking Up"
-
+        active_player.set_turret_angle(active_player.tank_turret_angle + angle_inc)
+        ?"Angle Up ";active_player.tank_turret_angle
     else if(button.bDown) then
-        ?"Trucking Down"
+        active_player.set_turret_angle(active_player.tank_turret_angle - angle_inc)
+        ?"Angle Up ";active_player.tank_turret_angle
 
     else if(button.bRight) then
         ?"Trucking Left"
-
+        active_player.set_turret_spacing(active_player.turret_spacing + 1)
     else if(button.bLeft) then
         ?"Trucking Right"
 
+        active_player.set_turret_spacing(active_player.turret_spacing - 1)
     else if(button.bSelect1) then
       ?"Fire!"
       if g.player_state = "IDLE" then
         g.player_state = "FIRE"
-        g.tank1.fireProjectile()
+        active_player.fireProjectile()
+        switchActivePlayer()
       else
 
       end if

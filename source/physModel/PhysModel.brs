@@ -496,7 +496,7 @@ Function physObjGroup() as Object
             end for
         end function,
 
-        isPhysObjGroup : Function() as boolean 
+        isPhysObjGroup : Function() as boolean
             return true
         End Function,
 
