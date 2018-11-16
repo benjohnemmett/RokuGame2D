@@ -53,6 +53,12 @@ function rg2dLoadSprites() as void
     g.rCircleFire16 = rg2dLoadRegion("pkg:/components/sprites/circle_fire_16p.png", 0, 0, 16, 16)
     g.rCircleGrey8 = rg2dLoadRegion("pkg:/components/sprites/circle_grey_8p.png", 0, 0, 8, 8)
 
+    ' Kenny's stuff
+    g.rSnowBall = rg2dLoadRegion("pkg:/components/sprites/snowball_p21.png", 0, 0, 21, 21)
+    g.rTerrain_ice = rg2dLoadRegion("pkg:/components/sprites/terrain_ice_288_44.png", 0, 0, 288, 44)
+    g.rIgloo_right = rg2dLoadRegion("pkg:/components/sprites/igloo_right_63_42.png", 0, 0, 63, 42)
+    g.rIgloo_left = rg2dLoadRegion("pkg:/components/sprites/igloo_left_63_42.png", 0, 0, 63, 42)
+
     if(g.USING_LB_CODE) then
         LBLoadSprites()
     end if
@@ -133,8 +139,8 @@ function rg2dGameInit() as void
     end if
 
     ' Create Truck
-    g.tank1 = createTank(g.sWidth/4, g.sHeight*0.9, 0, true) ' TODO Flip this one
-    g.tank2 = createTank(3*g.sWidth/4, g.sHeight*0.9,0, false)
+    g.tank1 = createTank(g.sWidth/4, g.sHeight*0.9, 0, true, "igloo") ' TODO Flip this one
+    g.tank2 = createTank(3*g.sWidth/4, g.sHeight*0.9,0, false, "igloo")
 
     g.pogTanks = g.pm.createPhysObjGroup()
     g.pogProjs = g.pm.createPhysObjGroup()

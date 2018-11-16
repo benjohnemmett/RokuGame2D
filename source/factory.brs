@@ -1,12 +1,31 @@
-
-function createTank(x, y, angle, faceRight) as object
+function createTank(x, y, angle, faceRight, tank_type) as object
 
   g = GetGlobalAA()
 
-  if faceRight then
-    sTruck = g.compositor.NewSprite(x, y, g.rTruck, 2) ' Flip this one'
+  tank = collectiveRotationalPhysObj(x, y, 30, angle)
+
+  If tank_type = "tank" then
+    tank.tank_type = tank_type
+  else if tank_type = "igloo" then
+    tank.tank_type = tank_type
   else
-    sTruck = g.compositor.NewSprite(x, y, g.rTruck, 2)
+    tank.tank_type = "tank"
+  End If
+
+  if tank.tank_type = "tank" then
+    if faceRight then
+      sTank = g.compositor.NewSprite(x, y, g.rTruck, 2) ' Flip this one'
+    else
+      sTank = g.compositor.NewSprite(x, y, g.rTruck, 2)
+    end if
+
+  else if tank.tank_type = "igloo" then
+    if faceRight then
+      sTank = g.compositor.NewSprite(x, y, g.rIgloo_right, 2) ' Flip this one'
+    else
+      sTank = g.compositor.NewSprite(x, y, g.rIgloo_left, 2)
+    end if
+
   end if
 
   sTurret1 = g.compositor.NewSprite(x, y, g.rCircleGrey8, 1)
@@ -17,7 +36,6 @@ function createTank(x, y, angle, faceRight) as object
   sTurret6 = g.compositor.NewSprite(x, y, g.rCircleGrey8, 1)
 
   ''
-  tank = collectiveRotationalPhysObj(x, y, 30, angle)
   tank.minX = 0.0
   tank.maxX = g.screen.GetWidth()
   tank.minY = 0.0
@@ -48,7 +66,7 @@ function createTank(x, y, angle, faceRight) as object
 
   tank.state = "ALIVE"
 
-  tank.createElement(sTruck, 0.0, 0.0)
+  tank.createElement(sTank, 0.0, 0.0)
 
   tank.fireProjectile = function() as object
     ?"Fire!!!!!!!!!!!"
@@ -117,7 +135,7 @@ end function
 function createProjectile(x,y,vx,vy) as object
   g = GetGlobalAA()
 
-  sCirc = g.compositor.NewSprite(x, y, g.rCircleFire16, 0)
+  sCirc = g.compositor.NewSprite(x, y, g.rSnowBall, 0)
 
   ''
   proj = collectiveRotationalPhysObj(x, y, 16, 0)

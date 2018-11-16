@@ -6,14 +6,22 @@ TODO
 DONE  Add second tank
 DONE  Check the tank flip angle flag
 DONE Redesign the angle controls
-* Gather sprites
+* Gather tank/igloo sprites
 * Add sprites to game
 * Create power bar
 * Program power controls
 
+() Flags & projectiles
+* create flag sprites
+* Create Flag logic
+* Create different projectile types
+
 () Music
 * Find/Create Music for Levels (several tracks?)
 * " " Menus
+
+()AI
+* Determine AI algorithm w/ skill variations 
 
 () Level
 * Get level sprites imported
@@ -23,7 +31,7 @@ DONE Redesign the angle controls
 
 () Game Flow
 * Classic mode
-**
+** Turn based
 * Lightning mode (Shoot as much as you can, reload with side buttons?)
 
 () Juice it up
