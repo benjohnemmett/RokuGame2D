@@ -698,3 +698,33 @@ function physObjFixedRadialElement(sprite, angle, radius) as object
     }
 
 end function ''' end physObjFixedRadialElement()
+
+' A collidable object
+'  Not movable or displayable on it's own
+' Good for an invisible box defining a goal to be reached or an invisible boundary.'
+'
+' NOTE: Use the setBox() method to change the size after creation. If size/location parameters are updated directory, the boundary definition will not match.
+function fixedBoxCollider(x,y,w,h) as object
+  return {
+  m.x = x,
+  m.y = y,
+  m.width = w,
+  m.height = h,
+  m.isMovable = false,
+  m.boundaryDefinition = boundaryAABB(x, y, width, height),
+
+  '' From the collidable interface
+  ' Note that '
+  getBoundaryDefinition : function() as object
+      return m.boundaryDefinition
+  end function,
+
+  setBox : function(x,y,w,h)
+    m.x = x
+    m.y = y
+    m.width = w
+    m.height = h
+    m.boundaryDefinition = boundaryAABB(x, y, width, height)
+  end function,
+
+end Function
