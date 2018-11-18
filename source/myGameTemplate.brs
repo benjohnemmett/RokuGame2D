@@ -146,21 +146,12 @@ function rg2dGameInit() as void
 
     g.pogTanks = g.pm.createPhysObjGroup()
     g.pogProjs = g.pm.createPhysObjGroup()
-    g.pogTerr = g.pm.createPhysObjGroup()
+    'g.pogTerr = g.pm.createPhysObjGroup()
 
     g.pogTanks.addPhysObj(g.tank1)
     g.pogTanks.addPhysObj(g.tank2)
 
     cpTankProj = g.pm.createCollisionPair(g.pogTanks,g.pogProjs)
-    cpProjTerr = g.pm.createCollisionPair(g.pogProjs,g.pogTerr)
-
-    cpProjTerr.overlapCallback = function(p,t) as integer
-      ?"Projectile hitting ICE"
-      if p.state = "ALIVE" then
-        p.ttl = 0.2
-        p.state = "DEAD"
-      end if
-    end function
 
     cpTankProj.overlapCallback = function(t,p) as integer
 
@@ -198,10 +189,21 @@ function rg2dLoadLevel(level as integer) as void
       po.wallEnable = invalid
       po.isMovable = false
       po.createElement(spr,0,0)
-      g.pogTerr.addPhysObj(po)
 
       x_spot += 21
     end while
+
+    gngCol = fixedBoxCollider(0,g.sHeight-21, g.sWidth, 21)
+    'g.pogTerr.addPhysObj(gngCol)
+
+    cpProjTerr = g.pm.createCollisionPair(g.pogProjs,gngCol)
+    cpProjTerr.overlapCallback = function(p,t) as integer
+      ?"Projectile hitting ICE"
+      if p.state = "ALIVE" then
+        p.ttl = 0.2
+        p.state = "DEAD"
+      end if
+    end function
 
 end function
 

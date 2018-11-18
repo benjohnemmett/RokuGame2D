@@ -706,12 +706,15 @@ end function ''' end physObjFixedRadialElement()
 ' NOTE: Use the setBox() method to change the size after creation. If size/location parameters are updated directory, the boundary definition will not match.
 function fixedBoxCollider(x,y,w,h) as object
   return {
-  m.x = x,
-  m.y = y,
-  m.width = w,
-  m.height = h,
-  m.isMovable = false,
-  m.boundaryDefinition = boundaryAABB(x, y, width, height),
+    x: x,
+    y: y,
+    width: w,
+    height: h,
+    isMovable: false,
+    boundaryDefinition: boundaryAABB(x, y, w, h),
+    isPhysObjGroup: function()
+      return false
+    end function,
 
   '' From the collidable interface
   ' Note that '
@@ -724,7 +727,8 @@ function fixedBoxCollider(x,y,w,h) as object
     m.y = y
     m.width = w
     m.height = h
-    m.boundaryDefinition = boundaryAABB(x, y, width, height)
-  end function,
+    m.boundaryDefinition = boundaryAABB(x, y, w, h)
+  end function
+  }
 
 end Function
