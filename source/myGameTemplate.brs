@@ -55,9 +55,11 @@ function rg2dLoadSprites() as void
 
     ' Kenny's stuff
     g.rSnowBall = rg2dLoadRegion("pkg:/components/sprites/snowball_p21.png", 0, 0, 21, 21)
-    g.rTerrain_ice = rg2dLoadRegion("pkg:/components/sprites/terrain_ice_288_44.png", 0, 0, 288, 44)
+    'g.rTerrain_ice = rg2dLoadRegion("pkg:/components/sprites/terrain_ice_288_44.png", 0, 0, 288, 44)
     g.rIgloo_right = rg2dLoadRegion("pkg:/components/sprites/igloo_right_63_42.png", 0, 0, 63, 42)
     g.rIgloo_left = rg2dLoadRegion("pkg:/components/sprites/igloo_left_63_42.png", 0, 0, 63, 42)
+
+    g.terrain_ice = createTerrain("pkg:/components/sprites/terrain_ice_288_44.png")
 
     if(g.USING_LB_CODE) then
         LBLoadSprites()
@@ -139,16 +141,26 @@ function rg2dGameInit() as void
     end if
 
     ' Create Truck
-    g.tank1 = createTank(g.sWidth/4, g.sHeight*0.9, 0, true, "igloo") ' TODO Flip this one
-    g.tank2 = createTank(3*g.sWidth/4, g.sHeight*0.9,0, false, "igloo")
+    g.tank1 = createTank(g.sWidth/4, g.sHeight-63-21, 0, true, "igloo") ' TODO Flip this one
+    g.tank2 = createTank(3*g.sWidth/4, g.sHeight-63-21,0, false, "igloo")
 
     g.pogTanks = g.pm.createPhysObjGroup()
     g.pogProjs = g.pm.createPhysObjGroup()
+    g.pogTerr = g.pm.createPhysObjGroup()
 
     g.pogTanks.addPhysObj(g.tank1)
     g.pogTanks.addPhysObj(g.tank2)
 
     cpTankProj = g.pm.createCollisionPair(g.pogTanks,g.pogProjs)
+    cpProjTerr = g.pm.createCollisionPair(g.pogProjs,g.pogTerr)
+
+    cpProjTerr.overlapCallback = function(p,t) as integer
+      ?"Projectile hitting ICE"
+      if p.state = "ALIVE" then
+        p.ttl = 0.2
+        p.state = "DEAD"
+      end if
+    end function
 
     cpTankProj.overlapCallback = function(t,p) as integer
 
@@ -178,6 +190,18 @@ function rg2dLoadLevel(level as integer) as void
     g.player_state = "IDLE"
 
     g.player_turn = 1
+
+    x_spot = 0
+    while x_spot < g.sWidth
+      spr = g.compositor.NewSprite(x_spot, g.sHeight-42, g.terrain_ice.rTopBlock_center, 2)
+      po = collectiveRotationalPhysObj(x_spot, g.sHeight-42, 20, 0.0)
+      po.wallEnable = invalid
+      po.isMovable = false
+      po.createElement(spr,0,0)
+      g.pogTerr.addPhysObj(po)
+
+      x_spot += 21
+    end while
 
 end function
 

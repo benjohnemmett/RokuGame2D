@@ -6,8 +6,8 @@ TODO
 DONE  Add second tank
 DONE  Check the tank flip angle flag
 DONE Redesign the angle controls
-* Gather tank/igloo sprites
-* Add sprites to game
+DONE Gather tank/igloo sprites
+DONE Add sprites to game
 * Create power bar
 * Program power controls
 
@@ -21,10 +21,10 @@ DONE Redesign the angle controls
 * " " Menus
 
 ()AI
-* Determine AI algorithm w/ skill variations 
+* Determine AI algorithm w/ skill variations
 
 () Level
-* Get level sprites imported
+STARTED Get level sprites imported
 * Make level creator
 * Make random level generator
 * Background

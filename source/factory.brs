@@ -40,7 +40,7 @@ function createTank(x, y, angle, faceRight, tank_type) as object
   tank.maxX = g.screen.GetWidth()
   tank.minY = 0.0
   tank.maxY = g.screen.GetHeight()
-  tank.wallEnable = 0 ' TODO Could maybe turn this off
+  tank.wallEnable = Invalid ' TODO Could maybe turn this off
   tank.size_x = 60
   tank.size_y = 60
   tank.vx = 0
@@ -143,7 +143,7 @@ function createProjectile(x,y,vx,vy) as object
   proj.maxX = g.screen.GetWidth()
   proj.minY = 0.0
   proj.maxY = g.screen.GetHeight()
-  proj.wallEnable = 0 ' TODO Could maybe turn this off
+  proj.wallEnable = Invalid ' TODO Could maybe turn this off
   proj.size_x = 60
   proj.size_y = 60
   proj.vx = vx
