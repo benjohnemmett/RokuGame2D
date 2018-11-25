@@ -11,7 +11,7 @@ Function overlapState(_obj, _area, _callback) as object
     }
 end function
 
-' Object to hold 
+' Object to hold
 Function collisionPair(o1, o2, olCB, colCB) as object
     return {
         obj1 : o1,
@@ -25,26 +25,77 @@ End Function
 '   Check for overlap, if it exists and the callback returns 0 or invalid then check for object of greatest overlap and store it.
 function checkOverlap(obj1, obj2, cb, pm) as void
     ' looking only at obj1, if it is not movable then no need to resolve a collision
-    
+
     b1 = obj1.getBoundaryDefinition()
     b2 = obj2.getBoundaryDefinition()
-    
-    ' Quick check for 
+
+    ' Quick check for
     d = minfloat(abs(obj1.x - obj2.x), abs(obj1.y - obj2.y))
     rad = maxfloat(b1.radius, b2.radius)
     if(d > 2*rad)
         return
     end if
-    
+
     if (b1.type = "Circular") and (b2.type = "Circular") then
         checkOverlapCircular(obj1, obj2, cb, pm)
     else if (b1.type = "AABB") and (b2.type = "AABB") then
         checkOverlapAABB(obj1, obj2, cb, pm)
+    else if (b1.type = "AABB") and (b2.type = "Circular") then
+        checkOverlapCircWithAABB(obj2, obj1, cb, pm)
+    else if (b1.type = "Circular") and (b2.type = "AABB") then
+        checkOverlapCircWithAABB(obj1, obj2, cb, pm)
     else
-        ?"Error: checkOverlap for ";b1.type;" and ";b2.type;" not supported."
+        ?"Warning: checkOverlap for ";b1.type;" and ";b2.type;" not supported."
         return
     end if
-    
+
+end function
+
+function checkOverlapCircWithAABB(circ, aabb, cb, pm) as void
+
+  'Simplification of circle AABB overlap check. Basically check against the circles bounding box'
+  ' OK this isn't really correct but close enough right?
+
+  ' Check if they overlap
+  x1 = ((circ.x - circ.radius) < (aabb.x + aabb.size_x))
+  x2 = ((circ.x + circ.radius) > aabb.x)
+  y1 = ((circ.y - circ.radius) < (aabb.y + aabb.size_y))
+  y2 = ((circ.y + circ.radius) > aabb.y)
+
+  if x1 AND x2 AND y1 AND y2 then
+    ' Call overlap callback function
+    '  If overlap returns 0 or invalid then continue with collisions as usual.
+    '  If overlap returns non-zero value then abort normal collisions
+    if(cb <> invalid) then
+        stat = cb(circ,aabb)
+        if (stat <> 0) AND (stat <> invalid) then
+            return
+        end if
+    end if
+
+    ' Get overlap area
+    area = 1 ' TODO implelment this
+
+    'add overlap state to normal openOverlaps
+    if(circ.isMovable) then ' TODO Change this to inv Mass later
+        if(circ.overlapState = invalid):
+            circ.overlapState = overlapState(aabb, area, cb)
+            pm.addOverlapToOpenList(circ)
+        else if(area > circ.overlapState.area):
+            circ.overlapState = overlapState(aabb, area, cb)
+        end if
+    end if
+
+    if(aabb.isMovable) then ' TODO Change this to inv Mass later
+        if(aabb.overlapState = invalid):
+            aabb.overlapState = overlapState(circ, area, cb)
+            pm.addOverlapToOpenList(aabb)
+        else if(area > aabb.overlapState.area): 'Replace previous overlap if this one is bigger
+            aabb.overlapState = overlapState(circ, area, cb)
+        end if
+    end if
+  end if
+
 end function
 
 function checkOverlapAABB(obj1, obj2, cb, pm) as void
@@ -54,9 +105,9 @@ function checkOverlapAABB(obj1, obj2, cb, pm) as void
     x2 = ((obj1.x + obj1.size_x) > obj2.x)
     y1 = (obj1.y < (obj2.y + obj2.size_y))
     y2 = ((obj1.y + obj1.size_y) > obj2.y)
-    
+
     if x1 AND x2 AND y1 AND y2 then
-        
+
         ' Call overlap callback function
         '  If overlap returns 0 or invalid then continue with collisions as usual.
         '  If overlap returns non-zero value then abort normal collisions
@@ -66,10 +117,10 @@ function checkOverlapAABB(obj1, obj2, cb, pm) as void
                 return
             end if
         end if
-        
+
         ' Get overlap area
         area = 1 ' TODO implelment this
-        
+
         'add overlap state to normal openOverlaps
         if(obj1.isMovable) then ' TODO Change this to inv Mass later
             if(obj1.overlapState = invalid):
@@ -79,7 +130,7 @@ function checkOverlapAABB(obj1, obj2, cb, pm) as void
                 obj1.overlapState = overlapState(obj2, area, cb)
             end if
         end if
-        
+
         if(obj2.isMovable) then ' TODO Change this to inv Mass later
             if(obj2.overlapState = invalid):
                 obj2.overlapState = overlapState(obj1, area, cb)
@@ -88,20 +139,20 @@ function checkOverlapAABB(obj1, obj2, cb, pm) as void
                 obj2.overlapState = overlapState(obj1, area, cb)
             end if
         end if
-    
+
     end if
 
 end function
 
 function checkOverlapCircular(obj1, obj2, cb, pm) as void
-    
+
     d = sqr(pow(obj1.x - obj2.x,2) + pow(obj1.y - obj2.y,2))
-    
+
     'Check overlap
     if(d >= (obj1.radius + obj2.radius))
         return
     end if
-    
+
     ' Call overlap callback function
     '  If overlap returns 0 or invalid then continue with collisions as usual.
     '  If overlap returns non-zero value then abort normal collisions
@@ -111,12 +162,12 @@ function checkOverlapCircular(obj1, obj2, cb, pm) as void
             return
         end if
     end if
-    
+
     r1 = obj1.radius
     r2 = obj2.radius
-    
+
     area = (1/d)*sqr( (-d + r1 - r2) * (-d + r1 - r2) * (-d + r1 + r2) * (d + r1 + r2) )
-    
+
     'add overlap state to normal openOverlaps
     if(obj1.isMovable) then ' TODO Change this to inv Mass later
         if(obj1.overlapState = invalid):
@@ -126,7 +177,7 @@ function checkOverlapCircular(obj1, obj2, cb, pm) as void
             obj1.overlapState = overlapState(obj2, area, cb)
         end if
     end if
-    
+
     if(obj2.isMovable) then ' TODO Change this to inv Mass later
         if(obj2.overlapState = invalid):
             obj2.overlapState = overlapState(obj1, area, cb)
@@ -135,7 +186,7 @@ function checkOverlapCircular(obj1, obj2, cb, pm) as void
             obj2.overlapState = overlapState(obj1, area, cb)
         end if
     end if
-    
+
 end function
 
 function checkOverlapGroupObj(group, obj, cb, pm) as void
@@ -162,7 +213,7 @@ function resolveCollision(obj1) as void
     ?"Warning Deprecated global function resolveCollision() called!!!!"
 
     if (obj1.overlapState <> invalid) then
-       
+
        os = obj1.overlapState
         ' Call collision callback function
         '  If callback returns 0 or invalid then continue with collisions as usual.
@@ -170,32 +221,32 @@ function resolveCollision(obj1) as void
         if(os.cb <> invalid) then
             stat = os.cb(obj1,obj2)
             if (stat <> 0) AND (stat <> invalid) then
-            
+
                 obj1.overlapState = invalid ' Set back to invalid after resolution
                 return
             end if
         end if
-        
+
         obj2 = os.obj 'Get other object in collision
-        
+
         'Magnitudes of overlap
         xx1 = Abs(obj1.x - (obj2.x + obj2.size_x))
         xx2 = Abs(obj2.x - (obj1.x + obj1.size_x))
         yy1 = Abs(obj1.y - (obj2.y + obj2.size_y))
         yy2 = Abs(obj2.y - (obj1.y + obj1.size_y))
-        
+
         minX = MinFloat(xx1,xx2)
         minY = MinFloat(yy1,yy2)
-        
+
         ' Resolve collision
         if (os.xDir = true) then
-        
+
             if (obj1.isMovable AND obj2.isMovable) then
                 'Equal & opposite recoil
     '                ?" - X both movable"
                 s = (Abs(obj1.vx) + Abs(obj2.vx))/(obj1.collisionRecoil + obj2.collisionRecoil)
-                
-                obj1.vx = -sgn(obj1.vx)*s*obj1.collisionRecoil 'Bounce back 
+
+                obj1.vx = -sgn(obj1.vx)*s*obj1.collisionRecoil 'Bounce back
                 obj2.vx = -sgn(obj2.vx)*s*obj2.collisionRecoil
             else if (obj1.isMovable AND (obj2.isMovable = false)) then
                 '?" - X obj1 movable"
@@ -212,8 +263,8 @@ function resolveCollision(obj1) as void
                         bounceVx = bounceVx0 + abs(minX/bounceVx0)*(obj1.ax + obj1.gx)
                     end if
                     obj1.vx = maxFloat(obj2.vx,bounceVx)
-    
-                else 
+
+                else
                     ' | obj1 |->| obj2 |
                     obj1.x = obj2.x - obj1.size_x
                     bounceVx0 = -obj1.vx*obj1.collisionRecoil
@@ -223,7 +274,7 @@ function resolveCollision(obj1) as void
                         bounceVx = bounceVx0 + abs(minX/bounceVx0)*(obj1.ax + obj1.gx)
                     end if
                     obj1.vx = minFloat(obj2.vx,bounceVx)
-    
+
                 end if
             else if ((obj1.isMovable = false) AND obj2.isMovable) then
                 '?" - X obj2 movable"
@@ -237,7 +288,7 @@ function resolveCollision(obj1) as void
                         bounceVx = bounceVx0 + abs(minX/bounceVx0)*(obj2.ax + obj2.gx)
                     end if
                     obj2.vx = minFloat(obj1.vx,bounceVx)
-                else 
+                else
                     ' | obj1 |<-| obj2 |
                     obj2.x = obj1.x + obj1.size_x
                     bounceVx0 = -obj2.vx*obj2.collisionRecoil
@@ -255,7 +306,7 @@ function resolveCollision(obj1) as void
                 'TODO this is  wrong
     '                ?" - Y both movable"
                 s = (Abs(obj1.vy) + Abs(obj2.vy))/(obj1.collisionRecoil + obj2.collisionRecoil)
-                obj1.vy = -sgn(obj1.vy)*s*obj1.collisionRecoil 'Bounce back 
+                obj1.vy = -sgn(obj1.vy)*s*obj1.collisionRecoil 'Bounce back
                 obj2.vy = -sgn(obj2.vy)*s*obj2.collisionRecoil
             else if (obj1.isMovable AND (obj2.isMovable = false)) then
     '                ?" - Y obj1 movable"
@@ -273,7 +324,7 @@ function resolveCollision(obj1) as void
                         bounceVy = bounceVy0 + abs(minY/bounceVy0)*(obj1.ay + obj1.gy)
                     end if
                     obj1.vy = maxFloat(obj2.vy,bounceVy)
-                else 
+                else
                     '_
                     'obj1 V
                     '_
@@ -294,7 +345,7 @@ function resolveCollision(obj1) as void
                     '_
                     'obj2 V
                     '_
-                    'obj1 
+                    'obj1
                     '_
                     obj2.y = obj1.y - obj2.size_y
                     bounceVy0 = -obj2.vy*obj2.collisionRecoil
@@ -304,9 +355,9 @@ function resolveCollision(obj1) as void
                         bounceVy = bounceVy0 + abs(minY/bounceVy0)*(obj2.ay + obj2.gy)
                     end if
                     obj2.vy = minFloat(obj1.vy,bounceVy)
-                else 
+                else
                     '_
-                    'obj1 
+                    'obj1
                     '_
                     'obj2 ^
                     '_
@@ -321,9 +372,9 @@ function resolveCollision(obj1) as void
                 end if
             end if
         end if
-    
+
         obj1.overlapState = invalid ' Set back to invalid after resolution
-        
+
     end if
 
 end function
@@ -333,4 +384,3 @@ function resolveCollisionGroup(group) as void
         resolveCollision(o)
     end for
 end function
-
