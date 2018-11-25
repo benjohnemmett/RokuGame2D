@@ -577,18 +577,75 @@ function collectiveRotationalPhysObj(x, y, radius, angle) as object
                 return
             end if
 
+            ' If this object is immovable then we are done here'
+            if (m.isMovable = false) then
+              m.overlapState = invalid
+              return
+            end if
+
             os  = m.overlapState
-            ' http://ericleong.me/research/circle-circle/#static-circle-collision
-            Nx = m.x - os.obj.x
-            Ny = m.y - os.obj.y
-            N = sqr(Nx*Nx + Ny*Ny)
-            Nx /= N ' normalized normal vector x
-            Ny /= N ' normalized normal vector y
 
-            p = ((os.obj.vx*Nx + os.obj.vy*Ny)  - (m.vx*Nx + m.vy*Ny)) ' Assuming mass of 1
+            obj2 = os.obj
+            bd = obj2.getBoundaryDefinition()
 
-            m.vx += p*Nx
-            m.vy += p*Ny
+            if(bd.type = "Circular") then
+              ' http://ericleong.me/research/circle-circle/#static-circle-collision
+              Nx = m.x - os.obj.x
+              Ny = m.y - os.obj.y
+              N = sqr(Nx*Nx + Ny*Ny)
+              Nx /= N ' normalized normal vector x
+              Ny /= N ' normalized normal vector y
+
+              p = ((os.obj.vx*Nx + os.obj.vy*Ny)  - (m.vx*Nx + m.vy*Ny)) ' Assuming mass of 1
+
+              m.vx += p*Nx
+              m.vy += p*Ny
+
+            else if (bd.type = "AABB") then
+              'Reflect off of box
+              ?"Circular object hit AABB!"
+
+              ' TODO, move this to overlap check & flag diminant direction of overlap
+              'Magnitudes of overlap
+              xx1 = Abs((m.x - m.radius) - (obj2.x + obj2.size_x))
+              xx2 = Abs(obj2.x - (m.x + m.radius))
+              yy1 = Abs((m.y - m.radius) - (obj2.y + obj2.size_y))
+              yy2 = Abs(obj2.y - (m.y + m.radius)) '' DB expect this to be smallest
+
+              minX = MinFloat(xx1,xx2)
+              minY = MinFloat(yy1,yy2) '' DB Expect yy2 value here
+
+              ' Check that objects are converging, and get dominant direction
+              conv_x = ((m.x - m.radius) - obj2.x) * (m.vx - obj2.vx) '' DB Expect positive. (L-S) * (L-0) = P*P = P
+              conv_y = ((m.y - m.radius) - obj2.y) * (m.vy - obj2.vy) ''DB expect  (S-L)* (P-0) = N*P = N
+
+              if(conv_x < 0 ) OR (conv_y < 0) then ' Is converging, otherwise let it go'
+
+                if((conv_x < 0) AND (conv_y < 0)) then 'Both directions converging
+                    if(minX <= minY) then
+                        isXDirection = true ' x dominant
+                    else
+                        isXDirection = false ' y dominant
+                    end if
+                else if(conv_x < 0) then 'Just x converging
+                    isXDirection = true ' x dominant
+                else if(conv_y < 0) 'Just y converging
+                    isXDirection = false ' x dominant
+                end if
+
+                ' TODO factor in energy transfer to other object'
+                if(isXDirection) then
+                  m.vx = -(m.vx * m.collisionRecoil)
+                else
+                  m.vy = -(m.vy * m.collisionRecoil)
+                end if
+
+              end if 'is converging
+
+
+            else
+              ?"Warning: collectiveRotationalPhysObj resolveCollision with ";bd.type;" not supported."
+            end if
 
             'Reset
             m.overlapState = invalid
@@ -708,8 +765,10 @@ function fixedBoxCollider(x,y,w,h) as object
   return {
     x: x,
     y: y,
-    width: w,
-    height: h,
+    size_x: w,
+    size_y: h,
+    vx : 0, ' To comply with collidable interface'
+    vy : 0, ' To comply with collidable interface
     isMovable: false,
     boundaryDefinition: boundaryAABB(x, y, w, h),
     isPhysObjGroup: function()
@@ -725,8 +784,8 @@ function fixedBoxCollider(x,y,w,h) as object
   setBox : function(x,y,w,h)
     m.x = x
     m.y = y
-    m.width = w
-    m.height = h
+    m.size_x = w
+    m.size_y = h
     m.boundaryDefinition = boundaryAABB(x, y, w, h)
   end function
   }
