@@ -200,10 +200,17 @@ function rg2dLoadLevel(level as integer) as void
     cpProjTerr.overlapCallback = function(p,t) as integer
       ?"Projectile hitting ICE"
       if p.state = "ALIVE" then
-        p.ttl = 0.2
+        p.ttl = 0.1
         p.state = "DEAD"
       end if
     end function
+
+
+    ' FLAGS'
+    g.bmFlagLeft = flag(g.tank1.x, g.tank1.y-400, 100, 400, &hDD1111FF)
+    g.bmFlagLeft.updateDisplay()
+    g.rFlagLeft = CreateObject("roRegion", g.bmFlagLeft.bm, 0, 0, g.bmFlagLeft.width, g.bmFlagLeft.height)
+    g.sFlagLeft = g.compositor.NewSprite(g.bmFlagLeft.x, g.bmFlagLeft.y, g.rFlagLeft, 0)
 
 end function
 
@@ -235,10 +242,15 @@ function rg2dInnerGameLoopUpdate(dt as float, button) as void
     if(button.bUp) then
         active_player.set_turret_angle(active_player.tank_turret_angle + angle_inc)
         ?"Angle Up ";active_player.tank_turret_angle
+
+        g.bmFlagLeft.setFlagPosition(g.bmFlagLeft.flagHeight + 0.05)
+        g.bmFlagLeft.updateDisplay()
     else if(button.bDown) then
         active_player.set_turret_angle(active_player.tank_turret_angle - angle_inc)
         ?"Angle Up ";active_player.tank_turret_angle
 
+        g.bmFlagLeft.setFlagPosition(g.bmFlagLeft.flagHeight - 0.05)
+        g.bmFlagLeft.updateDisplay()
     else if(button.bRight) then
         ?"Trucking Left"
         active_player.set_turret_spacing(active_player.turret_spacing + 1)
