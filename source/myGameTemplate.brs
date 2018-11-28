@@ -205,12 +205,17 @@ function rg2dLoadLevel(level as integer) as void
       end if
     end function
 
-
     ' FLAGS'
     g.bmFlagLeft = flag(g.tank1.x, g.tank1.y-400, 100, 400, &hDD1111FF)
     g.bmFlagLeft.updateDisplay()
     g.rFlagLeft = CreateObject("roRegion", g.bmFlagLeft.bm, 0, 0, g.bmFlagLeft.width, g.bmFlagLeft.height)
     g.sFlagLeft = g.compositor.NewSprite(g.bmFlagLeft.x, g.bmFlagLeft.y, g.rFlagLeft, 0)
+
+    'Extender '
+    g.bmExtLeft = uiExtender(50,100)
+    g.bmExtLeft.updateDisplay()
+    g.rExtLeft = CreateObject("roRegion", g.bmExtLeft.bm, 0, 0, g.bmExtLeft.width, g.bmExtLeft.height)
+    g.sExtLeft = g.compositor.NewSprite(100,100, g.rExtLeft, 0)
 
 end function
 
@@ -253,11 +258,14 @@ function rg2dInnerGameLoopUpdate(dt as float, button) as void
         g.bmFlagLeft.updateDisplay()
     else if(button.bRight) then
         ?"Trucking Left"
+        g.bmExtLeft.setValue(g.bmExtLeft.value + 0.05)
         active_player.set_turret_spacing(active_player.turret_spacing + 1)
+
     else if(button.bLeft) then
         ?"Trucking Right"
-
+        g.bmExtLeft.setValue(g.bmExtLeft.value - 0.05)
         active_player.set_turret_spacing(active_player.turret_spacing - 1)
+
     else if(button.bSelect1) then
       ?"Fire!"
       if g.player_state = "IDLE" then

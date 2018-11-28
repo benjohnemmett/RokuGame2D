@@ -48,18 +48,18 @@ function createTank(x, y, angle, faceRight, tank_type) as object
   tank.maxvx = 10
   tank.maxvy = 10
   tank.turret = collectiveRotationalPhysObj(x, y, 0, pi()/6)
-  tank.turret.createElement(sTurret1, 0, 3)
-  tank.turret.createElement(sTurret2, 0, 6)
-  tank.turret.createElement(sTurret3, 0, 9)
-  tank.turret.createElement(sTurret4, 0, 12)
-  tank.turret.createElement(sTurret5, 0, 15)
-  tank.turret.createElement(sTurret6, 0, 18)
+  tank.turret.createElement(sTurret1, 0, 12)
+  tank.turret.createElement(sTurret2, 0, 15)
+  tank.turret.createElement(sTurret3, 0, 18)
+  tank.turret.createElement(sTurret4, 0, 21)
+  tank.turret.createElement(sTurret5, 0, 24)
+  tank.turret.createElement(sTurret6, 0, 27)
   tank.turret_spacing = 3
   tank.tank_turret_angle = pi()/6 ' angle up from front of tank
   tank.faceRight = faceRight
   tank.MIN_TURRET_ANGLE = 0
   tank.MAX_TURRET_ANGLE = pi()
-  tank.MAX_TURRET_SPACING = 4
+  tank.MAX_TURRET_SPACING = 3
   tank.MIN_TURRET_SPACING = 0
 
   tank.turret.updateDisplay()
@@ -118,7 +118,7 @@ function createTank(x, y, angle, faceRight, tank_type) as object
   'Set Turret Spacing
   tank.set_turret_spacing = function(dist) as void
     m.turret_spacing = maxFloat(minFloat(dist, m.MAX_TURRET_SPACING), m.MIN_TURRET_SPACING)
-    rad = dist
+    rad = 12
     for each e in m.turret.elementArray
       e.radius = rad
       rad += dist
