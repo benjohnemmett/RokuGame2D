@@ -141,12 +141,12 @@ function rg2dGameInit() as void
     end if
 
     ' Create Truck
-    g.tank1 = createTank(g.sWidth/4, g.sHeight-63-21, 0, true, "igloo") ' TODO Flip this one
-    g.tank2 = createTank(3*g.sWidth/4, g.sHeight-63-21,0, false, "igloo")
+    g.tank1 = createTank(100, g.sHeight-200, 0, true, "igloo") ' TODO Flip this one
+    g.tank2 = createTank(g.sWidth-100, g.sHeight-200,0, false, "igloo")
 
     g.pogTanks = g.pm.createPhysObjGroup()
     g.pogProjs = g.pm.createPhysObjGroup()
-    'g.pogTerr = g.pm.createPhysObjGroup()
+    g.pogTerr = g.pm.createPhysObjGroup()
 
     g.pogTanks.addPhysObj(g.tank1)
     g.pogTanks.addPhysObj(g.tank2)
@@ -193,10 +193,11 @@ function rg2dLoadLevel(level as integer) as void
       x_spot += 21
     end while
 
+    'Terrain'
     gngCol = fixedBoxCollider(0,g.sHeight-21, g.sWidth, 21)
-    'g.pogTerr.addPhysObj(gngCol)
+    g.pogTerr.addPhysObj(gngCol)
 
-    cpProjTerr = g.pm.createCollisionPair(g.pogProjs,gngCol)
+    cpProjTerr = g.pm.createCollisionPair(g.pogProjs,g.pogTerr)
     cpProjTerr.overlapCallback = function(p,t) as integer
       ?"Projectile hitting ICE"
       if p.state = "ALIVE" then
@@ -204,6 +205,19 @@ function rg2dLoadLevel(level as integer) as void
         p.state = "DEAD"
       end if
     end function
+
+    td = terrainDefinition()
+    td.addSection(160,180)
+    td.addSection(160,180)
+    td.addSection(160,160)
+    td.addSection(160,140)
+
+    td.addSection(160,120)
+    td.addSection(160,100)
+    td.addSection(160,100)
+    td.addSection(160,160)
+
+    terrain = laydownTerrain(g.pm, g.compositor, g.terrain_ice, td)
 
     ' FLAGS'
     g.bmFlagLeft = flag(g.tank1.x, g.tank1.y-400, 100, 400, &hDD1111FF)

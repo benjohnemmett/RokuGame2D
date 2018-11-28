@@ -787,7 +787,17 @@ function fixedBoxCollider(x,y,w,h) as object
     m.size_x = w
     m.size_y = h
     m.boundaryDefinition = boundaryAABB(x, y, w, h)
+  end function,
+
+  runKinematics : function(dt) ' TODO This is called when the collider is part of a phys obj group. Find a way to not need this...'
+  'Nothing to do here'
+  end function,
+
+  updateDisplay : function()
+  'Nothing to do here'
   end function
+
+
   }
 
 end Function
