@@ -178,6 +178,8 @@ function rg2dLoadLevel(level as integer) as void
         LBLoadLevel(level)
     end if
 
+    g.bgColor = &h112233FF ' TODO probably need to have a compositor be tied to each level. BG color is set at creation. This might also help to clear sprites that the game is done with after each level.'
+
     g.player_state = "IDLE"
 
     g.player_turn = 1
@@ -202,7 +204,7 @@ function rg2dLoadLevel(level as integer) as void
     td.addSection(160,100)
     td.addSection(160,160)
 
-    terrain = laydownTerrain(g.pm, g.compositor, g.terrain_ice, td)
+    terrain = laydownTerrainInOneSprite(g.pm, g.compositor, g.terrain_ice, td)
 
     g.tank1.y = (g.sHeight - 180) - 21
     g.tank2.y = (g.sHeight - 160) - 21

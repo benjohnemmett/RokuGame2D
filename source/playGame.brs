@@ -193,7 +193,7 @@ function rg2dPlayGame() as object
                 g.pm.runphysics(dt)
 
                 ' Update game display
-                screen.clear(0)
+                screen.clear(g.bgColor)
 
                 g.pm.updateDisplay()
 
