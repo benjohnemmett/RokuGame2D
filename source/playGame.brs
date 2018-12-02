@@ -186,7 +186,8 @@ function rg2dPlayGame() as object
 
                 dt = ticks/1000
 
-                rg2dInnerGameLoopUpdate(dt, button)
+                hold_time = holdButtonClock.TotalMilliseconds()
+                rg2dInnerGameLoopUpdate(dt, button, hold_time)
 
                 ' Update game state
                 'ship.updateState(dt)

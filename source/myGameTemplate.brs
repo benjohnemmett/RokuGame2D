@@ -195,11 +195,11 @@ function rg2dLoadLevel(level as integer) as void
 
     td = terrainDefinition()
     td.addSection(160,180)
-    td.addSection(160,180)
+    td.addSection(160,200)
     td.addSection(160,160)
     td.addSection(160,140)
 
-    td.addSection(160,120)
+    td.addSection(160,320)
     td.addSection(160,100)
     td.addSection(160,100)
     td.addSection(160,160)
@@ -210,28 +210,6 @@ function rg2dLoadLevel(level as integer) as void
     g.tank2.y = (g.sHeight - 160) - 21
     g.tank1.updateDisplay()
     g.tank2.updateDisplay()
-
-    ' FLAGS' TODO encapsulate all this & expose setter functions
-    g.bmFlagLeft = flag(g.tank1.x, g.tank1.y-360, 100, 400, &hDD1111FF)
-    g.bmFlagLeft.updateDisplay()
-    g.rFlagLeft = CreateObject("roRegion", g.bmFlagLeft.bm, 0, 0, g.bmFlagLeft.width, g.bmFlagLeft.height)
-    g.sFlagLeft = g.compositor.NewSprite(g.bmFlagLeft.x, g.bmFlagLeft.y, g.rFlagLeft, 0)
-
-    g.bmFlagRight = flag(g.tank2.x, g.tank2.y-360, 100, 400, &hDD1111FF)
-    g.bmFlagRight.updateDisplay()
-    g.rFlagRight = CreateObject("roRegion", g.bmFlagRight.bm, 0, 0, g.bmFlagRight.width, g.bmFlagRight.height)
-    g.sFlagRight = g.compositor.NewSprite(g.bmFlagRight.x, g.bmFlagRight.y, g.rFlagRight, 0)
-
-    'Extender ' TODO encapsulate all this & expose setter functions
-    g.bmExtLeft = uiExtender(30,100)
-    g.bmExtLeft.updateDisplay()
-    g.rExtLeft = CreateObject("roRegion", g.bmExtLeft.bm, 0, 0, g.bmExtLeft.width, g.bmExtLeft.height)
-    g.sExtLeft = g.compositor.NewSprite(g.tank1.x, g.tank1.y+30, g.rExtLeft, 0)
-
-    g.bmExtRight = uiExtender(30,100)
-    g.bmExtRight.updateDisplay()
-    g.rExtRight = CreateObject("roRegion", g.bmExtRight.bm, 0, 0, g.bmExtRight.width, g.bmExtRight.height)
-    g.sExtRight = g.compositor.NewSprite(g.tank2.x, g.tank2.y+30, g.rExtRight, 0)
 
 end function
 
@@ -246,7 +224,7 @@ function switchActivePlayer() as void
 end function
 
 ' Stuff to be done at the start of each update loop goes here.
-function rg2dInnerGameLoopUpdate(dt as float, button) as void
+function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as void
     g = GetGlobalAA()
     if(g.DEBUG and (dt > 0.040)) then
       ?"rg2dInnerGameLoopUpdate(";dt;")..."
@@ -264,39 +242,38 @@ function rg2dInnerGameLoopUpdate(dt as float, button) as void
         active_player.set_turret_angle(active_player.tank_turret_angle + angle_inc)
         ?"Angle Up ";active_player.tank_turret_angle
 
-        g.bmFlagLeft.setFlagPosition(g.bmFlagLeft.flagHeight + 0.05)
-        g.bmFlagLeft.updateDisplay()
+        'g.bmFlagLeft.setFlagPosition(g.bmFlagLeft.flagHeight + 0.05)
+        'g.bmFlagLeft.updateDisplay()
     else if(button.bDown) then
         active_player.set_turret_angle(active_player.tank_turret_angle - angle_inc)
         ?"Angle Up ";active_player.tank_turret_angle
 
-        g.bmFlagLeft.setFlagPosition(g.bmFlagLeft.flagHeight - 0.05)
-        g.bmFlagLeft.updateDisplay()
+        'g.bmFlagLeft.setFlagPosition(g.bmFlagLeft.flagHeight - 0.05)
+        'g.bmFlagLeft.updateDisplay()
     else if(button.bRight) then
         ?"Trucking Left"
-        g.bmExtLeft.setValue(g.bmExtLeft.value + 0.05)
-        active_player.set_turret_spacing(active_player.turret_spacing + 1)
+        'g.bmExtLeft.setValue(g.bmExtLeft.value + 0.05)
+        'active_player.set_turret_spacing(active_player.turret_spacing + 1)
 
     else if(button.bLeft) then
         ?"Trucking Right"
-        g.bmExtLeft.setValue(g.bmExtLeft.value - 0.05)
-        active_player.set_turret_spacing(active_player.turret_spacing - 1)
+        'g.bmExtLeft.setValue(g.bmExtLeft.value - 0.05)
+        'active_player.set_turret_spacing(active_player.turret_spacing - 1)
 
     else if(button.bSelect1) then
-      ?"Fire!"
       if g.player_state = "IDLE" then
-        g.player_state = "FIRE"
-        active_player.fireProjectile()
-        switchActivePlayer()
-      else
-
+        ?"Prepping to fire"
+        g.player_state = "POWER_SELECT"
+      else if g.player_state = "POWER_SELECT"
+        g.power_select =  (button_hold_time MOD 2000)/2000
+        active_player.setPowerBar(g.power_select)
       end if
     else
-      if g.player_state <> "IDLE" then
-        ?"Back to IDLE"
+      if g.player_state = "POWER_SELECT"
+        g.player_state = "IDLE"
+        active_player.fireProjectile(200 + g.power_select * 300)
+        switchActivePlayer()
       end if
-      g.player_state = "IDLE"
-
     end if
 
 end function

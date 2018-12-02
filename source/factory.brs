@@ -68,11 +68,11 @@ function createTank(x, y, angle, faceRight, tank_type) as object
 
   tank.createElement(sTank, 0.0, 0.0)
 
-  tank.fireProjectile = function() as object
+  tank.fireProjectile = function(power as double) as object
     ?"Fire!!!!!!!!!!!"
     g = GetGlobalAA()
-    vx = cos(m.tank_turret_angle)*400
-    vy = -1*sin(m.tank_turret_angle)*400
+    vx = cos(m.tank_turret_angle)*power
+    vy = -1*sin(m.tank_turret_angle)*power
     if m.faceRight = false then
       vx = -vx
     end if
@@ -133,10 +133,32 @@ function createTank(x, y, angle, faceRight, tank_type) as object
 
   tank.set_turret_angle(tank.tank_turret_angle) ' Update display'
 
+  'Flag
+  bmFlag = flag(tank.x, tank.y-300, 100, 400, &hDD1111FF)
+  bmFlag.updateDisplay()
+  rFlag = CreateObject("roRegion", bmFlag.bm, 0, 0, bmFlag.width, bmFlag.height)
+  sFlag = g.compositor.NewSprite(bmFlag.x, bmFlag.y, rFlag, 1)
+
+  tank.bmFlag = bmFlag
+  tank.setFlagPosition = function(value)
+    m.bmFlag.setFlagPosition(value)
+  end function
+
+  ' Power bar '
+  bmPowerBar = uiExtender(30,100)
+  bmPowerBar.updateDisplay()
+  rPowerBar = CreateObject("roRegion", bmPowerBar.bm, 0, 0, bmPowerBar.width, bmPowerBar.height)
+  sPowerBar = g.compositor.NewSprite(tank.x, tank.y+30, rPowerBar, 1)
+
+  tank.bmPowerBar = bmPowerBar
+  tank.setPowerBar = function(value)
+    m.bmPowerBar.setValue(value)
+  end function
+
   ' Return our new tank!'
   return tank
 
-end function
+end function ' End Tank Class'
 
 function createProjectile(x,y,vx,vy) as object
   g = GetGlobalAA()
@@ -157,6 +179,7 @@ function createProjectile(x,y,vx,vy) as object
   proj.gy = 200
   proj.maxvx = 1000
   proj.maxvy = 1000
+  proj.ttl = 30 ' If it lives longer than 30 seconds it's probably off the screen floating through empty space.
 
   proj.state = "ALIVE"
 
