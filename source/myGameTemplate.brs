@@ -206,8 +206,8 @@ function rg2dLoadLevel(level as integer) as void
 
     terrain = laydownTerrainInOneSprite(g.pm, g.compositor, g.terrain_ice, td)
 
-    g.tank1.y = (g.sHeight - 180) - 21
-    g.tank2.y = (g.sHeight - 160) - 21
+    g.tank1.setPosition(100, (g.sHeight - 180) - 21)
+    g.tank2.setPosition(g.sWidth-100, (g.sHeight - 160) - 21)
     g.tank1.updateDisplay()
     g.tank2.updateDisplay()
 

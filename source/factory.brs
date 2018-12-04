@@ -134,10 +134,14 @@ function createTank(x, y, angle, faceRight, tank_type) as object
   tank.set_turret_angle(tank.tank_turret_angle) ' Update display'
 
   'Flag
-  bmFlag = flag(tank.x, tank.y-300, 100, 400, &hDD1111FF)
+  if faceRight then
+    bmFlag = flag(tank.x-100, tank.y-380, 100, 400, &hDD1111FF)
+  else
+    bmFlag = flag(tank.x, tank.y-380, 100, 400, &hDD1111FF)
+  end if
   bmFlag.updateDisplay()
   rFlag = CreateObject("roRegion", bmFlag.bm, 0, 0, bmFlag.width, bmFlag.height)
-  sFlag = g.compositor.NewSprite(bmFlag.x, bmFlag.y, rFlag, 1)
+  tank.sFlag = g.compositor.NewSprite(bmFlag.x, bmFlag.y, rFlag, 1)
 
   tank.bmFlag = bmFlag
   tank.setFlagPosition = function(value)
@@ -148,12 +152,27 @@ function createTank(x, y, angle, faceRight, tank_type) as object
   bmPowerBar = uiExtender(30,100)
   bmPowerBar.updateDisplay()
   rPowerBar = CreateObject("roRegion", bmPowerBar.bm, 0, 0, bmPowerBar.width, bmPowerBar.height)
-  sPowerBar = g.compositor.NewSprite(tank.x, tank.y+30, rPowerBar, 1)
+  tank.sPowerBar = g.compositor.NewSprite(tank.x, tank.y+30, rPowerBar, 3)
 
   tank.bmPowerBar = bmPowerBar
   tank.setPowerBar = function(value)
     m.bmPowerBar.setValue(value)
   end function
+
+  tank.setPosition = function(x,y) as void
+    m.x = x
+    m.y = y
+
+    if m.faceRight then
+      m.sFlag.MoveTo(m.x-100,m.y-380)
+    else
+      m.sFlag.MoveTo(m.x,m.y-380)
+    end if
+
+    m.sPowerBar.MoveTo(m.x, m.y+30)
+
+  end function
+
 
   ' Return our new tank!'
   return tank
