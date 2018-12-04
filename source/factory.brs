@@ -62,6 +62,8 @@ function createTank(x, y, angle, faceRight, tank_type) as object
   tank.MAX_TURRET_SPACING = 3
   tank.MIN_TURRET_SPACING = 0
 
+  tank.health = 100
+
   tank.turret.updateDisplay()
 
   tank.state = "ALIVE"
@@ -136,8 +138,10 @@ function createTank(x, y, angle, faceRight, tank_type) as object
   'Flag
   if faceRight then
     bmFlag = flag(tank.x-100, tank.y-380, 100, 400, &hDD1111FF)
+    bmFlag.flagRight = true
   else
     bmFlag = flag(tank.x, tank.y-380, 100, 400, &hDD1111FF)
+    bmFlag.flagRight = false
   end if
   bmFlag.updateDisplay()
   rFlag = CreateObject("roRegion", bmFlag.bm, 0, 0, bmFlag.width, bmFlag.height)
@@ -146,6 +150,16 @@ function createTank(x, y, angle, faceRight, tank_type) as object
   tank.bmFlag = bmFlag
   tank.setFlagPosition = function(value)
     m.bmFlag.setFlagPosition(value)
+  end function
+
+  tank.takeDamage = function(damage_points) as void
+    m.health -= damage_points
+    m.setFlagPosition(m.health/100.0)
+    ?"Taking damage ";damage_points
+    ?" Health = ";m.health
+    ?" Flag = ";m.bmFlag.flagHeight
+    m.bmFlag.updateDisplay()
+
   end function
 
   ' Power bar '

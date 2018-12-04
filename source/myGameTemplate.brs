@@ -155,7 +155,18 @@ function rg2dGameInit() as void
 
     cpTankProj.overlapCallback = function(t,p) as integer
 
-      ?"Projectile Hit Tank!"
+      if(p.ttl > 29) then
+
+        ?"Projectile must be firing still!";p.ttl
+        return 1
+      end if
+      if p.state = "ALIVE" then
+        ?"Projectile Hit Tank!"
+        t.takeDamage(10)
+        p.ttl = 0.0
+        p.state = "DEAD"
+      end if
+
       return 1 ' Indicate not to perform normal collision
 
     end function
@@ -199,7 +210,7 @@ function rg2dLoadLevel(level as integer) as void
     td.addSection(160,160)
     td.addSection(160,140)
 
-    td.addSection(160,320)
+    td.addSection(160,220)
     td.addSection(160,100)
     td.addSection(160,100)
     td.addSection(160,160)
