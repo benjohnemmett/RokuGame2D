@@ -59,6 +59,9 @@ function rg2dLoadSprites() as void
     g.rIgloo_right = rg2dLoadRegion("pkg:/components/sprites/igloo_right_63_42.png", 0, 0, 63, 42)
     g.rIgloo_left = rg2dLoadRegion("pkg:/components/sprites/igloo_left_63_42.png", 0, 0, 63, 42)
 
+    g.rFlagRed = rg2dLoadRegion("pkg:/components/sprites/Flag_red_white.png", 0, 0, 40, 30)
+    g.rFlagBlue = rg2dLoadRegion("pkg:/components/sprites/Flag_orange_blue.png", 0, 0, 40, 30)
+
     g.terrain_ice = createTerrain("pkg:/components/sprites/terrain_ice_288_44.png")
 
     if(g.USING_LB_CODE) then
@@ -143,6 +146,9 @@ function rg2dGameInit() as void
     ' Create Truck
     g.tank1 = createTank(100, g.sHeight-200, 0, true, "igloo") ' TODO Flip this one
     g.tank2 = createTank(g.sWidth-100, g.sHeight-200,0, false, "igloo")
+
+    g.tank1.bmFlag.setFlagImage(g.rFlagRed)
+    g.tank2.bmFlag.setFlagImage(g.rFlagBlue)
 
     g.pogTanks = g.pm.createPhysObjGroup()
     g.pogProjs = g.pm.createPhysObjGroup()

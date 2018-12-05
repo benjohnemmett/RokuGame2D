@@ -1,5 +1,5 @@
 function flag(_x, _y, width as integer, height as integer, flagColor as integer) as object
-  return {
+  f =  {
     x : _x,
     y : _y,
     width : width,
@@ -13,17 +13,31 @@ function flag(_x, _y, width as integer, height as integer, flagColor as integer)
     poleColor : &hAA5511FF,
     flagHeight : 0.98,
     flagRight : true,
+    flagImage : Invalid,
 
     updateDisplay : function() as void
       m.bm.clear(&h00000000) ' Transparent background, alpha = 0'
 
       ' Could try to change this simple flag for a bitmap flag using -> DrawObject(x as Integer, y as Integer, src as Object) as Boolean'
       m.bm.drawRect(m.polePos.x, m.polePos.y, m.poleSize.width, m.poleSize.height, m.poleColor) 'Draw Pole'
-      m.bm.drawRect(m.flagPos.x, m.flagPos.y, m.flagSize.width, m.flagSize.height, m.flagColor)
+      if m.flagImage = Invalid then
+        m.bm.drawRect(m.flagPos.x, m.flagPos.y, m.flagSize.width, m.flagSize.height, m.flagColor)
+      else
+        if m.flagRight then
+          m.bm.DrawObject(m.flagPos.x-3, m.flagPos.y, m.flagImage)
+        else
+          m.bm.DrawRotatedObject(m.flagPos.x+48, m.flagPos.y+30, 180, m.flagImage)
+        end if
+      end if
 
       m.bm.finish()
 
     end function,
+
+    setFlagImage : function(image) as void
+      m.flagImage = image
+      m.updateDisplay()
+    end function
 
     setFlagDirection : function(directionRight) as void
       m.flagRight = directionRight
@@ -53,5 +67,8 @@ function flag(_x, _y, width as integer, height as integer, flagColor as integer)
 
   }
 
+  f.updateDisplay()
+
+  return f
 
 end function

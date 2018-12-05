@@ -143,6 +143,7 @@ function createTank(x, y, angle, faceRight, tank_type) as object
     bmFlag = flag(tank.x, tank.y-380, 100, 400, &hDD1111FF)
     bmFlag.flagRight = false
   end if
+  bmFlag.setFlagPosition(0.98)
   bmFlag.updateDisplay()
   rFlag = CreateObject("roRegion", bmFlag.bm, 0, 0, bmFlag.width, bmFlag.height)
   tank.sFlag = g.compositor.NewSprite(bmFlag.x, bmFlag.y, rFlag, 1)
