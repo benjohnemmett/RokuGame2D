@@ -67,8 +67,10 @@ function randomizeTerrainDefinition(td, number_of_sections) as void
       h = minFloat(maxFloat( h - rnd(DH), MIN_H), MAX_H_TANK_SPOT) ' Always start by going down'
     else if(i = 2) then
       h = minFloat(maxFloat( h - rnd(DH), MIN_H), MAX_H) ' Always start by going down'
-    else if(i = number_of_sections) OR (i = (number_of_sections-1))
-      h = minFloat(maxFloat( h + (rnd(2*DH) - DH), MIN_H), MAX_H_TANK_SPOT) ' Always end by going up'
+    else if(i = (number_of_sections-1)) then
+      h = minFloat(maxFloat( h + (rnd(2*DH) - DH), MIN_H), MAX_H_TANK_SPOT) ' Second to last can't be too high'
+    else if(i = number_of_sections) then
+      h = minFloat(maxFloat( h + rnd(DH), MIN_H), MAX_H_TANK_SPOT) ' Always end by going up'
     else
       h = minFloat(maxFloat( h + (rnd(2*DH) - DH), MIN_H), MAX_H)
     end if

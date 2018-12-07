@@ -120,6 +120,11 @@ Function physModel(compositor) as object
             m.openOverlaps.push(os)
         end function,
 
+        setCompositor : function(comp) as void
+          m.compositor = comp
+        end function,
+
+
         '''''''''''''''''''''''''''''''''''''''''''''''''
 
         numPhysObj : 0,

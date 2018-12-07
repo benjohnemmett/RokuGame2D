@@ -138,11 +138,60 @@ end function
 ' Stuff that needs to be done at the start of each game goes here.
 function rg2dGameInit() as void
     g = GetGlobalAA()
+    '
+    ' if(g.DEBUG) then
+    '   ?"rg2dGameInit()..."
+    ' end if
+    '
+    ' ' Create Truck
+    ' g.tank1 = createTank(100, g.sHeight-200, 0, true, "igloo") ' TODO Flip this one
+    ' g.tank2 = createTank(g.sWidth-100, g.sHeight-200,0, false, "igloo")
+    '
+    ' g.tank1.bmFlag.setFlagImage(g.rFlagRed)
+    ' g.tank2.bmFlag.setFlagImage(g.rFlagBlue)
+    '
+    ' g.pogTanks = g.pm.createPhysObjGroup()
+    ' g.pogProjs = g.pm.createPhysObjGroup()
+    ' g.pogTerr = g.pm.createPhysObjGroup()
+    '
+    ' g.pogTanks.addPhysObj(g.tank1)
+    ' g.pogTanks.addPhysObj(g.tank2)
+    '
+    ' cpTankProj = g.pm.createCollisionPair(g.pogTanks,g.pogProjs)
+    '
+    ' cpTankProj.overlapCallback = function(t,p) as integer
+    '
+    '   if(p.ttl > 29) then
+    '
+    '     ?"Projectile must be firing still!";p.ttl
+    '     return 1
+    '   end if
+    '   if p.state = "ALIVE" then
+    '     ?"Projectile Hit Tank!"
+    '     t.takeDamage(10)
+    '     p.ttl = 0.0
+    '     p.state = "DEAD"
+    '   end if
+    '
+    '   return 1 ' Indicate not to perform normal collision
+    '
+    ' end function
+    '
+    ' if(g.USING_LB_CODE) then
+    '     LBMakeGroups()
+    ' end if
 
-    if(g.DEBUG) then
-      ?"rg2dGameInit()..."
-    end if
+    g.bgColor = &h112233FF
 
+end function
+
+
+'''''''''' OUTER LOOP STUFF
+' Stuff to be done at the start of each level goes here.
+function rg2dLoadLevel(level as integer) as void
+    g = GetGlobalAA()
+
+    ''Moved from game init
     ' Create Truck
     g.tank1 = createTank(100, g.sHeight-200, 0, true, "igloo") ' TODO Flip this one
     g.tank2 = createTank(g.sWidth-100, g.sHeight-200,0, false, "igloo")
@@ -181,13 +230,13 @@ function rg2dGameInit() as void
         LBMakeGroups()
     end if
 
-end function
+    '' End Moved from game init
 
 
-'''''''''' OUTER LOOP STUFF
-' Stuff to be done at the start of each level goes here.
-function rg2dLoadLevel(level as integer) as void
-    g = GetGlobalAA()
+    g.bgColor = &h112233FF
+
+
+
     if(g.DEBUG) then
       ?"rg2dLoadLevel()..."
     end if
@@ -195,7 +244,7 @@ function rg2dLoadLevel(level as integer) as void
         LBLoadLevel(level)
     end if
 
-    g.bgColor = &h112233FF ' TODO probably need to have a compositor be tied to each level. BG color is set at creation. This might also help to clear sprites that the game is done with after each level.'
+     ' TODO probably need to have a compositor be tied to each level. BG color is set at creation. This might also help to clear sprites that the game is done with after each level.'
 
     g.player_state = "IDLE"
 

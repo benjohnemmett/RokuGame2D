@@ -5,7 +5,7 @@ function rg2dPlayGame() as object
 
     screen = g.screen
     port = g.port
-    compositor = g.compositor
+    'compositor = g.compositor
 
     ' TODO Are these used? m.sWidth is set in main...
     g.screenWidth  = screen.GetWidth()
@@ -25,7 +25,7 @@ function rg2dPlayGame() as object
     g.game_sore = 0
 
     game_paused = false
-    sPauseMenu = compositor.NewSprite(300, 200, g.rPauseScreen, 50)
+    sPauseMenu = g.compositor.NewSprite(300, 200, g.rPauseScreen, 50)
     sPauseMenu.SetDrawableFlag(false)
 
     'Audio
@@ -59,7 +59,7 @@ function rg2dPlayGame() as object
 
     clock.Mark()
 
-    'g.pm = physModel(compositor) ' Now created in main no in playGame'
+    'g.pm = physModel(g.compositor) ' Now created in main no in playGame'
 
     '''''''''''''' Header stuff
     header_level = 50
@@ -74,6 +74,13 @@ function rg2dPlayGame() as object
     ' Main Game Loop
     ''''''''''''''''''''''''''''''''''''''''''''''
     while true
+        ?"Loading Level ";gs.wave
+        g.compositor = invalid
+
+        g.compositor = CreateObject("roCompositor")
+        g.compositor.SetDrawTo(g.screen, g.bgColor)
+
+        g.pm.setCompositor(g.compositor)
 
         rg2dLoadLevel(gs.wave)
 
@@ -167,7 +174,7 @@ function rg2dPlayGame() as object
                             end if
                         end if
 
-                        compositor.DrawAll()
+                        g.compositor.DrawAll()
                         'playGameAddPauseMenu(screen) ' TODO, Not sure what this was doing, determine if something is needed here
                         screen.SwapBuffers()
 
@@ -202,8 +209,8 @@ function rg2dPlayGame() as object
 
                 g.pm.updateDisplay()
 
-                compositor.AnimationTick(ticks)
-                compositor.DrawAll()
+                g.compositor.AnimationTick(ticks)
+                g.compositor.DrawAll()
                 'updateScore(screen)
 
                 screen.SwapBuffers()

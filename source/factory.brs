@@ -62,7 +62,7 @@ function createTank(x, y, angle, faceRight, tank_type) as object
   tank.MAX_TURRET_SPACING = 3
   tank.MIN_TURRET_SPACING = 0
 
-  tank.health = 100
+  tank.health = 10
 
   tank.turret.updateDisplay()
 
