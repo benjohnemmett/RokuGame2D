@@ -211,20 +211,12 @@ function rg2dLoadLevel(level as integer) as void
     end function
 
     td = terrainDefinition()
-    td.addSection(160,180)
-    td.addSection(160,200)
-    td.addSection(160,160)
-    td.addSection(160,140)
-
-    td.addSection(160,220)
-    td.addSection(160,100)
-    td.addSection(160,100)
-    td.addSection(160,160)
+    randomizeTerrainDefinition(td, 10)
 
     terrain = laydownTerrainInOneSprite(g.pm, g.compositor, g.terrain_ice, td)
 
-    g.tank1.setPosition(100, (g.sHeight - 180) - 21)
-    g.tank2.setPosition(g.sWidth-100, (g.sHeight - 160) - 21)
+    g.tank1.setPosition(100, g.sHeight-td.getHeightAtXPoint(100) - 21)
+    g.tank2.setPosition(g.sWidth-100, g.sHeight-td.getHeightAtXPoint(g.sWidth-100) - 21)
     g.tank1.updateDisplay()
     g.tank2.updateDisplay()
 
@@ -241,7 +233,7 @@ function switchActivePlayer() as void
 end function
 
 ' Stuff to be done at the start of each update loop goes here.
-function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as void
+function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as object
     g = GetGlobalAA()
     if(g.DEBUG and (dt > 0.040)) then
       ?"rg2dInnerGameLoopUpdate(";dt;")..."
@@ -292,5 +284,16 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as void
         switchActivePlayer()
       end if
     end if
+
+    ' TODO create level status object'
+    stat = {}
+    stat.level_complete = false
+    stat.game_complete = false
+
+    if (g.tank1.health <= 0) OR (g.tank2.health <= 0) then
+      stat.level_complete = true
+    end if
+
+    return stat
 
 end function

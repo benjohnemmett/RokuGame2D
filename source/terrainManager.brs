@@ -29,7 +29,55 @@ function terrainDefinition() as object
     addSection : function(width, height)
       m.sectionList.push(terrainSection(width, height))
     end function
+
+    getHeightAtXPoint : function(x)
+      x_ = 0
+
+      for each s in m.sectionList
+        x_ += s.width
+        if(x_ >= x) then
+          return s.height
+        end if
+      end for
+
+      return invalid
+
+    end function
+
   }
+end function
+
+' randomly adds sections to the terrain definition'
+function randomizeTerrainDefinition(td, number_of_sections) as void
+
+  MIN_H = 150
+  MAX_H = 400
+  MAX_H_TANK_SPOT = 300
+  TOTAL_WIDTH = 1280
+  DH = 100
+
+  x_ = 0
+
+  avg_w = cint(TOTAL_WIDTH/number_of_sections)
+
+  h = rnd(MAX_H - MIN_H) + MIN_H
+
+  for i = 1 to number_of_sections
+    if(i = 1) then
+      h = minFloat(maxFloat( h - rnd(DH), MIN_H), MAX_H_TANK_SPOT) ' Always start by going down'
+    else if(i = 2) then
+      h = minFloat(maxFloat( h - rnd(DH), MIN_H), MAX_H) ' Always start by going down'
+    else if(i = number_of_sections) OR (i = (number_of_sections-1))
+      h = minFloat(maxFloat( h + (rnd(2*DH) - DH), MIN_H), MAX_H_TANK_SPOT) ' Always end by going up'
+    else
+      h = minFloat(maxFloat( h + (rnd(2*DH) - DH), MIN_H), MAX_H)
+    end if
+
+    w = avg_w
+    td.addSection(w, h)
+  end for
+
+
 end function
 
 'Takes terrain regions & terrain definition, creates sprites & colliders and adds them to the compositor & physModel

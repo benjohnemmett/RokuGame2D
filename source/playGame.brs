@@ -187,8 +187,12 @@ function rg2dPlayGame() as object
                 dt = ticks/1000
 
                 hold_time = holdButtonClock.TotalMilliseconds()
-                rg2dInnerGameLoopUpdate(dt, button, hold_time)
+                stat = rg2dInnerGameLoopUpdate(dt, button, hold_time)
 
+                if stat.level_complete then
+                  ?"Level complete"
+                  exit while
+                end if
                 ' Update game state
                 'ship.updateState(dt)
                 g.pm.runphysics(dt)
@@ -210,7 +214,15 @@ function rg2dPlayGame() as object
 
         end while   ' While True
 
+        'TODO add rg2d level end function'
+
+        if stat.game_complete then
+          exit while
+        end if
+
     end while       ' while g.ships_left > 0
+
+    'TODO add rg2d Game end function'
 
     gs.score = g.game_score
     gs.wave = g.game_wave
