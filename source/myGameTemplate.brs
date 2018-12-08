@@ -138,48 +138,6 @@ end function
 ' Stuff that needs to be done at the start of each game goes here.
 function rg2dGameInit() as void
     g = GetGlobalAA()
-    '
-    ' if(g.DEBUG) then
-    '   ?"rg2dGameInit()..."
-    ' end if
-    '
-    ' ' Create Truck
-    ' g.tank1 = createTank(100, g.sHeight-200, 0, true, "igloo") ' TODO Flip this one
-    ' g.tank2 = createTank(g.sWidth-100, g.sHeight-200,0, false, "igloo")
-    '
-    ' g.tank1.bmFlag.setFlagImage(g.rFlagRed)
-    ' g.tank2.bmFlag.setFlagImage(g.rFlagBlue)
-    '
-    ' g.pogTanks = g.pm.createPhysObjGroup()
-    ' g.pogProjs = g.pm.createPhysObjGroup()
-    ' g.pogTerr = g.pm.createPhysObjGroup()
-    '
-    ' g.pogTanks.addPhysObj(g.tank1)
-    ' g.pogTanks.addPhysObj(g.tank2)
-    '
-    ' cpTankProj = g.pm.createCollisionPair(g.pogTanks,g.pogProjs)
-    '
-    ' cpTankProj.overlapCallback = function(t,p) as integer
-    '
-    '   if(p.ttl > 29) then
-    '
-    '     ?"Projectile must be firing still!";p.ttl
-    '     return 1
-    '   end if
-    '   if p.state = "ALIVE" then
-    '     ?"Projectile Hit Tank!"
-    '     t.takeDamage(10)
-    '     p.ttl = 0.0
-    '     p.state = "DEAD"
-    '   end if
-    '
-    '   return 1 ' Indicate not to perform normal collision
-    '
-    ' end function
-    '
-    ' if(g.USING_LB_CODE) then
-    '     LBMakeGroups()
-    ' end if
 
     g.bgColor = &h112233FF
 
@@ -296,40 +254,38 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
       active_player = g.tank2
     End If
 
+    PBT = 2000 'Powerbar period in milliseconds '
+
     if(button.bUp) then
         active_player.set_turret_angle(active_player.tank_turret_angle + angle_inc)
         ?"Angle Up ";active_player.tank_turret_angle
 
-        'g.bmFlagLeft.setFlagPosition(g.bmFlagLeft.flagHeight + 0.05)
-        'g.bmFlagLeft.updateDisplay()
     else if(button.bDown) then
         active_player.set_turret_angle(active_player.tank_turret_angle - angle_inc)
         ?"Angle Up ";active_player.tank_turret_angle
 
-        'g.bmFlagLeft.setFlagPosition(g.bmFlagLeft.flagHeight - 0.05)
-        'g.bmFlagLeft.updateDisplay()
     else if(button.bRight) then
         ?"Trucking Left"
-        'g.bmExtLeft.setValue(g.bmExtLeft.value + 0.05)
-        'active_player.set_turret_spacing(active_player.turret_spacing + 1)
 
     else if(button.bLeft) then
         ?"Trucking Right"
-        'g.bmExtLeft.setValue(g.bmExtLeft.value - 0.05)
-        'active_player.set_turret_spacing(active_player.turret_spacing - 1)
 
     else if(button.bSelect1) then
       if g.player_state = "IDLE" then
         ?"Prepping to fire"
         g.player_state = "POWER_SELECT"
       else if g.player_state = "POWER_SELECT"
-        g.power_select =  (button_hold_time MOD 2000)/2000
+        p1 = (button_hold_time MOD (2*PBT)) ' Power as a sawtooth wave'
+        p2 = (2*PBT) - p1 'Cross over sawtooth'
+        pwr = minFloat(p1,p2)
+
+        g.power_select =  (pwr/PBT)
         active_player.setPowerBar(g.power_select)
       end if
     else
       if g.player_state = "POWER_SELECT"
         g.player_state = "IDLE"
-        active_player.fireProjectile(200 + g.power_select * 300)
+        active_player.fireProjectile(300 + g.power_select * 200)
         switchActivePlayer()
       end if
     end if
