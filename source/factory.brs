@@ -62,7 +62,7 @@ function createTank(x, y, angle, faceRight, tank_type) as object
   tank.MAX_TURRET_SPACING = 3
   tank.MIN_TURRET_SPACING = 0
 
-  tank.health = 10
+  tank.health = 100
 
   tank.turret.updateDisplay()
 
@@ -102,7 +102,7 @@ function createTank(x, y, angle, faceRight, tank_type) as object
 
   end function
 
-  ' Override update display to also update the turret display as well. '
+  ' Override update display to also update the turret & flag display as well. '
   tank.updateDisplay = function() as void
     m.turret.x = m.x
     m.turret.y = m.y
@@ -121,6 +121,28 @@ function createTank(x, y, angle, faceRight, tank_type) as object
     for each e in m.elementArray
         e.updateDisplay()
     end for
+
+    'Flag Update
+    desired_flag_position = (m.health/100.0)
+    d = desired_flag_position - m.bmFlag.flagHeight
+    ' ?"desired_flag_position";desired_flag_position
+    ' ?"m.bmFlag.flagHeight";m.bmFlag.flagHeight
+    ' ?"d";d
+
+    flag_rate = 0.01 ' Percent per update cycle'
+    if( d = 0.0) then
+      'Nothing to do '
+      ''?"Equal"
+    else if (abs(d) < 2*flag_rate ) then
+      m.setFlagPosition(desired_flag_position)
+      ''?"Close enough"
+    else ' slowly move toward desire position'
+      new_pos = m.bmFlag.flagHeight + sgn(d)*flag_rate
+      m.setFlagPosition(new_pos)
+      m.bmFlag.updateDisplay()
+      ''?"Moving"
+    end if
+
   end function
 
   'Set Turret Spacing
@@ -154,12 +176,12 @@ function createTank(x, y, angle, faceRight, tank_type) as object
   end function
 
   tank.takeDamage = function(damage_points) as void
-    m.health -= damage_points
-    m.setFlagPosition(m.health/100.0)
+    m.health -= damage_points 'TODO set desired flag lower'
+    'm.setFlagPosition(m.health/100.0)
     ?"Taking damage ";damage_points
     ?" Health = ";m.health
     ?" Flag = ";m.bmFlag.flagHeight
-    m.bmFlag.updateDisplay()
+    'm.bmFlag.updateDisplay()
 
   end function
 
