@@ -1,4 +1,4 @@
-function createTank(x, y, angle, faceRight, tank_type) as object
+function createTank(playerNumber, x, y, angle, faceRight, tank_type) as object
 
   g = GetGlobalAA()
 
@@ -63,6 +63,8 @@ function createTank(x, y, angle, faceRight, tank_type) as object
   tank.MIN_TURRET_SPACING = 0
 
   tank.health = 100
+  tank.playerNumber = playerNumber
+
 
   tank.turret.updateDisplay()
 
@@ -78,7 +80,7 @@ function createTank(x, y, angle, faceRight, tank_type) as object
     if m.faceRight = false then
       vx = -vx
     end if
-    proj = createProjectile(m.x, m.y, vx, vy)
+    proj = createProjectile(m, m.x, m.y, vx, vy)
     g.pogProjs.addPhysObj(proj)
 
   end function
@@ -210,37 +212,18 @@ function createTank(x, y, angle, faceRight, tank_type) as object
 
   end function
 
+  ' IMplement ProjectileFirer interface '
+  tank.projectileNotification = function(obj, x, y, vx, vy)
+    ?"Got notice. Hit ";obj
+    if obj.DoesExist("playerNumber") then
+      n = obj.playerNumber
+      ?"player ";m.playerNumber;" hit player ";n
+    end if
+
+  end function
+
 
   ' Return our new tank!'
   return tank
 
 end function ' End Tank Class'
-
-function createProjectile(x,y,vx,vy) as object
-  g = GetGlobalAA()
-
-  sCirc = g.compositor.NewSprite(x, y, g.rSnowBall, 0)
-
-  ''
-  proj = collectiveRotationalPhysObj(x, y, 16, 0)
-  proj.minX = 0.0
-  proj.maxX = g.screen.GetWidth()
-  proj.minY = 0.0
-  proj.maxY = g.screen.GetHeight()
-  proj.wallEnable = Invalid ' TODO Could maybe turn this off
-  proj.size_x = 60
-  proj.size_y = 60
-  proj.vx = vx
-  proj.vy = vy
-  proj.gy = 200
-  proj.maxvx = 1000
-  proj.maxvy = 1000
-  proj.ttl = 30 ' If it lives longer than 30 seconds it's probably off the screen floating through empty space.
-
-  proj.state = "ALIVE"
-
-  proj.createElement(sCirc, 0.0, 0.0)
-
-  return proj
-
-end function

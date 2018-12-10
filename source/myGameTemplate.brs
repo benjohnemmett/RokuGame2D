@@ -151,8 +151,8 @@ function rg2dLoadLevel(level as integer) as void
 
     ''Moved from game init
     ' Create Truck
-    g.tank1 = createTank(100, g.sHeight-200, 0, true, "igloo") ' TODO Flip this one
-    g.tank2 = createTank(g.sWidth-100, g.sHeight-200,0, false, "igloo")
+    g.tank1 = createTank(1, 100, g.sHeight-200, 0, true, "igloo") ' TODO Flip this one
+    g.tank2 = createTank(2, g.sWidth-100, g.sHeight-200,0, false, "igloo")
 
     g.tank1.bmFlag.setFlagImage(g.rFlagRed)
     g.tank2.bmFlag.setFlagImage(g.rFlagBlue)
@@ -178,6 +178,7 @@ function rg2dLoadLevel(level as integer) as void
         t.takeDamage(10)
         p.ttl = 0.0
         p.state = "DEAD"
+        p.NotifyOwnerOfCollision(t)
       end if
 
       return 1 ' Indicate not to perform normal collision
@@ -202,8 +203,6 @@ function rg2dLoadLevel(level as integer) as void
         LBLoadLevel(level)
     end if
 
-     ' TODO probably need to have a compositor be tied to each level. BG color is set at creation. This might also help to clear sprites that the game is done with after each level.'
-
     g.player_state = "IDLE"
 
     g.player_turn = 1
@@ -214,7 +213,9 @@ function rg2dLoadLevel(level as integer) as void
       if p.state = "ALIVE" then
         p.ttl = 0.1
         p.state = "DEAD"
+        p.NotifyOwnerOfCollision(t)
       end if
+      return 1
     end function
 
     td = terrainDefinition()
@@ -283,7 +284,7 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
         active_player.setPowerBar(g.power_select)
       end if
     else
-      if g.player_state = "POWER_SELECT"
+      if g.player_state = "POWER_SELECT" ' Player just let go of fire button'
         g.player_state = "IDLE"
         active_player.fireProjectile(300 + g.power_select * 200)
         switchActivePlayer()
