@@ -151,8 +151,8 @@ function rg2dLoadLevel(level as integer) as void
 
     ''Moved from game init
     ' Create Truck
-    g.tank1 = createTank(1, 100, g.sHeight-200, 0, true, "igloo") ' TODO Flip this one
-    g.tank2 = createTank(2, g.sWidth-100, g.sHeight-200,0, false, "igloo")
+    g.tank1 = createTank(1, true, 100, g.sHeight-200, 0, true, "igloo") ' TODO Flip this one
+    g.tank2 = createTank(2, false, g.sWidth-100, g.sHeight-200,0, false, "igloo")
 
     g.tank1.bmFlag.setFlagImage(g.rFlagRed)
     g.tank2.bmFlag.setFlagImage(g.rFlagBlue)
@@ -241,6 +241,7 @@ function switchActivePlayer() as void
 end function
 
 ' Stuff to be done at the start of each update loop goes here.
+' TODO ?? dt is in seconds, but button_hold_time is in milliseconds'
 function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as object
     g = GetGlobalAA()
     if(g.DEBUG and (dt > 0.040)) then
@@ -257,39 +258,112 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
 
     PBT = 2000 'Powerbar period in milliseconds '
 
-    if(button.bUp) then
-        active_player.set_turret_angle(active_player.tank_turret_angle + angle_inc)
-        ?"Angle Up ";active_player.tank_turret_angle
+    if active_player.isHumanPlayer then
 
-    else if(button.bDown) then
-        active_player.set_turret_angle(active_player.tank_turret_angle - angle_inc)
-        ?"Angle Up ";active_player.tank_turret_angle
+      if(button.bUp) then
+          active_player.set_turret_angle(active_player.tank_turret_angle + angle_inc)
+          ?"Angle Up ";active_player.tank_turret_angle
 
-    else if(button.bRight) then
-        ?"Trucking Left"
+      else if(button.bDown) then
+          active_player.set_turret_angle(active_player.tank_turret_angle - angle_inc)
+          ?"Angle Up ";active_player.tank_turret_angle
 
-    else if(button.bLeft) then
-        ?"Trucking Right"
+      else if(button.bRight) then
+          ?"Trucking Left"
 
-    else if(button.bSelect1) then
-      if g.player_state = "IDLE" then
-        ?"Prepping to fire"
-        g.player_state = "POWER_SELECT"
-      else if g.player_state = "POWER_SELECT"
-        p1 = (button_hold_time MOD (2*PBT)) ' Power as a sawtooth wave'
-        p2 = (2*PBT) - p1 'Cross over sawtooth'
-        pwr = minFloat(p1,p2)
+      else if(button.bLeft) then
+          ?"Trucking Right"
 
-        g.power_select =  (pwr/PBT)
-        active_player.setPowerBar(g.power_select)
       end if
-    else
-      if g.player_state = "POWER_SELECT" ' Player just let go of fire button'
-        g.player_state = "IDLE"
-        active_player.fireProjectile(300 + g.power_select * 200)
+
+      if(button.bSelect1) then
+        if g.player_state = "IDLE" then
+          ?"Prepping to fire"
+          g.projectileInFlight = Invalid
+          g.player_state = "POWER_SELECT"
+          g.power_select = 0
+        else if g.player_state = "POWER_SELECT" then
+          p1 = (button_hold_time MOD (2*PBT)) ' Power as a sawtooth wave'
+          p2 = (2*PBT) - p1 'Cross over sawtooth'
+          pwr = minFloat(p1,p2)
+
+          g.power_select =  (pwr/PBT)
+          active_player.setPowerBar(g.power_select)
+        end if
+      else
+        if g.player_state = "POWER_SELECT" then
+          g.player_state = "FIRE"
+        end if
+      end if
+
+      if g.player_state = "FIRE" ' Player just let go of fire button'
+        g.player_state = "WAITING_IMPACT"
+        g.projectileInFlight = active_player.fireProjectile(300 + g.power_select * 200)
+      else if g.player_state = "WAITING_IMPACT"
+        if g.projectileInFlight.state = "DEAD"
+          g.player_state = "IMPACTED"
+          g.projectileInFlight = invalid
+        end if
+      else if g.player_state = "IMPACTED"
         switchActivePlayer()
+        g.player_state = "IDLE"
       end if
+
+
+    else ' AI Player'
+      if g.player_state = "IDLE" then
+        ?"IDLE"
+        g.player_state = "CALCULATING"
+      else if g.player_state = "CALCULATING"
+        ?" - CALCULATING"
+        'shot = active_player.calculateNextShot() 'TODO Temporary hard code'
+        active_player.shot = {}
+        active_player.shot.angle = 60 * (pi()/180)
+        active_player.shot.power = 450
+        active_player.shot.powerBar = ((active_player.shot.power-300)/200)
+        g.player_state = "AIMING"
+      else if g.player_state = "AIMING" 'Animate turret aiming
+        ?" - AIMING from ";active_player.tank_turret_angle;" to ";active_player.shot.angle
+        da = active_player.shot.angle - active_player.tank_turret_angle
+        if abs(da) <= angle_inc then
+          active_player.set_turret_angle(active_player.shot.angle)
+          g.player_state = "POWER_SELECT"
+        else
+          active_player.set_turret_angle(active_player.tank_turret_angle + sgn(da)*angle_inc)
+        end if
+
+      else if g.player_state = "POWER_SELECT" ' Animate power select bar'
+        ?" - POWER_SELECT"
+        dp = active_player.shot.powerBar - active_player.getPowerBarValue()
+
+        pwr_inc = (1.0/PBT)*(dt*1000)
+
+        if abs(dp) <= pwr_inc then
+          active_player.setPowerBar(active_player.shot.powerBar)
+          g.player_state = "FIRE"
+        else
+          active_player.setPowerBar(active_player.getPowerBarValue() + sgn(dp)*pwr_inc)
+        end if
+
+      else if g.player_state = "FIRE"
+        ?" - POWER_SELECT"
+        g.projectileInFlight = active_player.fireProjectile(active_player.shot.power)
+        g.player_state = "WAITING_IMPACT"
+
+      else if g.player_state = "WAITING_IMPACT"
+        ?" - WAITING_IMPACT"
+        if g.projectileInFlight.state = "DEAD"
+          g.player_state = "IMPACTED"
+          g.projectileInFlight = invalid
+        end if
+
+      else if g.player_state = "IMPACTED"
+        switchActivePlayer()
+        g.player_state = "IDLE"
+      end if
+
     end if
+
 
     ' TODO create level status object'
     stat = {}

@@ -1,4 +1,4 @@
-function createTank(playerNumber, x, y, angle, faceRight, tank_type) as object
+function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_type) as object
 
   g = GetGlobalAA()
 
@@ -64,6 +64,7 @@ function createTank(playerNumber, x, y, angle, faceRight, tank_type) as object
 
   tank.health = 100
   tank.playerNumber = playerNumber
+  tank.isHumanPlayer = isHumanPlayer
 
 
   tank.turret.updateDisplay()
@@ -83,6 +84,7 @@ function createTank(playerNumber, x, y, angle, faceRight, tank_type) as object
     proj = createProjectile(m, m.x, m.y, vx, vy)
     g.pogProjs.addPhysObj(proj)
 
+    return proj
   end function
 
 'm.turret.angle'
@@ -197,6 +199,9 @@ function createTank(playerNumber, x, y, angle, faceRight, tank_type) as object
   tank.setPowerBar = function(value)
     m.bmPowerBar.setValue(value)
   end function
+  tank.getPowerBarValue = function()
+    return m.bmPowerBar.value
+  end function
 
   tank.setPosition = function(x,y) as void
     m.x = x
@@ -212,7 +217,7 @@ function createTank(playerNumber, x, y, angle, faceRight, tank_type) as object
 
   end function
 
-  ' IMplement ProjectileFirer interface '
+  ' Implement ProjectileFirer interface '
   tank.projectileNotification = function(obj, x, y, vx, vy)
     ?"Got notice. Hit ";obj
     if obj.DoesExist("playerNumber") then
