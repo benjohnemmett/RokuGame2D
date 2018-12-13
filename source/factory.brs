@@ -220,6 +220,10 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
   ' Implement ProjectileFirer interface '
   tank.projectileNotification = function(obj, x, y, vx, vy)
     ?"Got notice. Hit ";obj
+    if obj = invalid then ' Object timed out without hitting anything'
+      return invalid
+    end if
+
     if obj.DoesExist("playerNumber") then
       n = obj.playerNumber
       ?"player ";m.playerNumber;" hit player ";n
@@ -227,8 +231,129 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
 
   end function
 
+  'argument target is a tank object'
+  tank.calculateNextShot = function(target) as object
+    shot = {}
+    shot.angle = 60 * (pi()/(180 + rnd(3)-2))
+    shot.power = 450 + (rnd(100)-50)
+    shot.powerBar = ((shot.power-300)/200)
+
+    return shot
+  end function
 
   ' Return our new tank!'
   return tank
 
 end function ' End Tank Class'
+
+
+'''''''' Create an AI tank that shoots randomly
+function AITankRandy(playerNumber, x, y, angle, faceRight, tank_type)
+  isHumanPlayer = false
+
+  randy = createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_type)
+
+  randy.projectileNotification = function(obj, x, y, vx, vy)
+    ?"Got notice. Hit ";obj
+    if obj = invalid then ' Object timed out without hitting anything'
+      return invalid
+    end if
+    if obj.DoesExist("playerNumber") then
+      n = obj.playerNumber
+      ?"Randy (";m.playerNumber;") hit player ";n
+    end if
+
+  end function
+
+  randy.calculateNextShot = function() as object
+    shot = {}
+    shot.angle = 60 * (pi()/(180 + rnd(3)-2))
+    shot.power = 450 + (rnd(100)-50)
+    shot.powerBar = ((shot.power-300)/200)
+
+    return shot
+  end function
+
+  return randy
+
+end function
+
+
+'''''''' Create an AI tank that shoots based on range to target
+function AITankRanger(playerNumber, x, y, angle, faceRight, tank_type)
+  isHumanPlayer = false
+
+  ranger = createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_type)
+
+  ranger.projectileNotification = function(obj, x, y, vx, vy)
+    ?"Got notice. Hit ";obj
+    if m.last_shot_target <> invalid then ' we can calulate miss distance'
+      if(m.faceRight) then
+        m.last_shot_miss_distance = x - m.last_shot_target.x
+      else
+        m.last_shot_miss_distance = m.last_shot_target.x - x
+      end if
+      ?"last_shot_miss_distance ";m.last_shot_miss_distance
+    end if
+
+    if obj = invalid then ' Object timed out without hitting anything'
+      return invalid
+    end if
+
+    if obj.DoesExist("playerNumber") then
+      n = obj.playerNumber
+      ?"Randy (";m.playerNumber;") hit player ";n
+      m.last_shot_hit = true
+    else
+      m.last_shot_hit = false
+    end if
+
+  end function
+
+  ranger.last_shot = invalid
+  ranger.last_shot_hit = false
+  ranger.last_shot_miss_distance = invalid ' projectile_ground_range - target_ground_range'
+  ranger.last_shot_target = invalid
+
+  ranger.calculateNextShot = function(target) as object
+    shot = {}
+
+    m.last_shot_target = target
+
+    if m.last_shot = invalid then
+      shot.angle = 45 * (pi()/180)' Choose high loft to avoid terrain'
+
+      R = abs(m.x - target.x) ' pixels'
+      Gy = getProjectileGY() 'pixels /sec^2 ?????'
+      D = sin(2 * shot.angle ) ''
+
+      vel = sqr( (R * Gy)/D )
+
+      ?"**** Aiming at something ";R;" pixels away. Power = ";vel
+
+      shot.power = vel ' Yeah... bad variable naming, sorry physicists.'
+      shot.powerBar = ((shot.power-300)/200)
+
+    else
+      shot = m.last_shot
+      ?"**** Last Shot Power";shot.power
+      if(m.last_shot_hit) then
+        'Nothing to do here now '
+      else
+        if m.last_shot_miss_distance > 0 then ' Too far'
+          shot.power -= 10
+        else ' Not far enough'
+          shot.power += 10
+        end if
+      end if
+    end if
+
+    ?"**** Shot Power";shot.power
+    m.last_shot = shot
+
+    return shot
+  end function
+
+  return ranger
+
+end function

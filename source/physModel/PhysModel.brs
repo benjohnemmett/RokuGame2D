@@ -484,6 +484,9 @@ Function physObjGroup() as Object
                 end if
 
                 if del = true then
+                    if o.DoesExist("dyingWish") then
+                      o.dyingWish()
+                    end if
                     o.clear()
                     m.physObjList.delete(i) ' remove object
                 else

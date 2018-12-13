@@ -133,6 +133,17 @@ function laydownTerrainInOneSprite(physModel, compositor, terrainRegions, terrai
   sprite = g.compositor.NewSprite(0, 0, reg, 0)
   terrain.sprites.push(sprite)
 
+  ' Add colliders around left & right edges of screen and far above the top'
+  left = fixedBoxCollider(-100, -3*g.sHeight, 100, 4*g.sHeight)
+  terrain.colliders.push(left)
+  g.pogTerr.addPhysObj(left)
+  right = fixedBoxCollider(g.sWidth, -3*g.sHeight, 100, 4*g.sHeight)
+  terrain.colliders.push(right)
+  g.pogTerr.addPhysObj(right)
+  top = fixedBoxCollider(-100, -3*g.sHeight, g.sWidth + 200, 100)
+  terrain.colliders.push(top)
+  g.pogTerr.addPhysObj(top)
+
   x_ = 0
   for each s in terrainDef.sectionList
     ' Create collider

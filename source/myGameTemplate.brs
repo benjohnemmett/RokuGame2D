@@ -152,7 +152,9 @@ function rg2dLoadLevel(level as integer) as void
     ''Moved from game init
     ' Create Truck
     g.tank1 = createTank(1, true, 100, g.sHeight-200, 0, true, "igloo") ' TODO Flip this one
-    g.tank2 = createTank(2, false, g.sWidth-100, g.sHeight-200,0, false, "igloo")
+    g.tank2 = AITankRanger(2, g.sWidth-100, g.sHeight-200,0, false, "igloo")
+    ' g.tank2 = AITankRandy(2, g.sWidth-100, g.sHeight-200,0, false, "igloo")
+    'g.tank2 = createTank(2, false, g.sWidth-100, g.sHeight-200,0, false, "igloo")
 
     g.tank1.bmFlag.setFlagImage(g.rFlagRed)
     g.tank2.bmFlag.setFlagImage(g.rFlagBlue)
@@ -168,7 +170,7 @@ function rg2dLoadLevel(level as integer) as void
 
     cpTankProj.overlapCallback = function(t,p) as integer
 
-      if(p.ttl > 29) then
+      if(p.ttl > 14) then
 
         ?"Projectile must be firing still!";p.ttl
         return 1
@@ -252,8 +254,10 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
 
     If g.player_turn = 1 then
       active_player = g.tank1
+      inactive_player = g.tank2
     else
       active_player = g.tank2
+      inactive_player = g.tank1
     End If
 
     PBT = 2000 'Powerbar period in milliseconds '
@@ -316,11 +320,7 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
         g.player_state = "CALCULATING"
       else if g.player_state = "CALCULATING"
         ?" - CALCULATING"
-        'shot = active_player.calculateNextShot() 'TODO Temporary hard code'
-        active_player.shot = {}
-        active_player.shot.angle = 60 * (pi()/180)
-        active_player.shot.power = 450
-        active_player.shot.powerBar = ((active_player.shot.power-300)/200)
+        active_player.shot = active_player.calculateNextShot(inactive_player) 'TODO Temporary hard code'
         g.player_state = "AIMING"
       else if g.player_state = "AIMING" 'Animate turret aiming
         ?" - AIMING from ";active_player.tank_turret_angle;" to ";active_player.shot.angle
@@ -334,11 +334,13 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
 
       else if g.player_state = "POWER_SELECT" ' Animate power select bar'
         ?" - POWER_SELECT"
-        dp = active_player.shot.powerBar - active_player.getPowerBarValue()
+
+        desired_val = minFloat(maxFloat(active_player.shot.powerBar, 0.1), 0.9)
+        dp =  desired_val - active_player.getPowerBarValue()
 
         pwr_inc = (1.0/PBT)*(dt*1000)
 
-        if abs(dp) <= pwr_inc then
+        if (abs(dp) <= pwr_inc) then
           active_player.setPowerBar(active_player.shot.powerBar)
           g.player_state = "FIRE"
         else
@@ -363,7 +365,6 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
       end if
 
     end if
-
 
     ' TODO create level status object'
     stat = {}
