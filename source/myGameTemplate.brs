@@ -314,7 +314,7 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
       end if
 
 
-    else ' AI Player'
+    else ''''''''''''''''   AI Player''''''''''''''''''''''''''''''''
       if g.player_state = "IDLE" then
         ?"IDLE"
         g.player_state = "CALCULATING"
@@ -353,7 +353,7 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
         g.player_state = "WAITING_IMPACT"
 
       else if g.player_state = "WAITING_IMPACT"
-        ?" - WAITING_IMPACT"
+        ''?" - WAITING_IMPACT"
         if g.projectileInFlight.state = "DEAD"
           g.player_state = "IMPACTED"
           g.projectileInFlight = invalid

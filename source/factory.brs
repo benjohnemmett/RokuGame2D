@@ -310,6 +310,8 @@ function AITankRanger(playerNumber, x, y, angle, faceRight, tank_type)
 
   end function
 
+  ranger.badness = .5 ' TODO make this setable'
+
   ranger.last_shot = invalid
   ranger.last_shot_hit = false
   ranger.last_shot_miss_distance = invalid ' projectile_ground_range - target_ground_range'
@@ -347,6 +349,9 @@ function AITankRanger(playerNumber, x, y, angle, faceRight, tank_type)
         end if
       end if
     end if
+    ''Shake things up a bit
+    shot.power += m.badness * (rnd(50)-25) ' Max +/- 25 vel error'
+    shot.angle += m.badness * (5*rnd(0) - 2.5) * (pi()/180) ' Max +/- 5 deg angle error'
 
     ?"**** Shot Power";shot.power
     m.last_shot = shot
