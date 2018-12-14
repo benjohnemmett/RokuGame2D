@@ -62,6 +62,13 @@ function rg2dLoadSprites() as void
     g.rFlagRed = rg2dLoadRegion("pkg:/components/sprites/Flag_red_white.png", 0, 0, 40, 30)
     g.rFlagBlue = rg2dLoadRegion("pkg:/components/sprites/Flag_orange_blue.png", 0, 0, 40, 30)
 
+    bmChevrons = CreateObject("roBitmap", "pkg:/components/sprites/chevrons.png")
+    g.rChevronGreenLeft = CreateObject("roRegion", bmChevrons, 0, 0, 30, 30)
+    g.rChevronGreyLeft = CreateObject("roRegion", bmChevrons, 30, 0, 30, 30)
+    g.rChevronGreyRight = CreateObject("roRegion", bmChevrons, 60, 0, 30, 30)
+    g.rChevronGreenRight = CreateObject("roRegion", bmChevrons, 90, 0, 30, 30)
+    g.rWindometerText = rg2dLoadRegion("pkg:/components/sprites/windometer_text.png", 0, 0, 124, 19)
+
     g.terrain_ice = createTerrain("pkg:/components/sprites/terrain_ice_288_44.png")
 
     if(g.USING_LB_CODE) then
@@ -149,7 +156,13 @@ end function
 function rg2dLoadLevel(level as integer) as void
     g = GetGlobalAA()
 
-    ''Moved from game init
+
+    g.wind = windMaker()
+    g.wind.setWindAcc(rnd(80)-40,0)
+
+    g.windViewer = windicator(g.wind, 500, 100)
+    g.windViewer.updateDisplay()
+
     ' Create Truck
     g.tank1 = createTank(1, true, 100, g.sHeight-200, 0, true, "igloo") ' TODO Flip this one
     g.tank2 = AITankRanger(2, g.sWidth-100, g.sHeight-200,0, false, "igloo")
@@ -274,9 +287,10 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
 
       else if(button.bRight) then
           ?"Trucking Left"
-
+          g.wind.offsetWind(10,0)
       else if(button.bLeft) then
           ?"Trucking Right"
+          g.wind.offsetWind(-10,0)
 
       end if
 
@@ -303,9 +317,11 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
       if g.player_state = "FIRE" ' Player just let go of fire button'
         g.player_state = "WAITING_IMPACT"
         g.projectileInFlight = active_player.fireProjectile(300 + g.power_select * 200)
+        g.wind.addObject(g.projectileInFlight)
       else if g.player_state = "WAITING_IMPACT"
         if g.projectileInFlight.state = "DEAD"
           g.player_state = "IMPACTED"
+          g.wind.clearDead()
           g.projectileInFlight = invalid
         end if
       else if g.player_state = "IMPACTED"
@@ -350,12 +366,14 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
       else if g.player_state = "FIRE"
         ?" - POWER_SELECT"
         g.projectileInFlight = active_player.fireProjectile(active_player.shot.power)
+        g.wind.addObject(g.projectileInFlight)
         g.player_state = "WAITING_IMPACT"
 
       else if g.player_state = "WAITING_IMPACT"
         ''?" - WAITING_IMPACT"
         if g.projectileInFlight.state = "DEAD"
           g.player_state = "IMPACTED"
+          g.wind.clearDead()
           g.projectileInFlight = invalid
         end if
 
@@ -365,6 +383,9 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
       end if
 
     end if
+
+
+    g.windViewer.updateDisplay() ' Update to current wind conditions'
 
     ' TODO create level status object'
     stat = {}
