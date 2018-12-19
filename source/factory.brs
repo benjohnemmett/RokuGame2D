@@ -66,12 +66,27 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
   tank.playerNumber = playerNumber
   tank.isHumanPlayer = isHumanPlayer
 
-
   tank.turret.updateDisplay()
 
   tank.state = "ALIVE"
 
   tank.createElement(sTank, 0.0, 0.0)
+
+  '''''' Projectile Stuff
+  tank.projectile_list = getProjectileList()
+  tank.projectile_idx = 0
+
+  tank.projectile_selector = projectileSelector()
+  tank.projectile_selector.updateDisplay()
+  rProjectileSelector= CreateObject("roRegion", tank.projectile_selector.bm, 0, 0, tank.projectile_selector.width, tank.projectile_selector.height)
+  tank.sProjectileSelector = g.compositor.NewSprite(tank.x, tank.y, rProjectileSelector, 4)
+
+  tank.select_projectile = function(idx)
+    ?"Swapping projectile from ";m.projectile_list[m.projectile_idx]
+    m.projectile_idx = idx mod m.projectile_list.Count()
+    m.projectile_selector.setProjectileIdx(m.projectile_idx) ' Update selector'
+    ?"-> To projectile ";m.projectile_list[m.projectile_idx]
+  end function
 
   tank.fireProjectile = function(power as double) as object
     ?"Fire!!!!!!!!!!!"
@@ -81,7 +96,7 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
     if m.faceRight = false then
       vx = -vx
     end if
-    proj = createProjectile(m, m.x, m.y, vx, vy)
+    proj = createProjectile(m, m.projectile_list[m.projectile_idx], m.x, m.y, vx, vy)
     g.pogProjs.addPhysObj(proj)
 
     return proj
@@ -214,6 +229,9 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
     end if
 
     m.sPowerBar.MoveTo(m.x, m.y+30)
+
+
+    m.sProjectileSelector.MoveTo(m.x-32, m.y+30)
 
   end function
 

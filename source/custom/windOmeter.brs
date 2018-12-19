@@ -72,7 +72,7 @@ function windicator(wind, x, y) as object
       if m.wind <> invalid then
         g = GetGlobalAA()
 
-        wind_strengths = [-40, -20, -10, 10, 20, 40]
+        wind_strengths = [-20, -10, -5, 5, 10, 20]
 
         m.bm.clear(&h00000000) ' Transparent background, alpha = 0'
 

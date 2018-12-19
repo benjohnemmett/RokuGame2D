@@ -55,6 +55,9 @@ function rg2dLoadSprites() as void
 
     ' Kenny's stuff
     g.rSnowBall = rg2dLoadRegion("pkg:/components/sprites/snowball_p21.png", 0, 0, 21, 21)
+    g.rSnowBallFire = rg2dLoadRegion("pkg:/components/sprites/snowball_fire_p21.png", 0, 0, 21, 21)
+    g.rSnowBall11 = rg2dLoadRegion("pkg:/components/sprites/snowball_p11.png", 0, 0, 11, 11)
+    g.rSnowBall5 = rg2dLoadRegion("pkg:/components/sprites/snowball_p5.png", 0, 0, 5, 5)
     'g.rTerrain_ice = rg2dLoadRegion("pkg:/components/sprites/terrain_ice_288_44.png", 0, 0, 288, 44)
     g.rIgloo_right = rg2dLoadRegion("pkg:/components/sprites/igloo_right_63_42.png", 0, 0, 63, 42)
     g.rIgloo_left = rg2dLoadRegion("pkg:/components/sprites/igloo_left_63_42.png", 0, 0, 63, 42)
@@ -158,7 +161,7 @@ function rg2dLoadLevel(level as integer) as void
 
 
     g.wind = windMaker()
-    g.wind.setWindAcc(rnd(80)-40,0)
+    g.wind.setWindAcc(rnd(50)-25,0)
 
     g.windViewer = windicator(g.wind, 500, 100)
     g.windViewer.updateDisplay()
@@ -190,7 +193,7 @@ function rg2dLoadLevel(level as integer) as void
       end if
       if p.state = "ALIVE" then
         ?"Projectile Hit Tank!"
-        t.takeDamage(10)
+        t.takeDamage(p.damage_power)
         p.ttl = 0.0
         p.state = "DEAD"
         p.NotifyOwnerOfCollision(t)
@@ -287,13 +290,33 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
 
       else if(button.bRight) then
           ?"Trucking Left"
-          g.wind.offsetWind(10,0)
+          'g.wind.offsetWind(10,0)
+          'active_player.select_projectile(active_player.projectile_idx+1)
       else if(button.bLeft) then
           ?"Trucking Right"
-          g.wind.offsetWind(-10,0)
+          'g.wind.offsetWind(-10,0)
+
+          'active_player.select_projectile(active_player.projectile_idx-1)
 
       end if
 
+      ' Start of Turn state transitions'
+      if g.player_state = "ENTER" then
+        g.player_state = "RANDOMIZE_PROJECTILE"
+        g.player_frames_in_state = 0 ' TODO make player state an object'
+      else if g.player_state = "RANDOMIZE_PROJECTILE" then
+        g.player_frames_in_state += 1 ' TODO make player state an object'
+
+        if(g.player_frames_in_state > 50) then ' TODO make player state an object')
+          g.player_state = "IDLE"
+        end if
+
+        if(g.player_frames_in_state mod 10) = 0 then
+          active_player.select_projectile(active_player.projectile_idx + rnd(3))
+        end if
+      end if
+
+      ' SELECT BUTTON DOWN'
       if(button.bSelect1) then
         if g.player_state = "IDLE" then
           ?"Prepping to fire"
@@ -314,6 +337,7 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
         end if
       end if
 
+      ' SELECT BUTTON RELEASED'
       if g.player_state = "FIRE" ' Player just let go of fire button'
         g.player_state = "WAITING_IMPACT"
         g.projectileInFlight = active_player.fireProjectile(300 + g.power_select * 200)
@@ -326,12 +350,27 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
         end if
       else if g.player_state = "IMPACTED"
         switchActivePlayer()
-        g.player_state = "IDLE"
+        g.player_state = "ENTER"
       end if
 
 
+
+
     else ''''''''''''''''   AI Player''''''''''''''''''''''''''''''''
-      if g.player_state = "IDLE" then
+
+      if g.player_state = "ENTER" then
+        g.player_state = "RANDOMIZE_PROJECTILE"
+        g.player_frames_in_state = 0 ' TODO make player state an object'
+      else if g.player_state = "RANDOMIZE_PROJECTILE" then
+        g.player_frames_in_state += 1 ' TODO make player state an object'
+
+        if(g.player_frames_in_state > 50) then ' TODO make player state an object')
+          g.player_state = "IDLE"
+        end if
+
+        active_player.select_projectile(active_player.projectile_idx + rnd(3))
+
+      else if g.player_state = "IDLE" then
         ?"IDLE"
         g.player_state = "CALCULATING"
       else if g.player_state = "CALCULATING"
@@ -379,7 +418,7 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
 
       else if g.player_state = "IMPACTED"
         switchActivePlayer()
-        g.player_state = "IDLE"
+        g.player_state = "ENTER"
       end if
 
     end if
