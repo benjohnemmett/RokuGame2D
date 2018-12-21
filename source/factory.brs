@@ -99,6 +99,8 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
     proj = createProjectile(m, m.projectile_list[m.projectile_idx], m.x, m.y, vx, vy)
     g.pogProjs.addPhysObj(proj)
 
+    rg2dPlaySound(g.sounds.foomp12)
+
     return proj
   end function
 
@@ -195,12 +197,10 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
   end function
 
   tank.takeDamage = function(damage_points) as void
-    m.health -= damage_points 'TODO set desired flag lower'
-    'm.setFlagPosition(m.health/100.0)
-    ?"Taking damage ";damage_points
-    ?" Health = ";m.health
-    ?" Flag = ";m.bmFlag.flagHeight
-    'm.bmFlag.updateDisplay()
+    m.health -= damage_points
+    ''?"Taking damage ";damage_points
+    ''?" Health = ";m.health
+    ''?" Flag = ";m.bmFlag.flagHeight
 
   end function
 

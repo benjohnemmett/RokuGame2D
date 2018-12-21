@@ -1,5 +1,3 @@
-' TODO should these all be subs, not returning anything? Any advantage to subs?
-
 ' Set global game parameters here.
 function rg2dSetGameParameters() as void
 
@@ -91,7 +89,9 @@ function rg2dLoadSounds() as void
     end if
 
     g.sounds ={}
-    'g.sounds.ship_engines = CreateObject("roAudioResource", "pkg:/assets/ship_engines.wav")
+    'g.sounds.foomp = CreateObject("roAudioResource", "pkg:/components/audio/foomp.wav")
+    'g.sounds.foompB = CreateObject("roAudioResource", "pkg:/components/audio/foompB.wav")
+    g.sounds.foomp12 = CreateObject("roAudioResource", "pkg:/components/audio/foomp12.wav")
     g.sounds.navSingle = CreateObject("roAudioResource", "navsingle")
 
     '?"Max Streams ";g.sounds.astroid_blast.maxSimulStreams()
@@ -167,7 +167,7 @@ function rg2dLoadLevel(level as integer) as void
     g.windViewer.updateDisplay()
 
     ' Create Truck
-    g.tank1 = createTank(1, true, 100, g.sHeight-200, 0, true, "igloo") ' TODO Flip this one
+    g.tank1 = createTank(1, true, 100, g.sHeight-200, 0, true, "igloo")
     g.tank2 = AITankRanger(2, g.sWidth-100, g.sHeight-200,0, false, "igloo")
     ' g.tank2 = AITankRandy(2, g.sWidth-100, g.sHeight-200,0, false, "igloo")
     'g.tank2 = createTank(2, false, g.sWidth-100, g.sHeight-200,0, false, "igloo")
@@ -311,7 +311,7 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
           g.player_state = "IDLE"
         end if
 
-        if(g.player_frames_in_state mod 10) = 0 then
+        if(g.player_frames_in_state mod 5) = 0 then
           active_player.select_projectile(active_player.projectile_idx + rnd(3))
         end if
       end if
@@ -362,20 +362,22 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
         g.player_state = "RANDOMIZE_PROJECTILE"
         g.player_frames_in_state = 0 ' TODO make player state an object'
       else if g.player_state = "RANDOMIZE_PROJECTILE" then
-        g.player_frames_in_state += 1 ' TODO make player state an object'
+        g.player_frames_in_state += 1
 
-        if(g.player_frames_in_state > 50) then ' TODO make player state an object')
+        if(g.player_frames_in_state > 50) then
           g.player_state = "IDLE"
         end if
 
-        active_player.select_projectile(active_player.projectile_idx + rnd(3))
+        if(g.player_frames_in_state mod 5) = 0 then
+          active_player.select_projectile(active_player.projectile_idx + rnd(3))
+        end if
 
       else if g.player_state = "IDLE" then
         ?"IDLE"
         g.player_state = "CALCULATING"
       else if g.player_state = "CALCULATING"
         ?" - CALCULATING"
-        active_player.shot = active_player.calculateNextShot(inactive_player) 'TODO Temporary hard code'
+        active_player.shot = active_player.calculateNextShot(inactive_player)
         g.player_state = "AIMING"
       else if g.player_state = "AIMING" 'Animate turret aiming
         ?" - AIMING from ";active_player.tank_turret_angle;" to ";active_player.shot.angle

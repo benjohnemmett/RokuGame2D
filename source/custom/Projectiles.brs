@@ -37,7 +37,7 @@ function projectile(owner as object, region, radius, damage_power, x,y,vx,vy) as
   proj.maxX = g.screen.GetWidth()
   proj.minY = 0.0
   proj.maxY = g.screen.GetHeight()
-  proj.wallEnable = Invalid ' TODO Could maybe turn this off
+  proj.wallEnable = Invalid 
   proj.size_x = radius
   proj.size_y = radius
   proj.vx = vx

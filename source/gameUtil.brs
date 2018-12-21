@@ -66,7 +66,7 @@ function rg2dPlaySound(sound) as void
     g = GetGlobalAA()
     if(g.settings.soundEffects = "On") then
         '?"Audio Stream ";g.audioStream
-        sound.trigger(80, g.audioStream)
+        sound.trigger(100, g.audioStream)
         g.audioStream = (g.audioStream + 1) mod g.maxAudioStreams
     end if
     '?"Next Audio Stream ";g.audioStream
