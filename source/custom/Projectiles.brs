@@ -1,3 +1,20 @@
+' Projectile dependencies
+'  Created with createProjectile(m, m.projectile_list[m.projectile_idx], m.x, m.y, vx, vy) by tank obj
+'   Added to physObj group <<Kinematic?>>
+'     -
+'   Added to the windMaker <<Pushable>>
+'   State checked to trigger game state transition
+'   Notify owner of collision/timeout death
+'
+'   -- Multi shot projectiles
+'   PLanA
+'     - Transfer logic trigger from projectile to active player. Require active player to keep track of projectiles in flight.
+'       - Tanks could have an array of projectiles -> Allows for multi-object shots.
+'         - Separating objects could be added to the tank's projectilesInFlight list
+'       - Tank provides "hasActiveProjectile()" function.
+'       - Each projectile piece would separately notify the owner of it's out impact/timeout
+'         ** requeres updates to AI logic, might need to collect impact information first, then update at the end of the turn.
+'         - Could start by restricing AI to only use single shot, then update AI later. 
 
 function getProjectileList()
   return ["standard","baked_alaska","snowman_pellet"]
@@ -37,7 +54,7 @@ function projectile(owner as object, region, radius, damage_power, x,y,vx,vy) as
   proj.maxX = g.screen.GetWidth()
   proj.minY = 0.0
   proj.maxY = g.screen.GetHeight()
-  proj.wallEnable = Invalid 
+  proj.wallEnable = Invalid
   proj.size_x = radius
   proj.size_y = radius
   proj.vx = vx
@@ -55,7 +72,7 @@ function projectile(owner as object, region, radius, damage_power, x,y,vx,vy) as
   proj.createElement(sCirc, 0.0, 0.0)
 
   proj.notifyOwnerOfCollision = function(obj) as void
-    ' (what_it_it, proj_x, proj_y, proj_vx, proj_vy)'
+    ' (what_it_is, proj_x, proj_y, proj_vx, proj_vy)'
     m.owner.projectileNotification(obj, m.x, m.y, m.vx, m.vy)
   end function
   proj.getOwner = function() as object
