@@ -263,3 +263,64 @@ function rg2dLoadRegion(path as String, x1,y1,x2,y2) as object
   return rObj
 
 end function
+
+'''' Datatype to keep track of state
+' Settable state substate
+'   Should call tick(dt) function on each frame
+'   use setState & setSubState function to transition states
+function rg2dGameState(intialState as String) as object
+  gs = {
+    state : initialState,
+    prevState : "None"
+    subState : "Entry",
+    framesInState : 0,
+    framesInSubState : 0,
+    totalFrames : 0,
+    timeInState : 0.0,
+    timeInSubState : 0.0,
+    totalTime : 0.0
+  }
+
+  ' Called to change the state & reset state & sub state counters
+  gs.setState = function(newState as String) as void
+    m.prevState = m.state
+    m.state = newState
+
+    m.framesInState = 0
+    m.framesInSubState = 0
+    m.timeInState = 0.0
+    m.timeInSubState = 0.0
+
+    subState = "Entry"
+
+  end function
+
+  ' Called to change the substate & reset substate counters
+  gs.setSubState = function(newSubState as String) as void
+    m.subState = newSubState
+    m.framesInSubState = 0
+    m.timeInSubState = 0.0
+
+  end function
+
+  '' Call this on each frame, passing in the time passed since the last frame
+  gs.tick = function(dt as float) as void
+    m.timeInState += dt
+    m.timeInSubState += dt
+
+    m.framesInState += 1
+    m.framesInSubState += 1
+  end function
+
+  gs.equals = function(testState as String) as boolean
+    return m.state = testState
+  end function
+
+  ' For debugging'
+  gs.print() as void
+    ?"GAME STATE     = ";m.state;" ";m.framesInState
+    ?"GAME SUB STATE = ";m.subState;" ";m.framesInSubState
+  end function
+
+
+end function

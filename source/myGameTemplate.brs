@@ -159,18 +159,20 @@ end function
 function rg2dLoadLevel(level as integer) as void
     g = GetGlobalAA()
 
+    g.bgColor = &h112233FF
 
+    '''''''''''''''''''''
+    '''''' WIND '''''''''
     g.wind = windMaker()
     g.wind.setWindAcc(rnd(50)-25,0)
 
     g.windViewer = windicator(g.wind, 500, 100)
     g.windViewer.updateDisplay()
 
-    ' Create Truck
+    '''''''''''''''''''''
+    '''''' TANKS
     g.tank1 = createTank(1, true, 100, g.sHeight-200, 0, true, "igloo")
     g.tank2 = AITankRanger(2, g.sWidth-100, g.sHeight-200,0, false, "igloo")
-    ' g.tank2 = AITankRandy(2, g.sWidth-100, g.sHeight-200,0, false, "igloo")
-    'g.tank2 = createTank(2, false, g.sWidth-100, g.sHeight-200,0, false, "igloo")
 
     g.tank1.bmFlag.setFlagImage(g.rFlagRed)
     g.tank2.bmFlag.setFlagImage(g.rFlagBlue)
@@ -182,12 +184,12 @@ function rg2dLoadLevel(level as integer) as void
     g.pogTanks.addPhysObj(g.tank1)
     g.pogTanks.addPhysObj(g.tank2)
 
+    '''''''''''''''''''''
+    '''''' Collisions
     cpTankProj = g.pm.createCollisionPair(g.pogTanks,g.pogProjs)
 
     cpTankProj.overlapCallback = function(t,p) as integer
-
       if(p.ttl > 14) then
-
         ?"Projectile must be firing still!";p.ttl
         return 1
       end if
@@ -198,33 +200,15 @@ function rg2dLoadLevel(level as integer) as void
         p.state = "DEAD"
         p.NotifyOwnerOfCollision(t)
       end if
-
       return 1 ' Indicate not to perform normal collision
-
     end function
-
-    if(g.USING_LB_CODE) then
-        LBMakeGroups()
-    end if
-
-    '' End Moved from game init
-
-
-    g.bgColor = &h112233FF
-
-
 
     if(g.DEBUG) then
       ?"rg2dLoadLevel()..."
     end if
-    if(g.USING_LB_CODE) then
-        LBLoadLevel(level)
-    end if
 
-    g.player_state = "IDLE"
-
-    g.player_turn = 1
-
+    ''''''''''''''''''''''''''
+    ''''' TERRAIN
     cpProjTerr = g.pm.createCollisionPair(g.pogProjs,g.pogTerr)
     cpProjTerr.overlapCallback = function(p,t) as integer
       ?"Projectile hitting ICE"
@@ -246,6 +230,12 @@ function rg2dLoadLevel(level as integer) as void
     g.tank1.updateDisplay()
     g.tank2.updateDisplay()
 
+    ''''''''''''''''''''''''''
+    ''''' Initialize State
+    'g.player_state = "IDLE"
+    g.gameState = rg2dGameState("IDLE")
+    g.player_turn = 1
+
 end function
 
 function switchActivePlayer() as void
@@ -255,7 +245,6 @@ function switchActivePlayer() as void
     else
       g.player_turn = 1
     End If
-
 end function
 
 ' Stuff to be done at the start of each update loop goes here.
@@ -301,29 +290,26 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
       end if
 
       ' Start of Turn state transitions'
-      if g.player_state = "ENTER" then
-        g.player_state = "RANDOMIZE_PROJECTILE"
-        g.player_frames_in_state = 0 ' TODO make player state an object'
-      else if g.player_state = "RANDOMIZE_PROJECTILE" then
-        g.player_frames_in_state += 1 ' TODO make player state an object'
+      if g.gameState.state = "ENTER" then
+        g.gameState.setState("RANDOMIZE_PROJECTILE")
 
-        if(g.player_frames_in_state > 50) then ' TODO make player state an object')
-          g.player_state = "IDLE"
+      else if g.gameState.state = "RANDOMIZE_PROJECTILE" then
+        if(g.gameState.framesInState > 50) then
+          g.gameState.setState("IDLE")
         end if
-
-        if(g.player_frames_in_state mod 5) = 0 then
+        if(g.gameState.framesInState mod 5) = 0 then ' Shuffle projectile type again'
           active_player.select_projectile(active_player.projectile_idx + rnd(3))
         end if
       end if
 
       ' SELECT BUTTON DOWN'
       if(button.bSelect1) then
-        if g.player_state = "IDLE" then
+        if g.gameState.state = "IDLE" then
           ?"Prepping to fire"
           g.projectileInFlight = Invalid
-          g.player_state = "POWER_SELECT"
+          g.gameState.setState("POWER_SELECT")
           g.power_select = 0
-        else if g.player_state = "POWER_SELECT" then
+        else if g.gameState.state = "POWER_SELECT" then
           p1 = (button_hold_time MOD (2*PBT)) ' Power as a sawtooth wave'
           p2 = (2*PBT) - p1 'Cross over sawtooth'
           pwr = minFloat(p1,p2)
@@ -332,64 +318,59 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
           active_player.setPowerBar(g.power_select)
         end if
       else
-        if g.player_state = "POWER_SELECT" then
-          g.player_state = "FIRE"
+        if g.gameState.state = "POWER_SELECT" then
+          g.gameState.setState("FIRE")
         end if
       end if
 
       ' SELECT BUTTON RELEASED'
-      if g.player_state = "FIRE" ' Player just let go of fire button'
-        g.player_state = "WAITING_IMPACT"
+      if g.gameState.state = "FIRE" ' Player just let go of fire button'
+        g.gameState.setState("WAITING_IMPACT")
         g.projectileInFlight = active_player.fireProjectile(300 + g.power_select * 200)
         g.wind.addObject(g.projectileInFlight)
-      else if g.player_state = "WAITING_IMPACT"
+      else if g.gameState.state = "WAITING_IMPACT"
         if g.projectileInFlight.state = "DEAD"
-          g.player_state = "IMPACTED"
+          g.gameState.setState("IMPACTED")
           g.wind.clearDead()
           g.projectileInFlight = invalid
         end if
-      else if g.player_state = "IMPACTED"
+      else if g.gameState.state = "IMPACTED"
         switchActivePlayer()
-        g.player_state = "ENTER"
+        g.gameState.setState("ENTER")
       end if
-
-
-
 
     else ''''''''''''''''   AI Player''''''''''''''''''''''''''''''''
 
-      if g.player_state = "ENTER" then
-        g.player_state = "RANDOMIZE_PROJECTILE"
-        g.player_frames_in_state = 0 ' TODO make player state an object'
-      else if g.player_state = "RANDOMIZE_PROJECTILE" then
-        g.player_frames_in_state += 1
+      if g.gameState.state = "ENTER" then
+        g.gameState.setState("RANDOMIZE_PROJECTILE")
+      else if g.gameState.state = "RANDOMIZE_PROJECTILE" then
 
-        if(g.player_frames_in_state > 50) then
-          g.player_state = "IDLE"
+        if(g.gameState.framesInState > 50) then
+          g.gameState.setState("IDLE")
         end if
 
-        if(g.player_frames_in_state mod 5) = 0 then
+        if(g.gameState.framesInState mod 5) = 0 then
           active_player.select_projectile(active_player.projectile_idx + rnd(3))
         end if
 
-      else if g.player_state = "IDLE" then
+      else if g.gameState.state = "IDLE" then
         ?"IDLE"
-        g.player_state = "CALCULATING"
-      else if g.player_state = "CALCULATING"
+        g.gameState.setState("CALCULATING")
+      else if g.gameState.state = "CALCULATING"
         ?" - CALCULATING"
         active_player.shot = active_player.calculateNextShot(inactive_player)
-        g.player_state = "AIMING"
-      else if g.player_state = "AIMING" 'Animate turret aiming
+        g.gameState.setState("AIMING")
+      else if g.gameState.state = "AIMING" 'Animate turret aiming
         ?" - AIMING from ";active_player.tank_turret_angle;" to ";active_player.shot.angle
         da = active_player.shot.angle - active_player.tank_turret_angle
         if abs(da) <= angle_inc then
           active_player.set_turret_angle(active_player.shot.angle)
-          g.player_state = "POWER_SELECT"
+          g.gameState.setState("POWER_SELECT")
         else
           active_player.set_turret_angle(active_player.tank_turret_angle + sgn(da)*angle_inc)
         end if
 
-      else if g.player_state = "POWER_SELECT" ' Animate power select bar'
+      else if g.gameState.state = "POWER_SELECT" ' Animate power select bar'
         ?" - POWER_SELECT"
 
         desired_val = minFloat(maxFloat(active_player.shot.powerBar, 0.1), 0.9)
@@ -399,32 +380,32 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
 
         if (abs(dp) <= pwr_inc) then
           active_player.setPowerBar(active_player.shot.powerBar)
-          g.player_state = "FIRE"
+          g.gameState.setState("FIRE")
         else
           active_player.setPowerBar(active_player.getPowerBarValue() + sgn(dp)*pwr_inc)
         end if
 
-      else if g.player_state = "FIRE"
+      else if g.gameState.state = "FIRE"
         ?" - POWER_SELECT"
         g.projectileInFlight = active_player.fireProjectile(active_player.shot.power)
         g.wind.addObject(g.projectileInFlight)
-        g.player_state = "WAITING_IMPACT"
+        g.gameState.setState("WAITING_IMPACT")
 
-      else if g.player_state = "WAITING_IMPACT"
+      else if g.gameState.state = "WAITING_IMPACT"
         ''?" - WAITING_IMPACT"
         if g.projectileInFlight.state = "DEAD"
-          g.player_state = "IMPACTED"
+          g.gameState.setState("IMPACTED")
           g.wind.clearDead()
           g.projectileInFlight = invalid
         end if
-
-      else if g.player_state = "IMPACTED"
+      else if g.gameState.state = "IMPACTED"
         switchActivePlayer()
-        g.player_state = "ENTER"
+        g.gameState.setState("ENTER")
       end if
 
     end if
 
+    g.gameState.tick(dt) ' Calling this to update state counters
 
     g.windViewer.updateDisplay() ' Update to current wind conditions'
 
