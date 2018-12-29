@@ -72,6 +72,12 @@ function rg2dLoadSprites() as void
 
     g.terrain_ice = createTerrain("pkg:/components/sprites/terrain_ice_288_44.png")
 
+    bmFlakes = CreateObject("roBitmap", "pkg:/components/sprites/flakes_32p_8x.png")
+    g.rFlakesArray = []
+    For i=0 to 7 step 1
+      g.rFlakesArray[i] = CreateObject("roRegion", bmFlakes, i*32, 0, 32, 32)
+    End For
+
     if(g.USING_LB_CODE) then
         LBLoadSprites()
     end if
@@ -230,11 +236,19 @@ function rg2dLoadLevel(level as integer) as void
     g.tank1.updateDisplay()
     g.tank2.updateDisplay()
 
+
     ''''''''''''''''''''''''''
     ''''' Initialize State
     'g.player_state = "IDLE"
     g.gameState = rg2dGameState("IDLE")
     g.player_turn = 1
+
+    ' Make snow '
+    g.snowMaker = snowMaker(g.wind, g.compositor)
+    if(rnd(4) = 1) ' 1 in 4 chance of snow'
+      g.snowMaker.randomInit(20 + rnd(30), g.rFlakesArray) ' Randomize snow severity'
+    end if
+
 
 end function
 
@@ -326,7 +340,7 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
       ' SELECT BUTTON RELEASED'
       if g.gameState.state = "FIRE" ' Player just let go of fire button'
         g.gameState.setState("WAITING_IMPACT")
-        g.projectileInFlight = active_player.fireProjectile(300 + g.power_select * 200)
+        g.projectileInFlight = active_player.fireProjectile(400 + g.power_select * 200)
         g.wind.addObject(g.projectileInFlight)
       else if g.gameState.state = "WAITING_IMPACT"
         if g.projectileInFlight.state = "DEAD"
@@ -405,9 +419,14 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
 
     end if
 
+    'Progress Game State'
     g.gameState.tick(dt) ' Calling this to update state counters
 
+    'Update wind'
     g.windViewer.updateDisplay() ' Update to current wind conditions'
+
+    ' Update snow
+    g.snowMaker.run(dt)
 
     ' TODO create level status object'
     stat = {}

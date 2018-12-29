@@ -268,7 +268,7 @@ end function
 ' Settable state substate
 '   Should call tick(dt) function on each frame
 '   use setState & setSubState function to transition states
-function rg2dGameState(intialState as String) as object
+function rg2dGameState(initialState as String) as object
   gs = {
     state : initialState,
     prevState : "None"
@@ -317,10 +317,11 @@ function rg2dGameState(intialState as String) as object
   end function
 
   ' For debugging'
-  gs.print() as void
+  gs.print = function() as void
     ?"GAME STATE     = ";m.state;" ";m.framesInState
     ?"GAME SUB STATE = ";m.subState;" ";m.framesInSubState
   end function
 
+  return gs
 
 end function
