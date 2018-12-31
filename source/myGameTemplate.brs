@@ -62,6 +62,7 @@ function rg2dLoadSprites() as void
 
     g.rFlagRed = rg2dLoadRegion("pkg:/components/sprites/Flag_red_white.png", 0, 0, 40, 30)
     g.rFlagBlue = rg2dLoadRegion("pkg:/components/sprites/Flag_orange_blue.png", 0, 0, 40, 30)
+    g.rMouseUp = rg2dLoadRegion("pkg:/components/sprites/MouseUp_32.png", 0, 0, 32, 32)
 
     bmChevrons = CreateObject("roBitmap", "pkg:/components/sprites/chevrons.png")
     g.rChevronGreenLeft = CreateObject("roRegion", bmChevrons, 0, 0, 30, 30)
@@ -165,7 +166,7 @@ end function
 function rg2dLoadLevel(level as integer) as void
     g = GetGlobalAA()
 
-    g.bgColor = &h112233FF
+    g.bgColor = &h114488FF
 
     '''''''''''''''''''''
     '''''' WIND '''''''''
@@ -231,6 +232,9 @@ function rg2dLoadLevel(level as integer) as void
 
     terrain = laydownTerrainInOneSprite(g.pm, g.compositor, g.terrain_ice, td)
 
+    ''' mouse
+    g.sMouse = g.compositor.NewSprite(600,g.sHeight-td.getHeightAtXPoint(600)-20,g.rMouseUp,1)
+
     g.tank1.setPosition(100, g.sHeight-td.getHeightAtXPoint(100) - 21)
     g.tank2.setPosition(g.sWidth-100, g.sHeight-td.getHeightAtXPoint(g.sWidth-100) - 21)
     g.tank1.updateDisplay()
@@ -245,7 +249,7 @@ function rg2dLoadLevel(level as integer) as void
 
     ' Make snow '
     g.snowMaker = snowMaker(g.wind, g.compositor)
-    if(rnd(4) = 1) ' 1 in 4 chance of snow'
+    if(rnd(4) <> 1) ' 1 in 4 chance of snow'
       g.snowMaker.randomInit(20 + rnd(30), g.rFlakesArray) ' Randomize snow severity'
     end if
 
