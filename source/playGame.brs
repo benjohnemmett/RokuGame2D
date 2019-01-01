@@ -32,7 +32,7 @@ function rg2dPlayGame() as object
     ' Play Background music
     if(g.settings.music = "On") then
         ?"Play that funky music!!!"
-        g.audioplayer.setContentList([{url:"pkg:/components/audio/happy_loop.mp3"}])
+        g.audioplayer.setContentList([{url:"pkg:/components/audio/Sliding.mp3"}])
         g.audioplayer.setloop(true)
         g.audioPlayer.play()
     else

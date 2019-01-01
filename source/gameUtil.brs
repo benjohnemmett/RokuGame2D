@@ -283,23 +283,28 @@ function rg2dGameState(initialState as String) as object
 
   ' Called to change the state & reset state & sub state counters
   gs.setState = function(newState as String) as void
-    m.prevState = m.state
-    m.state = newState
 
-    m.framesInState = 0
-    m.framesInSubState = 0
-    m.timeInState = 0.0
-    m.timeInSubState = 0.0
+    if(newState <> m.state) then
+      m.prevState = m.state
+      m.state = newState
 
-    subState = "Entry"
+      m.framesInState = 0
+      m.framesInSubState = 0
+      m.timeInState = 0.0
+      m.timeInSubState = 0.0
+
+      subState = "Entry"
+    end if
 
   end function
 
   ' Called to change the substate & reset substate counters
   gs.setSubState = function(newSubState as String) as void
-    m.subState = newSubState
-    m.framesInSubState = 0
-    m.timeInSubState = 0.0
+    if(newSubState <> m.subState) then
+      m.subState = newSubState
+      m.framesInSubState = 0
+      m.timeInSubState = 0.0
+    end if
 
   end function
 

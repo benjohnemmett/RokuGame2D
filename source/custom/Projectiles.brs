@@ -14,10 +14,15 @@
 '       - Tank provides "hasActiveProjectile()" function.
 '       - Each projectile piece would separately notify the owner of it's out impact/timeout
 '         ** requeres updates to AI logic, might need to collect impact information first, then update at the end of the turn.
-'         - Could start by restricing AI to only use single shot, then update AI later. 
+'         - Could start by restricing AI to only use single shot, then update AI later.
 
 function getProjectileList()
   return ["standard","baked_alaska","snowman_pellet"]
+end function
+
+'Wrapper to hold future shots until a certain time'
+function oneShot(proj, time)
+  return {proj : proj, time : time}
 end function
 
 function createProjectile(owner as object, ptype, x, y, vx, vy) as object
@@ -73,8 +78,9 @@ function projectile(owner as object, region, radius, damage_power, x,y,vx,vy) as
 
   proj.notifyOwnerOfCollision = function(obj) as void
     ' (what_it_is, proj_x, proj_y, proj_vx, proj_vy)'
-    m.owner.projectileNotification(obj, m.x, m.y, m.vx, m.vy)
+    m.owner.projectileNotification(m, obj)
   end function
+
   proj.getOwner = function() as object
     return m.owner
   end function
@@ -84,7 +90,7 @@ function projectile(owner as object, region, radius, damage_power, x,y,vx,vy) as
   ?"Projectile dying wish"
     if(m.state = "ALIVE") then
       ?"I was alive"
-      m.owner.projectileNotification(invalid, m.x, m.y, m.vx, m.vy)
+      m.owner.projectileNotification(m, invalid)
       m.state = "DEAD"
     end if
   end function

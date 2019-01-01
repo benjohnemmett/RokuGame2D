@@ -62,6 +62,10 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
   tank.MAX_TURRET_SPACING = 3
   tank.MIN_TURRET_SPACING = 0
 
+  tank.activeProjectiles = []
+  tank.shotsInTheHole = []
+  tank.timeSinceFire = 0
+
   tank.health = 100
   tank.playerNumber = playerNumber
   tank.isHumanPlayer = isHumanPlayer
@@ -72,7 +76,10 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
 
   tank.createElement(sTank, 0.0, 0.0)
 
+  ''''''''''''''''''''''''''''''''''''''''''''''''''''''
+  ''''''''''''''''''''''''''''''''''''''''''''''''''''''
   '''''' Projectile Stuff
+  ''''''''''''''''''''''''''''''''''''''''''''''''''''''
   tank.projectile_list = getProjectileList()
   tank.projectile_idx = 0
 
@@ -97,12 +104,107 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
       vx = -vx
     end if
     proj = createProjectile(m, m.projectile_list[m.projectile_idx], m.x, m.y, vx, vy)
-    g.pogProjs.addPhysObj(proj)
+    proj2 = createProjectile(m, m.projectile_list[m.projectile_idx], m.x, m.y, vx, vy)
+    proj3 = createProjectile(m, m.projectile_list[m.projectile_idx], m.x, m.y, vx, vy)
 
-    rg2dPlaySound(g.sounds.foomp12)
+    s1 = oneShot(proj, 0.0)
+    s2 = oneShot(proj2, 0.1)
+    s3 = oneShot(proj3, 0.2)
+
+    m.shotsInTheHole.push(s1)
+    m.shotsInTheHole.push(s2)
+    m.shotsInTheHole.push(s3)
+
+    'g.pogProjs.addPhysObj(proj)
+    'g.wind.addObject(proj)
+    'rg2dPlaySound(g.sounds.foomp12)
+
+    'm.activeProjectiles.push(proj)
+    m.timeSinceFire = 0.0
 
     return proj
   end function
+
+  tank.hasActiveProjectiles = function() as boolean
+    return m.activeProjectiles.count() > 0
+  end function
+
+  ' Implements << ProjectileOwner >> interface '
+  tank.projectileNotification = function(proj, obj)
+    ?"Got notice. Hit ";obj
+    if obj = invalid then ' Object timed out without hitting anything'
+      ?"Got notice that projectile timed out"
+      return invalid ' Return so that we don't try to access invalid object
+    end if
+
+    if obj.DoesExist("playerNumber") then
+      n = obj.playerNumber
+      ?"player ";m.playerNumber;" hit player ";n
+    end if
+
+    ' Remove projectile from active list'
+    for i = 0 to m.activeProjectiles.count()
+        'if(m.activeProjectiles[i] = proj) then
+        if (m.activeProjectiles[i].x = proj.x) AND (m.activeProjectiles[i].y = proj.y)then
+            m.activeProjectiles.Delete(i)
+            exit for
+        end if
+    end for
+
+  end function
+
+  tank.runProjectileControl = function(dt)
+    m.timeSinceFire += dt
+
+    newState = "PROJECTILE_CONTROL"
+
+    i = 0
+
+    ' check for projectiles in the hole waiting to be shot.
+    while i < m.shotsInTheHole.count()
+      s = m.shotsInTheHole[i]
+      if m.timeSinceFire > s.time then
+        g = GetGlobalAA()
+        g.pogProjs.addPhysObj(s.proj)
+        g.wind.addObject(s.proj)
+        m.activeProjectiles.push(s.proj)
+
+        rg2dPlaySound(g.sounds.foomp12)
+
+        m.shotsInTheHole.delete(i)
+      else
+        i += 1
+      end if
+    end while
+
+    ' If they are all shot, then move on'
+    if m.shotsInTheHole.count() = 0 then
+       newState = "WAITING_IMPACT"
+    end if
+
+
+    ' 'TEST CODE'
+    ' if m.timeSinceFire > 0.1 then
+    '   g = GetGlobalAA()
+    '   ?"Fire round 2!!!"
+    '
+    '   p1 = m.activeProjectiles[0]
+    '   p2 = createProjectile(m, m.projectile_list[0], m.x, m.y, p1.vx, p1.vy)
+    '   g.pogProjs.addPhysObj(p2)
+    '
+    '   g.wind.addObject(p2)
+    '
+    '   rg2dPlaySound(g.sounds.foomp12)
+    '
+    '   m.activeProjectiles.push(p2)
+    '   newState = "WAITING_IMPACT"
+    '
+    ' end if
+
+    return newState
+  end function
+
+
 
 'm.turret.angle'
 '        ^
@@ -229,28 +331,13 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
     end if
 
     m.sPowerBar.MoveTo(m.x, m.y+30)
-
-
     m.sProjectileSelector.MoveTo(m.x-32, m.y+30)
 
   end function
 
-  ' Implement ProjectileFirer interface '
-  tank.projectileNotification = function(obj, x, y, vx, vy)
-    ?"Got notice. Hit ";obj
-    if obj = invalid then ' Object timed out without hitting anything'
-      return invalid
-    end if
-
-    if obj.DoesExist("playerNumber") then
-      n = obj.playerNumber
-      ?"player ";m.playerNumber;" hit player ";n
-    end if
-
-  end function
-
-  'argument target is a tank object'
-  tank.calculateNextShot = function(target) as object
+  ''''''''''''''''''''''''''''''''''''''''''''''''''''''
+  ' AI
+  tank.calculateNextShot = function(target) as object 'argument target is a tank object'
     shot = {}
     shot.angle = 60 * (pi()/(180 + rnd(3)-2))
     shot.power = 450 + (rnd(100)-50)
@@ -271,7 +358,7 @@ function AITankRandy(playerNumber, x, y, angle, faceRight, tank_type)
 
   randy = createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_type)
 
-  randy.projectileNotification = function(obj, x, y, vx, vy)
+  randy.projectileNotification = function(proj, obj)
     ?"Got notice. Hit ";obj
     if obj = invalid then ' Object timed out without hitting anything'
       return invalid
@@ -280,6 +367,15 @@ function AITankRandy(playerNumber, x, y, angle, faceRight, tank_type)
       n = obj.playerNumber
       ?"Randy (";m.playerNumber;") hit player ";n
     end if
+
+    ' Remove projectile from active list'
+    for i = 0 to m.activeProjectiles.count()
+        'if(m.activeProjectiles[i] = proj) then
+        if (m.activeProjectiles[i].x = proj.x) AND (m.activeProjectiles[i].y = proj.y)then
+            m.activeProjectiles.Delete(i)
+            exit for
+        end if
+    end for
 
   end function
 
@@ -303,13 +399,14 @@ function AITankRanger(playerNumber, x, y, angle, faceRight, tank_type)
 
   ranger = createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_type)
 
-  ranger.projectileNotification = function(obj, x, y, vx, vy)
+  'OVERRIDE notification with AI code'
+  ranger.projectileNotification = function(proj, obj)
     ?"Got notice. Hit ";obj
     if m.last_shot_target <> invalid then ' we can calulate miss distance'
       if(m.faceRight) then
-        m.last_shot_miss_distance = x - m.last_shot_target.x
+        m.last_shot_miss_distance = proj.x - m.last_shot_target.x
       else
-        m.last_shot_miss_distance = m.last_shot_target.x - x
+        m.last_shot_miss_distance = m.last_shot_target.x - proj.x
       end if
       ?"last_shot_miss_distance ";m.last_shot_miss_distance
     end if
@@ -325,6 +422,15 @@ function AITankRanger(playerNumber, x, y, angle, faceRight, tank_type)
     else
       m.last_shot_hit = false
     end if
+
+    ' Remove projectile from active list'
+    for i = 0 to m.activeProjectiles.count()
+        'if(m.activeProjectiles[i] = proj) then
+        if (m.activeProjectiles[i].x = proj.x) AND (m.activeProjectiles[i].y = proj.y)then
+            m.activeProjectiles.Delete(i)
+            exit for
+        end if
+    end for
 
   end function
 

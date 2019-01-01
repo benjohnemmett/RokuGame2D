@@ -156,7 +156,7 @@ end function
 function rg2dGameInit() as void
     g = GetGlobalAA()
 
-    g.bgColor = &h112233FF
+    g.bgColor = &h114488FF
 
 end function
 
@@ -324,7 +324,7 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
       if(button.bSelect1) then
         if g.gameState.state = "IDLE" then
           ?"Prepping to fire"
-          g.projectileInFlight = Invalid
+          'g.projectileInFlight = Invalid
           g.gameState.setState("POWER_SELECT")
           g.power_select = 0
         else if g.gameState.state = "POWER_SELECT" then
@@ -343,15 +343,19 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
 
       ' SELECT BUTTON RELEASED'
       if g.gameState.state = "FIRE" ' Player just let go of fire button'
-        g.gameState.setState("WAITING_IMPACT")
-        g.projectileInFlight = active_player.fireProjectile(400 + g.power_select * 200)
-        g.wind.addObject(g.projectileInFlight)
+        g.gameState.setState("PROJECTILE_CONTROL")
+        newProj = active_player.fireProjectile(400 + g.power_select * 200)
+
+      else if g.gameState.state = "PROJECTILE_CONTROL"
+        newState = active_player.runProjectileControl(dt)
+        g.gameState.setState(newState) ' Let the projectile control determine when to transition
+
       else if g.gameState.state = "WAITING_IMPACT"
-        if g.projectileInFlight.state = "DEAD"
+        if active_player.hasActiveProjectiles() = False
           g.gameState.setState("IMPACTED")
           g.wind.clearDead()
-          g.projectileInFlight = invalid
         end if
+
       else if g.gameState.state = "IMPACTED"
         switchActivePlayer()
         g.gameState.setState("ENTER")
@@ -405,16 +409,18 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
 
       else if g.gameState.state = "FIRE"
         ?" - POWER_SELECT"
-        g.projectileInFlight = active_player.fireProjectile(active_player.shot.power)
-        g.wind.addObject(g.projectileInFlight)
-        g.gameState.setState("WAITING_IMPACT")
+        newProj = active_player.fireProjectile(active_player.shot.power)
+        g.gameState.setState("PROJECTILE_CONTROL")
+
+      else if g.gameState.state = "PROJECTILE_CONTROL"
+        newState = active_player.runProjectileControl(dt)
+        g.gameState.setState(newState) ' Let the projectile control determine when to transition
 
       else if g.gameState.state = "WAITING_IMPACT"
         ''?" - WAITING_IMPACT"
-        if g.projectileInFlight.state = "DEAD"
+        if active_player.hasActiveProjectiles() = False
           g.gameState.setState("IMPACTED")
           g.wind.clearDead()
-          g.projectileInFlight = invalid
         end if
       else if g.gameState.state = "IMPACTED"
         switchActivePlayer()
