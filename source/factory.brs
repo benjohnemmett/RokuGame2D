@@ -83,25 +83,25 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
   tank.projectile_list = getProjectileList()
   tank.projectile_idx = 0
 
-  tank.projectile_selector = projectileSelector()
-  tank.projectile_selector.updateDisplay()
-  rProjectileSelector= CreateObject("roRegion", tank.projectile_selector.bm, 0, 0, tank.projectile_selector.width, tank.projectile_selector.height)
-  tank.sProjectileSelector = g.compositor.NewSprite(tank.x, tank.y, rProjectileSelector, 4)
+  'tank.projectile_selector = projectileSelector()
+  'tank.projectile_selector.updateDisplay()
+  'rProjectileSelector= CreateObject("roRegion", tank.projectile_selector.bm, 0, 0, tank.projectile_selector.width, tank.projectile_selector.height)
+  'tank.sProjectileSelector = g.compositor.NewSprite(tank.x, tank.y, rProjectileSelector, 4)
 
   tank.shotTypeList = getShotTypeList()
   tank.shotIdx = 0
   tank.shotSelector = shotSelector()
   tank.shotSelector.updateDisplay()
   rshotSelector= CreateObject("roRegion", tank.shotSelector.bm, 0, 0, tank.shotSelector.width, tank.shotSelector.height)
-  tank.sshotSelector = g.compositor.NewSprite(tank.x, tank.y+30, rshotSelector, 4)
+  tank.sShotSelector = g.compositor.NewSprite(tank.x, tank.y+30, rshotSelector, 4)
 
-
-  tank.select_projectile = function(idx)
-    ?"Swapping projectile from ";m.projectile_list[m.projectile_idx]
-    m.projectile_idx = idx mod m.projectile_list.Count()
-    m.projectile_selector.setProjectileIdx(m.projectile_idx) ' Update selector'
-    ?"-> To projectile ";m.projectile_list[m.projectile_idx]
-  end function
+  '
+  ' tank.select_projectile = function(idx)
+  '   ?"Swapping projectile from ";m.projectile_list[m.projectile_idx]
+  '   m.projectile_idx = idx mod m.projectile_list.Count()
+  '   m.projectile_selector.setProjectileIdx(m.projectile_idx) ' Update selector'
+  '   ?"-> To projectile ";m.projectile_list[m.projectile_idx]
+  ' end function
 
   tank.selectShot = function(idx)
     ?"Swapping Shot from ";m.shotTypeList[m.shotIdx]
@@ -186,25 +186,6 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
     if m.shotsInTheHole.count() = 0 then
        newState = "WAITING_IMPACT"
     end if
-
-
-    ' 'TEST CODE'
-    ' if m.timeSinceFire > 0.1 then
-    '   g = GetGlobalAA()
-    '   ?"Fire round 2!!!"
-    '
-    '   p1 = m.activeProjectiles[0]
-    '   p2 = createProjectile(m, m.projectile_list[0], m.x, m.y, p1.vx, p1.vy)
-    '   g.pogProjs.addPhysObj(p2)
-    '
-    '   g.wind.addObject(p2)
-    '
-    '   rg2dPlaySound(g.sounds.foomp12)
-    '
-    '   m.activeProjectiles.push(p2)
-    '   newState = "WAITING_IMPACT"
-    '
-    ' end if
 
     return newState
   end function
@@ -336,7 +317,8 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
     end if
 
     m.sPowerBar.MoveTo(m.x, m.y+30)
-    m.sProjectileSelector.MoveTo(m.x-32, m.y+30)
+    'm.sProjectileSelector.MoveTo(m.x-32, m.y+30)
+    m.sShotSelector.MoveTo(m.x-32, m.y+30)
 
   end function
 

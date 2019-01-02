@@ -11,8 +11,7 @@ function getProjectileList()
 end function
 
 function getShotTypeList()
-  ' return ["standard_1","standard_3p","standard_5p","standard_3s","standard_5s"]
-    return ["standard_1","standard_3p","standard_5p"]
+  return ["standard_1","standard_3p","standard_5p","standard_3s","standard_5s"]
 end function
 
 ''' Creates an array of oneShots
@@ -28,21 +27,37 @@ function createShot(owner, sType, x, y, power, angle, faceRight)
     proj = projectile_ap(owner, g.rSnowBall, 11, 15, x, y, angle, power, faceRight)
     s1 = oneShot(proj, 0.0)
     shotArray.push(s1)
-  else if(sType = "standard_3p") then
 
+  else if(sType = "standard_3p") then
     For i=-1 to 1 step 1
       proj = projectile_ap(owner, g.rSnowBall, 11, 15, x, y, angle + i*deg5, power, faceRight)
       s = oneShot(proj, 0.0)
       shotArray.push(s)
     End For
 
-  else 'if(sType = "standard_5p") then
-
+  else if(sType = "standard_5p") then
       For i=-2 to 2 step 1
         proj = projectile_ap(owner, g.rSnowBall, 11, 15, x, y, angle + i*deg5, power, faceRight)
         s = oneShot(proj, 0.0)
         shotArray.push(s)
       End For
+
+  else if(sType = "standard_3s") then
+      For i=0 to 2 step 1
+        proj = projectile_ap(owner, g.rSnowBall, 11, 15, x, y, angle, power, faceRight)
+        s = oneShot(proj, 0.1 * i)
+        shotArray.push(s)
+      End For
+
+  else if(sType = "standard_3s") then
+      For i=0 to 4 step 1
+        proj = projectile_ap(owner, g.rSnowBall, 11, 15, x, y, angle, power, faceRight)
+        s = oneShot(proj, 0.1 * i)
+        shotArray.push(s)
+      End For
+
+  else
+      ?"*** Warning *** Unhandled shotType requested ";sType
 
   end if
 
@@ -51,26 +66,9 @@ function createShot(owner, sType, x, y, power, angle, faceRight)
 end function
 
 
-
 'Wrapper to hold future shots until a certain time'
 function oneShot(proj, time)
   return {proj : proj, time : time}
-end function
-
-function createProjectile(owner as object, ptype, x, y, vx, vy) as object
-
-  g = GetGlobalAA()
-
-  if (ptype = "baked_alaska") then
-    proj = projectile(owner, g.rSnowBallFire, 11, 15, x,y,vx,vy)
-  else if (ptype = "snowman_pellet") then
-    proj = projectile(owner, g.rSnowBall11, 7, 5, x,y,vx,vy)
-  else  ' Standard '
-    proj = projectile(owner, g.rSnowBall, 11, 15, x,y,vx,vy)
-  end if
-
-  return proj
-
 end function
 
 
@@ -152,51 +150,49 @@ function getProjectileGY() as float
 end function
 
 '''''''' Viewer
-function projectileSelector() as object
-
-  PS_WIDTH = 30
-  PS_HEIGHT = 30
-
-  pv = {bm : CreateObject("roBitmap", {width:PS_WIDTH, height:PS_HEIGHT, AlphaEnable:true}),
-        bgColor: &h111133FF,
-        borderColor : &hAA5511FF,
-        borderWidth : 2,
-        idx : 0,
-        width : PS_WIDTH,
-        height : PS_HEIGHT,
-        projectileList : getProjectileList()
-        }
-
-  pv.updateDisplay = function()
-    g = GetGlobalAA()
-
-    m.bm.clear(&h00000000)
-    m.bm.drawRect(0, 0, m.width, m.height , m.bgColor) 'Draw borders'
-    m.bm.drawRect(m.borderWidth, m.borderWidth, m.width-2*m.borderWidth, m.height-2*m.borderWidth, m.borderColor)
-
-    ptype = m.projectileList[m.idx]
-
-    if (ptype = "baked_alaska") then
-      '(30-21)/2 ~= 5'
-      m.bm.DrawObject(5,5,g.rSnowBallFire)
-    else if (ptype = "snowman_pellet") then
-      m.bm.DrawObject(11,11,g.rSnowBall11)
-    else  ' Standard '
-      m.bm.DrawObject(5,5,g.rSnowBall)
-    end if
-
-  end function
-
-  pv.setProjectileIdx = function(idx) as void
-    m.idx  = idx
-    m.updateDisplay()
-  end function
-
-  return pv
-
-end function
-
-
+' function projectileSelector() as object
+'
+'   PS_WIDTH = 30
+'   PS_HEIGHT = 30
+'
+'   pv = {bm : CreateObject("roBitmap", {width:PS_WIDTH, height:PS_HEIGHT, AlphaEnable:true}),
+'         bgColor: &h111133FF,
+'         borderColor : &hAA5511FF,
+'         borderWidth : 2,
+'         idx : 0,
+'         width : PS_WIDTH,
+'         height : PS_HEIGHT,
+'         projectileList : getProjectileList()
+'         }
+'
+'   pv.updateDisplay = function()
+'     g = GetGlobalAA()
+'
+'     m.bm.clear(&h00000000)
+'     m.bm.drawRect(0, 0, m.width, m.height , m.bgColor) 'Draw borders'
+'     m.bm.drawRect(m.borderWidth, m.borderWidth, m.width-2*m.borderWidth, m.height-2*m.borderWidth, m.borderColor)
+'
+'     ptype = m.projectileList[m.idx]
+'
+'     if (ptype = "baked_alaska") then
+'       '(30-21)/2 ~= 5'
+'       m.bm.DrawObject(5,5,g.rSnowBallFire)
+'     else if (ptype = "snowman_pellet") then
+'       m.bm.DrawObject(11,11,g.rSnowBall11)
+'     else  ' Standard '
+'       m.bm.DrawObject(5,5,g.rSnowBall)
+'     end if
+'
+'   end function
+'
+'   pv.setProjectileIdx = function(idx) as void
+'     m.idx  = idx
+'     m.updateDisplay()
+'   end function
+'
+'   return pv
+'
+' end function
 
 function shotSelector()
 
@@ -225,11 +221,11 @@ function shotSelector()
     if (sType = "standard_1") then
       '(30-21)/2 ~= 5'
       m.bm.DrawObject(5,5,g.rSnowBall)
-    else if (sType = "standard_3p") then
+    else if (sType = "standard_3p") OR (sType = "standard_3s") then
       m.bm.DrawObject(4,4,g.rSnowBall)
       m.bm.DrawObject(8,8,g.rSnowBall)
       m.bm.DrawObject(12,12,g.rSnowBall)
-    else if (sType = "standard_5p") then
+    else if (sType = "standard_5p") OR (sType = "standard_5s") then
       m.bm.DrawObject(4,4,g.rSnowBall)
       m.bm.DrawObject(6,6,g.rSnowBall)
       m.bm.DrawObject(8,8,g.rSnowBall)

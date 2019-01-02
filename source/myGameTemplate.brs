@@ -44,8 +44,6 @@ function rg2dLoadSprites() as void
     bmPauseScreen = CreateObject("roBitmap", "pkg:/components/sprites/Pause_Menu_Screen.png")
     g.rPauseScreen = CreateObject("roRegion", bmPauseScreen, 0, 0, 640, 200)
 
-    'bmTruck = CreateObject("roBitmap", "pkg:/components/sprites/texture_brick01_60p.png")
-    'g.rTruck = CreateObject("roRegion", bmTruck, 0, 0, 60, 60)
     g.rTruck = rg2dLoadRegion("pkg:/components/sprites/firetruck_spritesheetII.png", 0, 0, 49, 36)
     g.rBricks = rg2dLoadRegion("pkg:/components/sprites/texture_brick01_60p.png", 0, 0, 60, 60)
     g.rCircleFire16 = rg2dLoadRegion("pkg:/components/sprites/circle_fire_16p.png", 0, 0, 16, 16)
@@ -243,8 +241,7 @@ function rg2dLoadLevel(level as integer) as void
 
     ''''''''''''''''''''''''''
     ''''' Initialize State
-    'g.player_state = "IDLE"
-    g.gameState = rg2dGameState("IDLE")
+    g.gameState = rg2dGameState("ENTER")
     g.player_turn = 1
 
     ' Make snow '
