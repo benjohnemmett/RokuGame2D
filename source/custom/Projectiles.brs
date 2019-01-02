@@ -3,22 +3,54 @@
 '   Added to physObj group <<Kinematic?>>
 '     -
 '   Added to the windMaker <<Pushable>>
-'   State checked to trigger game state transition
 '   Notify owner of collision/timeout death
-'
-'   -- Multi shot projectiles
-'   PLanA
-'     - Transfer logic trigger from projectile to active player. Require active player to keep track of projectiles in flight.
-'       - Tanks could have an array of projectiles -> Allows for multi-object shots.
-'         - Separating objects could be added to the tank's projectilesInFlight list
-'       - Tank provides "hasActiveProjectile()" function.
-'       - Each projectile piece would separately notify the owner of it's out impact/timeout
-'         ** requeres updates to AI logic, might need to collect impact information first, then update at the end of the turn.
-'         - Could start by restricing AI to only use single shot, then update AI later.
+
 
 function getProjectileList()
   return ["standard","baked_alaska","snowman_pellet"]
 end function
+
+function getShotTypeList()
+  ' return ["standard_1","standard_3p","standard_5p","standard_3s","standard_5s"]
+    return ["standard_1","standard_3p","standard_5p"]
+end function
+
+''' Creates an array of oneShots
+function createShot(owner, sType, x, y, power, angle, faceRight)
+  g = GetGlobalAA()
+
+  shotArray = []
+
+  deg5 = 0.0872664626
+
+  ?" Creating Shot ";sType
+  if(sType = "standard_1") then
+    proj = projectile_ap(owner, g.rSnowBall, 11, 15, x, y, angle, power, faceRight)
+    s1 = oneShot(proj, 0.0)
+    shotArray.push(s1)
+  else if(sType = "standard_3p") then
+
+    For i=-1 to 1 step 1
+      proj = projectile_ap(owner, g.rSnowBall, 11, 15, x, y, angle + i*deg5, power, faceRight)
+      s = oneShot(proj, 0.0)
+      shotArray.push(s)
+    End For
+
+  else 'if(sType = "standard_5p") then
+
+      For i=-2 to 2 step 1
+        proj = projectile_ap(owner, g.rSnowBall, 11, 15, x, y, angle + i*deg5, power, faceRight)
+        s = oneShot(proj, 0.0)
+        shotArray.push(s)
+      End For
+
+  end if
+
+  return shotArray
+
+end function
+
+
 
 'Wrapper to hold future shots until a certain time'
 function oneShot(proj, time)
@@ -100,6 +132,21 @@ function projectile(owner as object, region, radius, damage_power, x,y,vx,vy) as
 
 end function
 
+''' Helper function to create projectile from angle & power
+function projectile_ap(owner as object, region, radius, damage_power, x, y, angle, power, faceRight) as object
+
+  vx = cos(angle)*power
+  vy = -1*sin(angle)*power
+  if faceRight = false then
+    vx = -vx
+  end if
+
+  proj = projectile(owner, region, radius, damage_power, x, y, vx, vy)
+
+  return proj
+
+end function
+
 function getProjectileGY() as float
   return 200
 end function
@@ -147,6 +194,58 @@ function projectileSelector() as object
 
   return pv
 
+end function
 
+
+
+function shotSelector()
+
+  PS_WIDTH = 30
+  PS_HEIGHT = 30
+
+  pv = {bm : CreateObject("roBitmap", {width:PS_WIDTH, height:PS_HEIGHT, AlphaEnable:true}),
+        bgColor: &h111133FF,
+        borderColor : &hAA5511FF,
+        borderWidth : 2,
+        idx : 0,
+        width : PS_WIDTH,
+        height : PS_HEIGHT,
+        shotTypeList : getShotTypeList()
+        }
+
+  pv.updateDisplay = function()
+    g = GetGlobalAA()
+
+    m.bm.clear(&h00000000)
+    m.bm.drawRect(0, 0, m.width, m.height , m.bgColor) 'Draw borders'
+    m.bm.drawRect(m.borderWidth, m.borderWidth, m.width-2*m.borderWidth, m.height-2*m.borderWidth, m.borderColor)
+
+    sType = m.shotTypeList[m.idx]
+'"standard_1","standard_3p","standard_5p","standard_3s","standard_5s"'
+    if (sType = "standard_1") then
+      '(30-21)/2 ~= 5'
+      m.bm.DrawObject(5,5,g.rSnowBall)
+    else if (sType = "standard_3p") then
+      m.bm.DrawObject(4,4,g.rSnowBall)
+      m.bm.DrawObject(8,8,g.rSnowBall)
+      m.bm.DrawObject(12,12,g.rSnowBall)
+    else if (sType = "standard_5p") then
+      m.bm.DrawObject(4,4,g.rSnowBall)
+      m.bm.DrawObject(6,6,g.rSnowBall)
+      m.bm.DrawObject(8,8,g.rSnowBall)
+      m.bm.DrawObject(10,10,g.rSnowBall)
+      m.bm.DrawObject(12,12,g.rSnowBall)
+    else  ' Standard '
+      m.bm.DrawObject(5,5,g.rSnowBall)
+    end if
+
+  end function
+
+  pv.setShotTypeIdx = function(idx) as void
+    m.idx  = idx
+    m.updateDisplay()
+  end function
+
+  return pv
 
 end function

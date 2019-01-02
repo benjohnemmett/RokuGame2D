@@ -88,6 +88,14 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
   rProjectileSelector= CreateObject("roRegion", tank.projectile_selector.bm, 0, 0, tank.projectile_selector.width, tank.projectile_selector.height)
   tank.sProjectileSelector = g.compositor.NewSprite(tank.x, tank.y, rProjectileSelector, 4)
 
+  tank.shotTypeList = getShotTypeList()
+  tank.shotIdx = 0
+  tank.shotSelector = shotSelector()
+  tank.shotSelector.updateDisplay()
+  rshotSelector= CreateObject("roRegion", tank.shotSelector.bm, 0, 0, tank.shotSelector.width, tank.shotSelector.height)
+  tank.sshotSelector = g.compositor.NewSprite(tank.x, tank.y+30, rshotSelector, 4)
+
+
   tank.select_projectile = function(idx)
     ?"Swapping projectile from ";m.projectile_list[m.projectile_idx]
     m.projectile_idx = idx mod m.projectile_list.Count()
@@ -95,34 +103,31 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
     ?"-> To projectile ";m.projectile_list[m.projectile_idx]
   end function
 
+  tank.selectShot = function(idx)
+    ?"Swapping Shot from ";m.shotTypeList[m.shotIdx]
+    m.shotIdx = idx mod m.shotTypeList.Count()
+    m.shotSelector.setShotTypeIdx(m.shotIdx) ' Update selector'
+    ?"-> To projectile ";m.shotTypeList[m.shotIdx]
+  end function
+
   tank.fireProjectile = function(power as double) as object
     ?"Fire!!!!!!!!!!!"
     g = GetGlobalAA()
-    vx = cos(m.tank_turret_angle)*power
-    vy = -1*sin(m.tank_turret_angle)*power
-    if m.faceRight = false then
-      vx = -vx
-    end if
-    proj = createProjectile(m, m.projectile_list[m.projectile_idx], m.x, m.y, vx, vy)
-    proj2 = createProjectile(m, m.projectile_list[m.projectile_idx], m.x, m.y, vx, vy)
-    proj3 = createProjectile(m, m.projectile_list[m.projectile_idx], m.x, m.y, vx, vy)
+    ' vx = cos(m.tank_turret_angle)*power
+    ' vy = -1*sin(m.tank_turret_angle)*power
+    ' if m.faceRight = false then
+    '   vx = -vx
+    ' end if
+    shotArray = createShot(m, m.shotTypeList[m.shotIdx], m.x, m.y, power, m.tank_turret_angle, m.faceRight)
+    for each s in shotArray
+      m.shotsInTheHole.push(s)
+    end for
 
-    s1 = oneShot(proj, 0.0)
-    s2 = oneShot(proj2, 0.1)
-    s3 = oneShot(proj3, 0.2)
+    shotArray = invalid
 
-    m.shotsInTheHole.push(s1)
-    m.shotsInTheHole.push(s2)
-    m.shotsInTheHole.push(s3)
-
-    'g.pogProjs.addPhysObj(proj)
-    'g.wind.addObject(proj)
-    'rg2dPlaySound(g.sounds.foomp12)
-
-    'm.activeProjectiles.push(proj)
     m.timeSinceFire = 0.0
 
-    return proj
+    return shotArray
   end function
 
   tank.hasActiveProjectiles = function() as boolean

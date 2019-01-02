@@ -316,7 +316,7 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
           g.gameState.setState("IDLE")
         end if
         if(g.gameState.framesInState mod 5) = 0 then ' Shuffle projectile type again'
-          active_player.select_projectile(active_player.projectile_idx + rnd(3))
+          active_player.selectShot(active_player.projectile_idx + rnd(3))
         end if
       end if
 
@@ -372,7 +372,7 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
         end if
 
         if(g.gameState.framesInState mod 5) = 0 then
-          active_player.select_projectile(active_player.projectile_idx + rnd(3))
+          active_player.selectShot(active_player.projectile_idx + rnd(3))
         end if
 
       else if g.gameState.state = "IDLE" then
