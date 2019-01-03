@@ -11,7 +11,9 @@ function getProjectileList()
 end function
 
 function getShotTypeList()
-  return ["standard_1","standard_3p","standard_5p","standard_3s","standard_5s"]
+  return ["standard_1","standard_3p","standard_5p","standard_3s","standard_5s",
+          "pellet_1","pellet_3p","pellet_5p","pellet_3s","pellet_5s",
+          "baked_alaska_1"]
 end function
 
 ''' Creates an array of oneShots
@@ -20,45 +22,75 @@ function createShot(owner, sType, x, y, power, angle, faceRight)
 
   shotArray = []
 
-  deg5 = 0.0872664626
+  PELLET_RAD = 5
+  PELLET_DMG = 10
+  STD_RAD = 11
+  STD_DMG = 15
+  BA_RAD = 11
+  BA_DMG = 25
 
   ?" Creating Shot ";sType
   if(sType = "standard_1") then
-    proj = projectile_ap(owner, g.rSnowBall, 11, 15, x, y, angle, power, faceRight)
-    s1 = oneShot(proj, 0.0)
-    shotArray.push(s1)
+    shotArray = subCreateShot(owner, g.SB.standard_1, 1, true, STD_RAD, STD_DMG, x, y, power, angle, faceRight)
 
   else if(sType = "standard_3p") then
-    For i=-1 to 1 step 1
-      proj = projectile_ap(owner, g.rSnowBall, 11, 15, x, y, angle + i*deg5, power, faceRight)
-      s = oneShot(proj, 0.0)
-      shotArray.push(s)
-    End For
+    shotArray = subCreateShot(owner, g.SB.standard_1, 3, false, STD_RAD, STD_DMG, x, y, power, angle, faceRight)
 
   else if(sType = "standard_5p") then
-      For i=-2 to 2 step 1
-        proj = projectile_ap(owner, g.rSnowBall, 11, 15, x, y, angle + i*deg5, power, faceRight)
-        s = oneShot(proj, 0.0)
-        shotArray.push(s)
-      End For
+    shotArray = subCreateShot(owner, g.SB.standard_1, 5, false, STD_RAD, STD_DMG, x, y, power, angle, faceRight)
 
   else if(sType = "standard_3s") then
-      For i=0 to 2 step 1
-        proj = projectile_ap(owner, g.rSnowBall, 11, 15, x, y, angle, power, faceRight)
-        s = oneShot(proj, 0.1 * i)
-        shotArray.push(s)
-      End For
+    shotArray = subCreateShot(owner, g.SB.standard_1, 3, true, STD_RAD, STD_DMG, x, y, power, angle, faceRight)
 
-  else if(sType = "standard_3s") then
-      For i=0 to 4 step 1
-        proj = projectile_ap(owner, g.rSnowBall, 11, 15, x, y, angle, power, faceRight)
-        s = oneShot(proj, 0.1 * i)
-        shotArray.push(s)
-      End For
+  else if(sType = "standard_5s") then
+    shotArray = subCreateShot(owner, g.SB.standard_1, 5, true, STD_RAD, STD_DMG, x, y, power, angle, faceRight)
+
+  else if(sType = "pellet_1") then
+    shotArray = subCreateShot(owner, g.SB.pellet_1, 1, true, PELLET_RAD, PELLET_DMG, x, y, power, angle, faceRight)
+
+  else if(sType = "pellet_3p") then
+    shotArray = subCreateShot(owner, g.SB.pellet_1, 3, false, PELLET_RAD, PELLET_DMG, x, y, power, angle, faceRight)
+
+  else if(sType = "pellet_5p") then
+    shotArray = subCreateShot(owner, g.SB.pellet_1, 5, false, PELLET_RAD, PELLET_DMG, x, y, power, angle, faceRight)
+
+  else if(sType = "pellet_3s") then
+    shotArray = subCreateShot(owner, g.SB.pellet_1, 3, true, PELLET_RAD, PELLET_DMG, x, y, power, angle, faceRight)
+
+  else if(sType = "pellet_5s") then
+    shotArray = subCreateShot(owner, g.SB.pellet_1, 5, true, PELLET_RAD, PELLET_DMG, x, y, power, angle, faceRight)
+
+  else if(sType = "baked_alaska_1") then
+    shotArray = subCreateShot(owner, g.SB.baked_alaska_1, 1, true, BA_RAD, BA_DMG, x, y, power, angle, faceRight)
 
   else
       ?"*** Warning *** Unhandled shotType requested ";sType
 
+  end if
+
+  return shotArray
+
+end function
+
+function subCreateShot(owner, region, number, isSerial, radius, damage_power, x, y, power, angle, faceRight)
+
+  shotArray = []
+  deg5 = 0.0872664626
+
+  if(isSerial) then
+    For i=0 to (number-1) step 1
+      proj = projectile_ap(owner, region, radius, damage_power, x, y, angle, power, faceRight)
+      s = oneShot(proj, 0.1 * i)
+      shotArray.push(s)
+    End For
+  else
+    fromHere = -1*(number-1)/2
+    toHere = (number-1)/2
+    For i=fromHere to toHere step 1
+      proj = projectile_ap(owner, region, radius, damage_power, x, y, angle + i*deg5, power, faceRight)
+      s = oneShot(proj, 0.0)
+      shotArray.push(s)
+    End For
   end if
 
   return shotArray
@@ -149,50 +181,6 @@ function getProjectileGY() as float
   return 200
 end function
 
-'''''''' Viewer
-' function projectileSelector() as object
-'
-'   PS_WIDTH = 30
-'   PS_HEIGHT = 30
-'
-'   pv = {bm : CreateObject("roBitmap", {width:PS_WIDTH, height:PS_HEIGHT, AlphaEnable:true}),
-'         bgColor: &h111133FF,
-'         borderColor : &hAA5511FF,
-'         borderWidth : 2,
-'         idx : 0,
-'         width : PS_WIDTH,
-'         height : PS_HEIGHT,
-'         projectileList : getProjectileList()
-'         }
-'
-'   pv.updateDisplay = function()
-'     g = GetGlobalAA()
-'
-'     m.bm.clear(&h00000000)
-'     m.bm.drawRect(0, 0, m.width, m.height , m.bgColor) 'Draw borders'
-'     m.bm.drawRect(m.borderWidth, m.borderWidth, m.width-2*m.borderWidth, m.height-2*m.borderWidth, m.borderColor)
-'
-'     ptype = m.projectileList[m.idx]
-'
-'     if (ptype = "baked_alaska") then
-'       '(30-21)/2 ~= 5'
-'       m.bm.DrawObject(5,5,g.rSnowBallFire)
-'     else if (ptype = "snowman_pellet") then
-'       m.bm.DrawObject(11,11,g.rSnowBall11)
-'     else  ' Standard '
-'       m.bm.DrawObject(5,5,g.rSnowBall)
-'     end if
-'
-'   end function
-'
-'   pv.setProjectileIdx = function(idx) as void
-'     m.idx  = idx
-'     m.updateDisplay()
-'   end function
-'
-'   return pv
-'
-' end function
 
 function shotSelector()
 
@@ -200,8 +188,8 @@ function shotSelector()
   PS_HEIGHT = 30
 
   pv = {bm : CreateObject("roBitmap", {width:PS_WIDTH, height:PS_HEIGHT, AlphaEnable:true}),
-        bgColor: &h111133FF,
-        borderColor : &hAA5511FF,
+        bgColor: &hAAAAFFFF,
+        borderColor : &h111111FF,
         borderWidth : 2,
         idx : 0,
         width : PS_WIDTH,
@@ -213,27 +201,13 @@ function shotSelector()
     g = GetGlobalAA()
 
     m.bm.clear(&h00000000)
-    m.bm.drawRect(0, 0, m.width, m.height , m.bgColor) 'Draw borders'
-    m.bm.drawRect(m.borderWidth, m.borderWidth, m.width-2*m.borderWidth, m.height-2*m.borderWidth, m.borderColor)
+    m.bm.drawRect(0, 0, m.width, m.height , m.borderColor) 'Draw borders'
+    m.bm.drawRect(m.borderWidth, m.borderWidth, m.width-2*m.borderWidth, m.height-2*m.borderWidth, m.bgColor)
 
     sType = m.shotTypeList[m.idx]
-'"standard_1","standard_3p","standard_5p","standard_3s","standard_5s"'
-    if (sType = "standard_1") then
-      '(30-21)/2 ~= 5'
-      m.bm.DrawObject(5,5,g.rSnowBall)
-    else if (sType = "standard_3p") OR (sType = "standard_3s") then
-      m.bm.DrawObject(4,4,g.rSnowBall)
-      m.bm.DrawObject(8,8,g.rSnowBall)
-      m.bm.DrawObject(12,12,g.rSnowBall)
-    else if (sType = "standard_5p") OR (sType = "standard_5s") then
-      m.bm.DrawObject(4,4,g.rSnowBall)
-      m.bm.DrawObject(6,6,g.rSnowBall)
-      m.bm.DrawObject(8,8,g.rSnowBall)
-      m.bm.DrawObject(10,10,g.rSnowBall)
-      m.bm.DrawObject(12,12,g.rSnowBall)
-    else  ' Standard '
-      m.bm.DrawObject(5,5,g.rSnowBall)
-    end if
+
+    ' Draw selection icon'
+    m.bm.DrawObject(0,0,g.SB.Lookup(sType))
 
   end function
 

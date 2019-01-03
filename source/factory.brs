@@ -89,7 +89,7 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
   'tank.sProjectileSelector = g.compositor.NewSprite(tank.x, tank.y, rProjectileSelector, 4)
 
   tank.shotTypeList = getShotTypeList()
-  tank.shotIdx = 0
+  tank.shotTypeIdx = 0
   tank.shotSelector = shotSelector()
   tank.shotSelector.updateDisplay()
   rshotSelector= CreateObject("roRegion", tank.shotSelector.bm, 0, 0, tank.shotSelector.width, tank.shotSelector.height)
@@ -104,10 +104,10 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
   ' end function
 
   tank.selectShot = function(idx)
-    ?"Swapping Shot from ";m.shotTypeList[m.shotIdx]
-    m.shotIdx = idx mod m.shotTypeList.Count()
-    m.shotSelector.setShotTypeIdx(m.shotIdx) ' Update selector'
-    ?"-> To projectile ";m.shotTypeList[m.shotIdx]
+    ?"Swapping Shot from ";m.shotTypeList[m.shotTypeIdx]
+    m.shotTypeIdx = idx mod m.shotTypeList.Count()
+    m.shotSelector.setShotTypeIdx(m.shotTypeIdx) ' Update selector'
+    ?"-> To projectile ";m.shotTypeList[m.shotTypeIdx]
   end function
 
   tank.fireProjectile = function(power as double) as object
@@ -118,7 +118,7 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
     ' if m.faceRight = false then
     '   vx = -vx
     ' end if
-    shotArray = createShot(m, m.shotTypeList[m.shotIdx], m.x, m.y, power, m.tank_turret_angle, m.faceRight)
+    shotArray = createShot(m, m.shotTypeList[m.shotTypeIdx], m.x, m.y, power, m.tank_turret_angle, m.faceRight)
     for each s in shotArray
       m.shotsInTheHole.push(s)
     end for

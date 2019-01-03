@@ -50,6 +50,20 @@ function rg2dLoadSprites() as void
     g.rCircleGrey8 = rg2dLoadRegion("pkg:/components/sprites/circle_grey_8p.png", 0, 0, 8, 8)
 
     ' Kenny's stuff
+    bmSnowBallIcons = CreateObject("roBitmap", "pkg:/components/sprites/SnowballSelectIcons.png")
+    g.SB = {}
+    g.SB.standard_1  = CreateObject("roRegion", bmSnowBallIcons, 0, 0, 32, 32)
+    g.SB.standard_3s = CreateObject("roRegion", bmSnowBallIcons, 32, 0, 32, 32)
+    g.SB.standard_5s = CreateObject("roRegion", bmSnowBallIcons, 64, 0, 32, 32)
+    g.SB.standard_3p = CreateObject("roRegion", bmSnowBallIcons, 96, 0, 32, 32)
+    g.SB.standard_5p = CreateObject("roRegion", bmSnowBallIcons, 128, 0, 32, 32)
+    g.SB.pellet_1  = CreateObject("roRegion", bmSnowBallIcons, 0, 32, 32, 32)
+    g.SB.pellet_3s = CreateObject("roRegion", bmSnowBallIcons, 32, 32, 32, 32)
+    g.SB.pellet_5s = CreateObject("roRegion", bmSnowBallIcons, 64, 32, 32, 32)
+    g.SB.pellet_3p = CreateObject("roRegion", bmSnowBallIcons, 96, 32, 32, 32)
+    g.SB.pellet_5p = CreateObject("roRegion", bmSnowBallIcons, 128, 32, 32, 32)
+    g.SB.baked_alaska_1 = CreateObject("roRegion", bmSnowBallIcons, 0, 64, 32, 32)
+
     g.rSnowBall = rg2dLoadRegion("pkg:/components/sprites/snowball_p21.png", 0, 0, 21, 21)
     g.rSnowBallFire = rg2dLoadRegion("pkg:/components/sprites/snowball_fire_p21.png", 0, 0, 21, 21)
     g.rSnowBall11 = rg2dLoadRegion("pkg:/components/sprites/snowball_p11.png", 0, 0, 11, 11)
@@ -313,7 +327,7 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
           g.gameState.setState("IDLE")
         end if
         if(g.gameState.framesInState mod 5) = 0 then ' Shuffle projectile type again'
-          active_player.selectShot(active_player.projectile_idx + rnd(3))
+          active_player.selectShot(active_player.shotTypeIdx + rnd(3))
         end if
       end if
 
@@ -369,7 +383,7 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
         end if
 
         if(g.gameState.framesInState mod 5) = 0 then
-          active_player.selectShot(active_player.projectile_idx + rnd(3))
+          active_player.selectShot(active_player.shotTypeIdx + rnd(3))
         end if
 
       else if g.gameState.state = "IDLE" then
