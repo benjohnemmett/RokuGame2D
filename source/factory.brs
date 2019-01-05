@@ -4,29 +4,25 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
 
   tank = collectiveRotationalPhysObj(x, y, 30, angle)
 
-  If tank_type = "tank" then
-    tank.tank_type = tank_type
-  else if tank_type = "igloo" then
-    tank.tank_type = tank_type
-  else
-    tank.tank_type = "tank"
-  End If
+  tank.tank_type = tank_type
 
-  if tank.tank_type = "tank" then
-    if faceRight then
-      sTank = g.compositor.NewSprite(x, y, g.rTruck, 2) ' Flip this one'
-    else
-      sTank = g.compositor.NewSprite(x, y, g.rTruck, 2)
-    end if
 
-  else if tank.tank_type = "igloo" then
-    if faceRight then
-      sTank = g.compositor.NewSprite(x, y, g.rIgloo_right, 2) ' Flip this one'
-    else
-      sTank = g.compositor.NewSprite(x, y, g.rIgloo_left, 2)
-    end if
+  spriteArray = g.iglooSprites.Lookup(tank.tank_type)
 
+  if spriteArray = invalid then
+    ?"Warning: Unhandled tank type requested ";tank.tank_type
   end if
+
+  if faceRight then
+    sTank = g.compositor.NewSprite(x, y, spriteArray[1], 2) ' Flip this one'
+    tx = x - 15
+    ty = y
+  else
+    sTank = g.compositor.NewSprite(x, y, spriteArray[0], 2)
+    tx = x + 15
+    ty = y
+  end if
+
 
   sTurret1 = g.compositor.NewSprite(x, y, g.rCircleGrey8, 1)
   sTurret2 = g.compositor.NewSprite(x, y, g.rCircleGrey8, 1)
@@ -47,7 +43,7 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
   tank.vy = 0
   tank.maxvx = 10
   tank.maxvy = 10
-  tank.turret = collectiveRotationalPhysObj(x, y, 0, pi()/6)
+  tank.turret = collectiveRotationalPhysObj(tx, ty, 0, pi()/6)
   tank.turret.createElement(sTurret1, 0, 21)
   tank.turret.createElement(sTurret2, 0, 24)
   tank.turret.createElement(sTurret3, 0, 27)
@@ -104,20 +100,16 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
   ' end function
 
   tank.selectShot = function(idx)
-    ?"Swapping Shot from ";m.shotTypeList[m.shotTypeIdx]
+    ''?"Swapping Shot from ";m.shotTypeList[m.shotTypeIdx]
     m.shotTypeIdx = idx mod m.shotTypeList.Count()
     m.shotSelector.setShotTypeIdx(m.shotTypeIdx) ' Update selector'
-    ?"-> To projectile ";m.shotTypeList[m.shotTypeIdx]
+    ''?"-> To projectile ";m.shotTypeList[m.shotTypeIdx]
   end function
 
   tank.fireProjectile = function(power as double) as object
-    ?"Fire!!!!!!!!!!!"
+    ?"Fire!!!! ";m.shotTypeList[m.shotTypeIdx]
     g = GetGlobalAA()
-    ' vx = cos(m.tank_turret_angle)*power
-    ' vy = -1*sin(m.tank_turret_angle)*power
-    ' if m.faceRight = false then
-    '   vx = -vx
-    ' end if
+
     shotArray = createShot(m, m.shotTypeList[m.shotTypeIdx], m.x, m.y, power, m.tank_turret_angle, m.faceRight)
     for each s in shotArray
       m.shotsInTheHole.push(s)
@@ -136,7 +128,7 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
 
   ' Implements << ProjectileOwner >> interface '
   tank.projectileNotification = function(proj, obj)
-    ?"Got notice. Hit ";obj
+    ?"Tank got projectile notice. "
     if obj = invalid then ' Object timed out without hitting anything'
       ?"Got notice that projectile timed out"
       return invalid ' Return so that we don't try to access invalid object
@@ -213,7 +205,15 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
 
   ' Override update display to also update the turret & flag display as well. '
   tank.updateDisplay = function() as void
-    m.turret.x = m.x
+
+    turret_shift = 10
+
+    if(m.faceRight) then
+      m.turret.x = m.x - turret_shift
+    else
+      m.turret.x = m.x + turret_shift
+    end if
+
     m.turret.y = m.y
 
     for each e in m.turret.elementArray
@@ -346,7 +346,7 @@ function AITankRandy(playerNumber, x, y, angle, faceRight, tank_type)
   randy = createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_type)
 
   randy.projectileNotification = function(proj, obj)
-    ?"Got notice. Hit ";obj
+    ?" RANDY Got notice."
     if obj = invalid then ' Object timed out without hitting anything'
       return invalid
     end if
@@ -388,7 +388,7 @@ function AITankRanger(playerNumber, x, y, angle, faceRight, tank_type)
 
   'OVERRIDE notification with AI code'
   ranger.projectileNotification = function(proj, obj)
-    ?"Got notice. Hit ";obj
+    ?"Ranger Got notice."
     if m.last_shot_target <> invalid then ' we can calulate miss distance'
       if(m.faceRight) then
         m.last_shot_miss_distance = proj.x - m.last_shot_target.x

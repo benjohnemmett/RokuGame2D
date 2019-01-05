@@ -55,7 +55,7 @@ function snowMaker(wind as object, compositor as object) as object
       gx = 0
       gy = 60 + 30*rnd(3)
 
-      fric = 4.0 + (rnd(0) * 0.3)
+      fric = 5.0 + (rnd(0) * 0.3)
       'stop
       newFlake = flake(rFlake, m.comp, x, y, vx, vy, gx, gy, fric)
       newFlake.maxVy = 200 + 100*rnd(3)

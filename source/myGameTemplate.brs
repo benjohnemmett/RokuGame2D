@@ -69,8 +69,47 @@ function rg2dLoadSprites() as void
     g.rSnowBall11 = rg2dLoadRegion("pkg:/components/sprites/snowball_p11.png", 0, 0, 11, 11)
     g.rSnowBall5 = rg2dLoadRegion("pkg:/components/sprites/snowball_p5.png", 0, 0, 5, 5)
     'g.rTerrain_ice = rg2dLoadRegion("pkg:/components/sprites/terrain_ice_288_44.png", 0, 0, 288, 44)
-    g.rIgloo_right = rg2dLoadRegion("pkg:/components/sprites/igloo_right_63_42.png", 0, 0, 63, 42)
-    g.rIgloo_left = rg2dLoadRegion("pkg:/components/sprites/igloo_left_63_42.png", 0, 0, 63, 42)
+    'g.rIgloo_right = rg2dLoadRegion("pkg:/components/sprites/igloo2_right_63_42.png", 0, 0, 63, 42)
+    'g.rIgloo_left = rg2dLoadRegion("pkg:/components/sprites/igloo2_left_63_42.png", 0, 0, 63, 42)
+
+    bmIgloos = CreateObject("roBitmap", "pkg:/components/sprites/igloos_II_128_294.png")
+
+    g.iglooSprites = {}
+    g.iglooSprites.igloo = []
+    g.iglooSprites.igloo.push(CreateObject("roRegion", bmIgloos, 0, 0, 63, 42))' left'
+    g.iglooSprites.igloo.push(CreateObject("roRegion", bmIgloos, 64, 0, 63, 42))' right'
+
+    g.iglooSprites.igloo_blue = []
+    g.iglooSprites.igloo_blue.push(CreateObject("roRegion", bmIgloos, 0, 42, 63, 42))' left'
+    g.iglooSprites.igloo_blue.push(CreateObject("roRegion", bmIgloos, 64, 42, 63, 42))' right'
+
+    g.iglooSprites.igloo_green = []
+    g.iglooSprites.igloo_green.push(CreateObject("roRegion", bmIgloos, 0, 42*2, 63, 42))' left'
+    g.iglooSprites.igloo_green.push(CreateObject("roRegion", bmIgloos, 64, 42*2, 63, 42))' right'
+
+    g.iglooSprites.igloo_red = []
+    g.iglooSprites.igloo_red.push(CreateObject("roRegion", bmIgloos, 0, 42*3, 63, 42))' left'
+    g.iglooSprites.igloo_red.push(CreateObject("roRegion", bmIgloos, 64, 42*3, 63, 42))' right'
+
+    g.iglooSprites.igloo_pink = []
+    g.iglooSprites.igloo_pink.push(CreateObject("roRegion", bmIgloos, 0, 42*4, 63, 42))' left'
+    g.iglooSprites.igloo_pink.push(CreateObject("roRegion", bmIgloos, 64, 42*4, 63, 42))' right'
+
+    g.iglooSprites.igloo_grey = []
+    g.iglooSprites.igloo_grey.push(CreateObject("roRegion", bmIgloos, 0, 42*5, 63, 42))' left'
+    g.iglooSprites.igloo_grey.push(CreateObject("roRegion", bmIgloos, 64, 42*5, 63, 42))' right'
+
+    g.iglooSprites.igloo_black = []
+    g.iglooSprites.igloo_black.push(CreateObject("roRegion", bmIgloos, 0, 42*6, 63, 42))' left'
+    g.iglooSprites.igloo_black.push(CreateObject("roRegion", bmIgloos, 64, 42*6, 63, 42))' right'
+
+
+    '
+    '
+    ' g.rIgloo_left = CreateObject("roRegion", bmIgloos, 0, 0, 63, 42)
+    ' g.rIgloo_right = CreateObject("roRegion", bmIgloos, 64, 0, 63, 42)
+    ' g.rIgloo_blue_left = CreateObject("roRegion", bmIgloos, 0, 42, 63, 42)
+    ' g.rIgloo_blue_right = CreateObject("roRegion", bmIgloos, 64, 42, 63, 42)
 
     g.rFlagRed = rg2dLoadRegion("pkg:/components/sprites/Flag_red_white.png", 0, 0, 40, 30)
     g.rFlagBlue = rg2dLoadRegion("pkg:/components/sprites/Flag_orange_blue.png", 0, 0, 40, 30)
@@ -111,6 +150,8 @@ function rg2dLoadSounds() as void
     'g.sounds.foomp = CreateObject("roAudioResource", "pkg:/components/audio/foomp.wav")
     'g.sounds.foompB = CreateObject("roAudioResource", "pkg:/components/audio/foompB.wav")
     g.sounds.foomp12 = CreateObject("roAudioResource", "pkg:/components/audio/foomp12.wav")
+    g.sounds.ouch1 = CreateObject("roAudioResource", "pkg:/components/audio/ouch1.wav")
+    g.sounds.poof1 = CreateObject("roAudioResource", "pkg:/components/audio/poof1.wav")
     g.sounds.navSingle = CreateObject("roAudioResource", "navsingle")
 
     '?"Max Streams ";g.sounds.astroid_blast.maxSimulStreams()
@@ -190,8 +231,10 @@ function rg2dLoadLevel(level as integer) as void
 
     '''''''''''''''''''''
     '''''' TANKS
-    g.tank1 = createTank(1, true, 100, g.sHeight-200, 0, true, "igloo")
-    g.tank2 = AITankRanger(2, g.sWidth-100, g.sHeight-200,0, false, "igloo")
+    g.tank1 = createTank(1, true, 100, g.sHeight-200, 0, true, "igloo_pink")
+    g.tank2 = AITankRanger(2, g.sWidth-100, g.sHeight-200,0, false, "igloo_green")
+
+    g.tank2.badness = 0.0
 
     g.tank1.bmFlag.setFlagImage(g.rFlagRed)
     g.tank2.bmFlag.setFlagImage(g.rFlagBlue)
@@ -213,11 +256,13 @@ function rg2dLoadLevel(level as integer) as void
         return 1
       end if
       if p.state = "ALIVE" then
+        g = GetGlobalAA()
         ?"Projectile Hit Tank!"
         t.takeDamage(p.damage_power)
         p.ttl = 0.0
         p.state = "DEAD"
         p.NotifyOwnerOfCollision(t)
+        rg2dPlaySound(g.sounds.ouch1)
       end if
       return 1 ' Indicate not to perform normal collision
     end function
@@ -232,9 +277,11 @@ function rg2dLoadLevel(level as integer) as void
     cpProjTerr.overlapCallback = function(p,t) as integer
       ?"Projectile hitting ICE"
       if p.state = "ALIVE" then
+        g = GetGlobalAA()
         p.ttl = 0.1
         p.state = "DEAD"
         p.NotifyOwnerOfCollision(t)
+        rg2dPlaySound(g.sounds.poof1)
       end if
       return 1
     end function
@@ -247,8 +294,8 @@ function rg2dLoadLevel(level as integer) as void
     ''' mouse
     g.sMouse = g.compositor.NewSprite(600,g.sHeight-td.getHeightAtXPoint(600)-20,g.rMouseUp,1)
 
-    g.tank1.setPosition(100, g.sHeight-td.getHeightAtXPoint(100) - 21)
-    g.tank2.setPosition(g.sWidth-100, g.sHeight-td.getHeightAtXPoint(g.sWidth-100) - 21)
+    g.tank1.setPosition(100, g.sHeight-td.getHeightAtXPoint(100) - 16)
+    g.tank2.setPosition(g.sWidth-100, g.sHeight-td.getHeightAtXPoint(g.sWidth-100) - 16)
     g.tank1.updateDisplay()
     g.tank2.updateDisplay()
 
@@ -355,7 +402,7 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
       ' SELECT BUTTON RELEASED'
       if g.gameState.state = "FIRE" ' Player just let go of fire button'
         g.gameState.setState("PROJECTILE_CONTROL")
-        newProj = active_player.fireProjectile(400 + g.power_select * 200)
+        newProj = active_player.fireProjectile(350 + g.power_select * 200)
 
       else if g.gameState.state = "PROJECTILE_CONTROL"
         newState = active_player.runProjectileControl(dt)

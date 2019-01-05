@@ -14,6 +14,8 @@ function getShotTypeList()
   return ["standard_1","standard_3p","standard_5p","standard_3s","standard_5s",
           "pellet_1","pellet_3p","pellet_5p","pellet_3s","pellet_5s",
           "baked_alaska_1"]
+  ' return ["baked_alaska_1"]
+  ' return ["baked_alaska_1","pellet_5s"]
 end function
 
 ''' Creates an array of oneShots
@@ -23,9 +25,9 @@ function createShot(owner, sType, x, y, power, angle, faceRight)
   shotArray = []
 
   PELLET_RAD = 5
-  PELLET_DMG = 10
+  PELLET_DMG = 4
   STD_RAD = 11
-  STD_DMG = 15
+  STD_DMG = 8
   BA_RAD = 11
   BA_DMG = 25
 
