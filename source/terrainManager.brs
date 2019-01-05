@@ -28,7 +28,7 @@ function terrainDefinition() as object
 
     addSection : function(width, height)
       m.sectionList.push(terrainSection(width, height))
-    end function
+    end function,
 
     getHeightAtXPoint : function(x)
       x_ = 0
@@ -42,6 +42,11 @@ function terrainDefinition() as object
 
       return invalid
 
+    end function,
+
+    setSectionHeight : function(idx, height)
+      section = m.sectionList[idx]
+      section.height = height
     end function
 
   }

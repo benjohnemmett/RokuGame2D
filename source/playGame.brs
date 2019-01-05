@@ -1,4 +1,4 @@
-function rg2dPlayGame() as object
+function rg2dPlayGame(gdef) as object
     g = GetGlobalAA()
 
     ?"Play Ball!"
@@ -69,7 +69,7 @@ function rg2dPlayGame() as object
     scoreSpaces = 7
 
 
-    rg2dGameInit()
+    rg2dGameInit(gdef)
     ''''''''''''''''''''''''''''''''''''''''''''''
     ' Main Game Loop
     ''''''''''''''''''''''''''''''''''''''''''''''
@@ -82,7 +82,12 @@ function rg2dPlayGame() as object
 
         g.pm.setCompositor(g.compositor)
 
-        rg2dLoadLevel(gs.wave)
+        ' Exit when set number of rounds has been played'
+        if(gs.wave > gdef.rounds) then
+          exit while
+        end if
+
+        rg2dLoadLevel(gdef, gs.wave)
 
         ''''''''''''''''''''''''''''''''''''''''''''''
         ' Enter inner run loop
@@ -233,6 +238,7 @@ function rg2dPlayGame() as object
 
     gs.score = g.game_score
     gs.wave = g.game_wave
+    gs.winningPlayer = stat.winningPlayer
     return gs
 
 end function

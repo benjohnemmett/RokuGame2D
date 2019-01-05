@@ -9,7 +9,8 @@ function rg2dSetGameParameters() as void
     g.highScoreRegister = "GameHighScores"
 
     g.menuArray = rg2dMenuItemList()
-    g.menuArray.addItem("New Game", "new_game")
+    g.menuArray.addItem("Play", "play")
+    g.menuArray.addItem("Two Player Match", "two_player")
     g.menuArray.addItem("Options", "options")
     g.menuArray.addItem("High Scores", "high_scores")
     g.menuArray.addItem("About", "about")
@@ -160,6 +161,73 @@ function rg2dLoadSounds() as void
 
 end function
 
+' Wrapper definition with function for generating a player
+function playerDef(playerNumber, isHumanPlayer, tankType)
+  pdef =  {playerNumber : playerNumber,
+          isHumanPlayer : isHumanPlayer,
+          tankType : tankType}
+
+  '''' Generate player function
+  pdef.generate = function() as object
+
+    faceRight = true
+    if(m.playerNumber = 2) then
+      faceRight = False
+    end if
+
+    if(m.isHumanPlayer) then
+      tank = createTank(1, true, 100, 200, 0, faceRight, m.tankType)
+    else
+      tank = AITankRandy(2, 100, 100,0, faceRight, m.tankType)
+    end if
+
+    return tank
+  end function
+
+
+  return pdef
+
+end function
+
+' Wrapper definition with function for generating an AIRanger player'
+'' Must be called in level setup so that compisitor for level has been set
+function AIRangerPlayerDef(playerNumber, tankType, badness)
+  pdef = playerDef(playerNumber, false, tankType)
+  pdef.badness = badness
+
+  pdef.generate = function() as object
+
+    faceRight = true
+    if(m.playerNumber = 2) then
+      faceRight = False
+    end if
+
+    tank = AITankRanger(2, 100, 100,0, faceRight, m.tankType)
+    tank.badness = m.badness
+
+    return tank
+  end function
+
+
+  return pdef
+
+end function
+
+' Defines how a game will be played'
+' tank1 & tank2 are player defninition objects with a generate() function'
+function gameDefinition(rounds as integer, tank1, tank2, windspeed, levelPlayers) as object
+
+  GDef = {rounds : rounds,
+          tank1 : tank1,
+          tank2 : tank2 }
+
+  GDef.windspeed = windspeed ' INvalid selects random wind speed'
+  GDef.levelPlayers = levelPlayers
+
+  return GDef
+
+end function
+
 '
 ' Use this to set custom actions when a menu item is selected
 '
@@ -179,9 +247,41 @@ function rg2dMenuItemSelected() as void
       ?"->";shortName
     end if
 
-    if(shortName = "new_game") then ' New Game
+    if(shortName = "play") then ' New Game
 
-        stat = rg2dPlayGame()
+      gameDefs = []
+      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo"), PlayerDef(2, false, "igloo_blue"), invalid, false ) )
+      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo"), AIRangerPlayerDef(2, "igloo_green", 2.0), invalid, false) )
+      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo"), AIRangerPlayerDef(2, "igloo_red", 1.0), invalid, false) )
+      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo"), AIRangerPlayerDef(2, "igloo_pink", 0.5), invalid, false) )
+      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo"), AIRangerPlayerDef(2, "igloo_grey", 0.1), invalid, true) )
+      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo"), AIRangerPlayerDef(2, "igloo_black", 0.0), 0, true) )
+
+      idx = 0
+      stillAlive = True
+
+      while stillAlive
+        stat = rg2dPlayGame(gameDefs[idx])
+
+        if stat.winningPlayer = 2 then
+          stillAlive = false
+        end if
+
+        if idx = gameDefs.count() then
+          ?"YOU WINN!!!!"
+          exit while
+        end if
+
+        idx += 1
+
+      end while
+
+
+
+    else if(shortName = "two_player") then ' New Game
+
+      gdef = gameDefinition(1, playerDef(1, true, "igloo"), playerDef(2, true, "igloo_pink"), invalid, false)
+      stat = rg2dPlayGame(gdef)
 
     else if(shortName = "options") then ' Settings
         '?"Going to settings screen"
@@ -206,7 +306,7 @@ end function
 
 
 ' Stuff that needs to be done at the start of each game goes here.
-function rg2dGameInit() as void
+function rg2dGameInit(gdef) as void
     g = GetGlobalAA()
 
     g.bgColor = &h114488FF
@@ -214,27 +314,31 @@ function rg2dGameInit() as void
 end function
 
 
+
+
 '''''''''' OUTER LOOP STUFF
 ' Stuff to be done at the start of each level goes here.
-function rg2dLoadLevel(level as integer) as void
+function rg2dLoadLevel(gdef, level as integer) as void
     g = GetGlobalAA()
 
-    g.bgColor = &h114488FF
 
     '''''''''''''''''''''
     '''''' WIND '''''''''
     g.wind = windMaker()
-    g.wind.setWindAcc(rnd(50)-25,0)
+    if gdef.windspeed = invalid then
+      g.wind.setWindAcc(rnd(50)-25,0)
+    else
+      g.wind.setWindAcc(gdef.windspeed,0)
+    end if
 
     g.windViewer = windicator(g.wind, 500, 100)
     g.windViewer.updateDisplay()
 
     '''''''''''''''''''''
     '''''' TANKS
-    g.tank1 = createTank(1, true, 100, g.sHeight-200, 0, true, "igloo_pink")
-    g.tank2 = AITankRanger(2, g.sWidth-100, g.sHeight-200,0, false, "igloo_green")
 
-    g.tank2.badness = 0.0
+    g.tank1 = gdef.tank1.generate()
+    g.tank2 = gdef.tank2.generate()
 
     g.tank1.bmFlag.setFlagImage(g.rFlagRed)
     g.tank2.bmFlag.setFlagImage(g.rFlagBlue)
@@ -286,8 +390,20 @@ function rg2dLoadLevel(level as integer) as void
       return 1
     end function
 
+    NUM_TERRAIN_SECTIONS = 10
+
     td = terrainDefinition()
-    randomizeTerrainDefinition(td, 10)
+    randomizeTerrainDefinition(td, NUM_TERRAIN_SECTIONS)
+
+    if gdef.levelPlayers then ' Make the first & last sections the same height'
+      h = minFloat(td.sectionList[0].height, td.sectionList[NUM_TERRAIN_SECTIONS-1].height)
+      td.setSectionHeight(0, h)
+      td.setSectionHeight(NUM_TERRAIN_SECTIONS-1, h)
+      ' Make sure neither are up against s steep cliff'
+      td.setSectionHeight(1, minFloat(td.sectionList[1].height, h + 20))
+      td.setSectionHeight(NUM_TERRAIN_SECTIONS-2, minFloat(td.sectionList[NUM_TERRAIN_SECTIONS-2].height, h + 20))
+
+    end if
 
     terrain = laydownTerrainInOneSprite(g.pm, g.compositor, g.terrain_ice, td)
 
@@ -357,6 +473,7 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
           ?"Trucking Left"
           'g.wind.offsetWind(10,0)
           'active_player.select_projectile(active_player.projectile_idx+1)
+          inactive_player.takeDamage(1)
       else if(button.bLeft) then
           ?"Trucking Right"
           'g.wind.offsetWind(-10,0)
@@ -501,8 +618,14 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
     stat.level_complete = false
     stat.game_complete = false
 
-    if (g.tank1.health <= 0) OR (g.tank2.health <= 0) then
+    if (g.tank1.health <= 0) then
       stat.level_complete = true
+      stat.game_complete = true ' Always returning control to menu'
+      stat.winningPlayer = 2
+    else if (g.tank2.health <= 0) then
+      stat.level_complete = true
+      stat.game_complete = true ' Always returning control to menu'
+      stat.winningPlayer = 1
     end if
 
     return stat

@@ -366,7 +366,7 @@ function AITankRandy(playerNumber, x, y, angle, faceRight, tank_type)
 
   end function
 
-  randy.calculateNextShot = function() as object
+  randy.calculateNextShot = function(target) as object
     shot = {}
     shot.angle = 60 * (pi()/(180 + rnd(3)-2))
     shot.power = 450 + (rnd(100)-50)
