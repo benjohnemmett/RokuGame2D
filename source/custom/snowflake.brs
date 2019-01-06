@@ -42,7 +42,7 @@ function snowMaker(wind as object, compositor as object) as object
   ' Randomly initialize a specified number of flakes '
   '   Creates random flakes in an area half the size of the screen, immediately above the screen.
   sm.randomInit = function(numFlakes, regionArray) as void
-
+  g = GetGlobalAA()
   ' TODO finish this'
     For i=0 to numFlakes step 1
       ridx = rnd(regionArray.count())-1 'Randomly pick flake sprite image'
@@ -56,9 +56,12 @@ function snowMaker(wind as object, compositor as object) as object
       gy = 60 + 30*rnd(3)
 
       fric = 5.0 + (rnd(0) * 0.3)
-      'stop
+
       newFlake = flake(rFlake, m.comp, x, y, vx, vy, gx, gy, fric)
       newFlake.maxVy = 200 + 100*rnd(3)
+      if newFlake.maxVy < 400 then ' Make slow snow be in the back'
+        newFlake.sprite.setZ(g.layers.SlowSnow)
+      end if
       m.wind.addObject(newFlake)
 
       m.flakeArray.push(newFlake) ' Add to my flakeArray
@@ -81,9 +84,11 @@ end function
 '   term - Terminal velocity in either x or y direction
 '   fric  - value (0.0 to 1.0) for how much the wind effects this flake. 0.0 is free from wind influence.
 function flake(rFlake, comp, x as integer, y as integer, vx, vy, gx, gy, fric) as object
-'stop
+
+  g = GetGlobalAA()
+
   f = {
-    sprite : comp.NewSprite(x, y, rFlake, 1),
+    sprite : comp.NewSprite(x, y, rFlake, g.layers.FastSnow),
     x : x,
     y : y,
     vx : vx,

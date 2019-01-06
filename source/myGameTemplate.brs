@@ -11,9 +11,24 @@ function rg2dSetGameParameters() as void
     g.menuArray = rg2dMenuItemList()
     g.menuArray.addItem("Play", "play")
     g.menuArray.addItem("Two Player Match", "two_player")
+    g.menuArray.addItem("Just Watching", "ai_v_ai")
     g.menuArray.addItem("Options", "options")
     g.menuArray.addItem("High Scores", "high_scores")
     g.menuArray.addItem("About", "about")
+
+    g.layers = {}
+    ' Front'
+    g.layers.FastSnow = 60
+    g.layers.playerControl = 50
+    g.layers.Windometer = 40
+    g.layers.Projectiles = 30
+    g.layers.Flags = 22
+    g.layers.Igloos = 21
+    g.layers.Turret = 20
+    g.layers.MousePlane = 15
+    g.layers.Terrain = 10
+    g.layers.SlowSnow = 9
+    'Back'
 
 end function
 
@@ -115,6 +130,7 @@ function rg2dLoadSprites() as void
     g.rFlagRed = rg2dLoadRegion("pkg:/components/sprites/Flag_red_white.png", 0, 0, 40, 30)
     g.rFlagBlue = rg2dLoadRegion("pkg:/components/sprites/Flag_orange_blue.png", 0, 0, 40, 30)
     g.rMouseUp = rg2dLoadRegion("pkg:/components/sprites/MouseUp_32.png", 0, 0, 32, 32)
+    g.rMousePlaneStrings = rg2dLoadRegion("pkg:/components/sprites/MousePlaneWithLines_148_86.png", 0, 0, 148, 86)
 
     bmChevrons = CreateObject("roBitmap", "pkg:/components/sprites/chevrons.png")
     g.rChevronGreenLeft = CreateObject("roRegion", bmChevrons, 0, 0, 30, 30)
@@ -263,7 +279,7 @@ function rg2dMenuItemSelected() as void
       while stillAlive
         stat = rg2dPlayGame(gameDefs[idx])
 
-        if stat.winningPlayer = 2 then
+        if stat.winningPlayer <> 1 then
           stillAlive = false
         end if
 
@@ -281,6 +297,11 @@ function rg2dMenuItemSelected() as void
     else if(shortName = "two_player") then ' New Game
 
       gdef = gameDefinition(1, playerDef(1, true, "igloo"), playerDef(2, true, "igloo_pink"), invalid, false)
+      stat = rg2dPlayGame(gdef)
+
+    else if(shortName = "ai_v_ai") then ' New Game
+
+      gdef = gameDefinition(1, AIRangerPlayerDef(1, "igloo_blue", 0.5), AIRangerPlayerDef(2, "igloo_pink", 0.5), invalid, false)
       stat = rg2dPlayGame(gdef)
 
     else if(shortName = "options") then ' Settings
@@ -408,7 +429,9 @@ function rg2dLoadLevel(gdef, level as integer) as void
     terrain = laydownTerrainInOneSprite(g.pm, g.compositor, g.terrain_ice, td)
 
     ''' mouse
-    g.sMouse = g.compositor.NewSprite(600,g.sHeight-td.getHeightAtXPoint(600)-20,g.rMouseUp,1)
+    g.mouseController = mouseController()
+
+    'g.sMouse = g.compositor.NewSprite(600,g.sHeight-td.getHeightAtXPoint(600)-20,g.rMouseUp,1)
 
     g.tank1.setPosition(100, g.sHeight-td.getHeightAtXPoint(100) - 16)
     g.tank2.setPosition(g.sWidth-100, g.sHeight-td.getHeightAtXPoint(g.sWidth-100) - 16)
@@ -447,6 +470,11 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
       ?"rg2dInnerGameLoopUpdate(";dt;")..."
     end if
 
+    ' TODO create level status object'
+    stat = {}
+    stat.level_complete = false
+    stat.game_complete = false
+
     angle_inc = pi()/180
 
     If g.player_turn = 1 then
@@ -459,150 +487,190 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
 
     PBT = 2000 'Powerbar period in milliseconds '
 
-    if active_player.isHumanPlayer then
+    if g.gameState.state = "EXITING"
 
-      if(button.bUp) then
-          active_player.set_turret_angle(active_player.tank_turret_angle + angle_inc)
-          ?"Angle Up ";active_player.tank_turret_angle
+      if g.gameState.subState = "ENTRY" then
+        ' TODO Play victory sound'
+        g.audioPlayer.stop()
+        ' TODO  Start mouse banner'
+        msg = ""
 
-      else if(button.bDown) then
-          active_player.set_turret_angle(active_player.tank_turret_angle - angle_inc)
-          ?"Angle Up ";active_player.tank_turret_angle
+        if (g.tank1.health <= 0) then
+          msg = "Player 2 Wins!"
+        else if (g.tank2.health <= 0) then
+          msg = "Player 1 Wins!"
+        end if
 
-      else if(button.bRight) then
-          ?"Trucking Left"
-          'g.wind.offsetWind(10,0)
-          'active_player.select_projectile(active_player.projectile_idx+1)
-          inactive_player.takeDamage(1)
-      else if(button.bLeft) then
-          ?"Trucking Right"
-          'g.wind.offsetWind(-10,0)
+        g.mouseController.startPlaneBanner(msg)
+        g.gameState.setSubState("FLYING")
 
-          'active_player.select_projectile(active_player.projectile_idx-1)
+      else if g.gameState.subState = "FLYING" then
+        ' TODO Upate mouse controller
+        if g.gameState.timeInSubState > 10.0 then
+          g.gameState.setSubState("DONE")
+        end if
+
+     ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+      else if g.gameState.subState = "DONE" '''''''''''''''''''''''''''''''''''' Exit this match
+        stat.level_complete = true
+        stat.game_complete = true ' Always returning control to menu'
+
+        if (g.tank1.health <= 0) then
+          stat.winningPlayer = 2
+        else if (g.tank2.health <= 0) then
+          stat.winningPlayer = 1
+        end if
 
       end if
 
-      ' Start of Turn state transitions'
-      if g.gameState.state = "ENTER" then
-        g.gameState.setState("RANDOMIZE_PROJECTILE")
+    else ' Handle player input' TODO Move this to separate function
 
-      else if g.gameState.state = "RANDOMIZE_PROJECTILE" then
-        if(g.gameState.framesInState > 50) then
-          g.gameState.setState("IDLE")
-        end if
-        if(g.gameState.framesInState mod 5) = 0 then ' Shuffle projectile type again'
-          active_player.selectShot(active_player.shotTypeIdx + rnd(3))
-        end if
-      end if
+      if active_player.isHumanPlayer then
 
-      ' SELECT BUTTON DOWN'
-      if(button.bSelect1) then
-        if g.gameState.state = "IDLE" then
-          ?"Prepping to fire"
-          'g.projectileInFlight = Invalid
-          g.gameState.setState("POWER_SELECT")
-          g.power_select = 0
-        else if g.gameState.state = "POWER_SELECT" then
-          p1 = (button_hold_time MOD (2*PBT)) ' Power as a sawtooth wave'
-          p2 = (2*PBT) - p1 'Cross over sawtooth'
-          pwr = minFloat(p1,p2)
+        if(button.bUp) then
+            active_player.set_turret_angle(active_player.tank_turret_angle + angle_inc)
+            ?"Angle Up ";active_player.tank_turret_angle
 
-          g.power_select =  (pwr/PBT)
-          active_player.setPowerBar(g.power_select)
-        end if
-      else
-        if g.gameState.state = "POWER_SELECT" then
-          g.gameState.setState("FIRE")
-        end if
-      end if
+        else if(button.bDown) then
+            active_player.set_turret_angle(active_player.tank_turret_angle - angle_inc)
+            ?"Angle Up ";active_player.tank_turret_angle
 
-      ' SELECT BUTTON RELEASED'
-      if g.gameState.state = "FIRE" ' Player just let go of fire button'
-        g.gameState.setState("PROJECTILE_CONTROL")
-        newProj = active_player.fireProjectile(350 + g.power_select * 200)
+        else if(button.bRight) then
+            ?"Trucking Left"
+            'g.wind.offsetWind(10,0)
+            'active_player.select_projectile(active_player.projectile_idx+1)
+            inactive_player.takeDamage(1)
+        else if(button.bLeft) then
+            ?"Trucking Right"
+            'g.wind.offsetWind(-10,0)
 
-      else if g.gameState.state = "PROJECTILE_CONTROL"
-        newState = active_player.runProjectileControl(dt)
-        g.gameState.setState(newState) ' Let the projectile control determine when to transition
-
-      else if g.gameState.state = "WAITING_IMPACT"
-        if active_player.hasActiveProjectiles() = False
-          g.gameState.setState("IMPACTED")
-          g.wind.clearDead()
+            'active_player.select_projectile(active_player.projectile_idx-1)
+            g.mouseController.startPlaneBanner("TESTING TESTING 1,2,3...")
         end if
 
-      else if g.gameState.state = "IMPACTED"
-        switchActivePlayer()
-        g.gameState.setState("ENTER")
-      end if
+        ' Start of Turn state transitions'
+        if g.gameState.state = "ENTER" then
+          g.gameState.setState("RANDOMIZE_PROJECTILE")
 
-    else ''''''''''''''''   AI Player''''''''''''''''''''''''''''''''
-
-      if g.gameState.state = "ENTER" then
-        g.gameState.setState("RANDOMIZE_PROJECTILE")
-      else if g.gameState.state = "RANDOMIZE_PROJECTILE" then
-
-        if(g.gameState.framesInState > 50) then
-          g.gameState.setState("IDLE")
+        else if g.gameState.state = "RANDOMIZE_PROJECTILE" then
+          if(g.gameState.framesInState > 50) then
+            g.gameState.setState("IDLE")
+          end if
+          if(g.gameState.framesInState mod 5) = 0 then ' Shuffle projectile type again'
+            active_player.selectShot(active_player.shotTypeIdx + rnd(3))
+          end if
         end if
 
-        if(g.gameState.framesInState mod 5) = 0 then
-          active_player.selectShot(active_player.shotTypeIdx + rnd(3))
-        end if
+        ' SELECT BUTTON DOWN'
+        if(button.bSelect1) then
+          if g.gameState.state = "IDLE" then
+            ?"Prepping to fire"
+            'g.projectileInFlight = Invalid
+            g.gameState.setState("POWER_SELECT")
+            g.power_select = 0
+          else if g.gameState.state = "POWER_SELECT" then
+            p1 = (button_hold_time MOD (2*PBT)) ' Power as a sawtooth wave'
+            p2 = (2*PBT) - p1 'Cross over sawtooth'
+            pwr = minFloat(p1,p2)
 
-      else if g.gameState.state = "IDLE" then
-        ?"IDLE"
-        g.gameState.setState("CALCULATING")
-      else if g.gameState.state = "CALCULATING"
-        ?" - CALCULATING"
-        active_player.shot = active_player.calculateNextShot(inactive_player)
-        g.gameState.setState("AIMING")
-      else if g.gameState.state = "AIMING" 'Animate turret aiming
-        ?" - AIMING from ";active_player.tank_turret_angle;" to ";active_player.shot.angle
-        da = active_player.shot.angle - active_player.tank_turret_angle
-        if abs(da) <= angle_inc then
-          active_player.set_turret_angle(active_player.shot.angle)
-          g.gameState.setState("POWER_SELECT")
+            g.power_select =  (pwr/PBT)
+            active_player.setPowerBar(g.power_select)
+          end if
         else
-          active_player.set_turret_angle(active_player.tank_turret_angle + sgn(da)*angle_inc)
+          if g.gameState.state = "POWER_SELECT" then
+            g.gameState.setState("FIRE")
+          end if
         end if
 
-      else if g.gameState.state = "POWER_SELECT" ' Animate power select bar'
-        ?" - POWER_SELECT"
+        ' SELECT BUTTON RELEASED'
+        if g.gameState.state = "FIRE" ' Player just let go of fire button'
+          g.gameState.setState("PROJECTILE_CONTROL")
+          newProj = active_player.fireProjectile(350 + g.power_select * 200)
 
-        desired_val = minFloat(maxFloat(active_player.shot.powerBar, 0.1), 0.9)
-        dp =  desired_val - active_player.getPowerBarValue()
+        else if g.gameState.state = "PROJECTILE_CONTROL"
+          newState = active_player.runProjectileControl(dt)
+          g.gameState.setState(newState) ' Let the projectile control determine when to transition
 
-        pwr_inc = (1.0/PBT)*(dt*1000)
+        else if g.gameState.state = "WAITING_IMPACT"
+          if active_player.hasActiveProjectiles() = False
+            g.gameState.setState("IMPACTED")
+            g.wind.clearDead()
+          end if
 
-        if (abs(dp) <= pwr_inc) then
-          active_player.setPowerBar(active_player.shot.powerBar)
-          g.gameState.setState("FIRE")
-        else
-          active_player.setPowerBar(active_player.getPowerBarValue() + sgn(dp)*pwr_inc)
+        else if g.gameState.state = "IMPACTED"
+          switchActivePlayer()
+          g.gameState.setState("ENTER")
         end if
 
-      else if g.gameState.state = "FIRE"
-        ?" - POWER_SELECT"
-        newProj = active_player.fireProjectile(active_player.shot.power)
-        g.gameState.setState("PROJECTILE_CONTROL")
+      else ''''''''''''''''   AI Player''''''''''''''''''''''''''''''''
 
-      else if g.gameState.state = "PROJECTILE_CONTROL"
-        newState = active_player.runProjectileControl(dt)
-        g.gameState.setState(newState) ' Let the projectile control determine when to transition
+        if g.gameState.state = "ENTER" then
+          g.gameState.setState("RANDOMIZE_PROJECTILE")
+        else if g.gameState.state = "RANDOMIZE_PROJECTILE" then
 
-      else if g.gameState.state = "WAITING_IMPACT"
-        ''?" - WAITING_IMPACT"
-        if active_player.hasActiveProjectiles() = False
-          g.gameState.setState("IMPACTED")
-          g.wind.clearDead()
+          if(g.gameState.framesInState > 50) then
+            g.gameState.setState("IDLE")
+          end if
+
+          if(g.gameState.framesInState mod 5) = 0 then
+            active_player.selectShot(active_player.shotTypeIdx + rnd(3))
+          end if
+
+        else if g.gameState.state = "IDLE" then
+          ?"IDLE"
+          g.gameState.setState("CALCULATING")
+        else if g.gameState.state = "CALCULATING"
+          ?" - CALCULATING"
+          active_player.shot = active_player.calculateNextShot(inactive_player)
+          g.gameState.setState("AIMING")
+        else if g.gameState.state = "AIMING" 'Animate turret aiming
+          ?" - AIMING from ";active_player.tank_turret_angle;" to ";active_player.shot.angle
+          da = active_player.shot.angle - active_player.tank_turret_angle
+          if abs(da) <= angle_inc then
+            active_player.set_turret_angle(active_player.shot.angle)
+            g.gameState.setState("POWER_SELECT")
+          else
+            active_player.set_turret_angle(active_player.tank_turret_angle + sgn(da)*angle_inc)
+          end if
+
+        else if g.gameState.state = "POWER_SELECT" ' Animate power select bar'
+          ?" - POWER_SELECT"
+
+          desired_val = minFloat(maxFloat(active_player.shot.powerBar, 0.1), 0.9)
+          dp =  desired_val - active_player.getPowerBarValue()
+
+          pwr_inc = (1.0/PBT)*(dt*1000)
+
+          if (abs(dp) <= pwr_inc) then
+            active_player.setPowerBar(active_player.shot.powerBar)
+            g.gameState.setState("FIRE")
+          else
+            active_player.setPowerBar(active_player.getPowerBarValue() + sgn(dp)*pwr_inc)
+          end if
+
+        else if g.gameState.state = "FIRE"
+          ?" - POWER_SELECT"
+          newProj = active_player.fireProjectile(active_player.shot.power)
+          g.gameState.setState("PROJECTILE_CONTROL")
+
+        else if g.gameState.state = "PROJECTILE_CONTROL"
+          newState = active_player.runProjectileControl(dt)
+          g.gameState.setState(newState) ' Let the projectile control determine when to transition
+
+        else if g.gameState.state = "WAITING_IMPACT"
+          ''?" - WAITING_IMPACT"
+          if active_player.hasActiveProjectiles() = False
+            g.gameState.setState("IMPACTED")
+            g.wind.clearDead()
+          end if
+        else if g.gameState.state = "IMPACTED"
+          switchActivePlayer()
+          g.gameState.setState("ENTER")
         end if
-      else if g.gameState.state = "IMPACTED"
-        switchActivePlayer()
-        g.gameState.setState("ENTER")
-      end if
 
-    end if
+      end if  ' End of player handling'
+
+    end if ' end of if EXIT'
 
     'Progress Game State'
     g.gameState.tick(dt) ' Calling this to update state counters
@@ -613,19 +681,12 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
     ' Update snow
     g.snowMaker.run(dt)
 
-    ' TODO create level status object'
-    stat = {}
-    stat.level_complete = false
-    stat.game_complete = false
+    'Update Mouse'
+    g.mouseController.update(dt)
 
-    if (g.tank1.health <= 0) then
-      stat.level_complete = true
-      stat.game_complete = true ' Always returning control to menu'
-      stat.winningPlayer = 2
-    else if (g.tank2.health <= 0) then
-      stat.level_complete = true
-      stat.game_complete = true ' Always returning control to menu'
-      stat.winningPlayer = 1
+    ' If one player is dead, then begin exiting the level'
+    if (g.tank1.health <= 0) OR (g.tank2.health <= 0) then
+      g.gameState.setState("EXITING")
     end if
 
     return stat

@@ -102,7 +102,7 @@ function rg2dSetupMainScreen() as void
     regColor = &hFFFFFFFF
     selColor = &hFFFF22FF
 
-    topIndent = 320
+    topIndent = 200
     leftIndent = 400
     vertSpace = font.GetOneLineHeight() + 10
 

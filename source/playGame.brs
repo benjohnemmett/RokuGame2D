@@ -164,6 +164,7 @@ function rg2dPlayGame(gdef) as object
                                 sPauseMenu.SetDrawableFlag(false)
                                 gs.score = g.game_score
                                 gs.wave = g.game_wave
+                                gs.winningPlayer = -1
                                 return gs
 
                             else if (id = myCodes.PLAY_PRESSED)  then

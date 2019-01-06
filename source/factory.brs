@@ -14,22 +14,22 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
   end if
 
   if faceRight then
-    sTank = g.compositor.NewSprite(x, y, spriteArray[1], 2) ' Flip this one'
+    sTank = g.compositor.NewSprite(x, y, spriteArray[1], g.layers.Igloos) ' Flip this one'
     tx = x - 15
     ty = y
   else
-    sTank = g.compositor.NewSprite(x, y, spriteArray[0], 2)
+    sTank = g.compositor.NewSprite(x, y, spriteArray[0], g.layers.Igloos)
     tx = x + 15
     ty = y
   end if
 
 
-  sTurret1 = g.compositor.NewSprite(x, y, g.rCircleGrey8, 1)
-  sTurret2 = g.compositor.NewSprite(x, y, g.rCircleGrey8, 1)
-  sTurret3 = g.compositor.NewSprite(x, y, g.rCircleGrey8, 1)
-  sTurret4 = g.compositor.NewSprite(x, y, g.rCircleGrey8, 1)
-  sTurret5 = g.compositor.NewSprite(x, y, g.rCircleGrey8, 1)
-  sTurret6 = g.compositor.NewSprite(x, y, g.rCircleGrey8, 1)
+  sTurret1 = g.compositor.NewSprite(x, y, g.rCircleGrey8, g.layers.Turret)
+  sTurret2 = g.compositor.NewSprite(x, y, g.rCircleGrey8, g.layers.Turret)
+  sTurret3 = g.compositor.NewSprite(x, y, g.rCircleGrey8, g.layers.Turret)
+  sTurret4 = g.compositor.NewSprite(x, y, g.rCircleGrey8, g.layers.Turret)
+  sTurret5 = g.compositor.NewSprite(x, y, g.rCircleGrey8, g.layers.Turret)
+  sTurret6 = g.compositor.NewSprite(x, y, g.rCircleGrey8, g.layers.Turret)
 
   ''
   tank.minX = 0.0
@@ -89,7 +89,7 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
   tank.shotSelector = shotSelector()
   tank.shotSelector.updateDisplay()
   rshotSelector= CreateObject("roRegion", tank.shotSelector.bm, 0, 0, tank.shotSelector.width, tank.shotSelector.height)
-  tank.sShotSelector = g.compositor.NewSprite(tank.x, tank.y+30, rshotSelector, 4)
+  tank.sShotSelector = g.compositor.NewSprite(tank.x, tank.y+30, rshotSelector, g.layers.playerControl)
 
   '
   ' tank.select_projectile = function(idx)
@@ -277,7 +277,7 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
   bmFlag.setFlagPosition(0.98)
   bmFlag.updateDisplay()
   rFlag = CreateObject("roRegion", bmFlag.bm, 0, 0, bmFlag.width, bmFlag.height)
-  tank.sFlag = g.compositor.NewSprite(bmFlag.x, bmFlag.y, rFlag, 1)
+  tank.sFlag = g.compositor.NewSprite(bmFlag.x, bmFlag.y, rFlag, g.layers.Flags)
 
   tank.bmFlag = bmFlag
   tank.setFlagPosition = function(value)
@@ -296,7 +296,7 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
   bmPowerBar = uiExtender(30,100)
   bmPowerBar.updateDisplay()
   rPowerBar = CreateObject("roRegion", bmPowerBar.bm, 0, 0, bmPowerBar.width, bmPowerBar.height)
-  tank.sPowerBar = g.compositor.NewSprite(tank.x, tank.y+30, rPowerBar, 3)
+  tank.sPowerBar = g.compositor.NewSprite(tank.x, tank.y+30, rPowerBar, g.layers.playerControl)
 
   tank.bmPowerBar = bmPowerBar
   tank.setPowerBar = function(value)

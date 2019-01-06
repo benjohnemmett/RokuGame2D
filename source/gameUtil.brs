@@ -272,7 +272,7 @@ function rg2dGameState(initialState as String) as object
   gs = {
     state : initialState,
     prevState : "None"
-    subState : "Entry",
+    subState : "ENTRY",
     framesInState : 0,
     framesInSubState : 0,
     totalFrames : 0,
@@ -285,6 +285,7 @@ function rg2dGameState(initialState as String) as object
   gs.setState = function(newState as String) as void
 
     if(newState <> m.state) then
+
       m.prevState = m.state
       m.state = newState
 
@@ -293,7 +294,7 @@ function rg2dGameState(initialState as String) as object
       m.timeInState = 0.0
       m.timeInSubState = 0.0
 
-      subState = "Entry"
+      m.subState = "ENTRY"
     end if
 
   end function
@@ -301,6 +302,7 @@ function rg2dGameState(initialState as String) as object
   ' Called to change the substate & reset substate counters
   gs.setSubState = function(newSubState as String) as void
     if(newSubState <> m.subState) then
+      ?"SUBSTATE TO ";newSubState
       m.subState = newSubState
       m.framesInSubState = 0
       m.timeInSubState = 0.0

@@ -114,7 +114,7 @@ function windicator(wind, x, y) as object
     g = GetGlobalAA()
 
     rWindViewer = CreateObject("roRegion", wv.bm, 0, 0, DEF_WIDTH, DEF_HEIGHT)
-    g.sWindViewer = g.compositor.NewSprite(x, y, rwindViewer, 1)
+    g.sWindViewer = g.compositor.NewSprite(x, y, rwindViewer, g.layers.Windometer)
 
     return wv
 
