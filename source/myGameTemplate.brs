@@ -17,18 +17,18 @@ function rg2dSetGameParameters() as void
     g.menuArray.addItem("About", "about")
 
     g.layers = {}
-    ' Front'
+    ' Front' 100
     g.layers.FastSnow = 60
     g.layers.playerControl = 50
-    g.layers.Windometer = 40
+    g.layers.Flags = 42
+    g.layers.Igloos = 41
+    g.layers.Turret = 40
     g.layers.Projectiles = 30
-    g.layers.Flags = 22
-    g.layers.Igloos = 21
-    g.layers.Turret = 20
-    g.layers.MousePlane = 15
+    g.layers.MousePlane = 25
+    g.layers.Windometer = 20
     g.layers.Terrain = 10
     g.layers.SlowSnow = 9
-    'Back'
+    'Back' 1
 
 end function
 
@@ -178,10 +178,11 @@ function rg2dLoadSounds() as void
 end function
 
 ' Wrapper definition with function for generating a player
-function playerDef(playerNumber, isHumanPlayer, tankType)
+function playerDef(playerNumber, isHumanPlayer, tankType, name)
   pdef =  {playerNumber : playerNumber,
           isHumanPlayer : isHumanPlayer,
-          tankType : tankType}
+          tankType : tankType,
+          name : name}
 
   '''' Generate player function
   pdef.generate = function() as object
@@ -197,6 +198,8 @@ function playerDef(playerNumber, isHumanPlayer, tankType)
       tank = AITankRandy(2, 100, 100,0, faceRight, m.tankType)
     end if
 
+    tank.name = m.name
+
     return tank
   end function
 
@@ -207,8 +210,8 @@ end function
 
 ' Wrapper definition with function for generating an AIRanger player'
 '' Must be called in level setup so that compisitor for level has been set
-function AIRangerPlayerDef(playerNumber, tankType, badness)
-  pdef = playerDef(playerNumber, false, tankType)
+function AIRangerPlayerDef(playerNumber, tankType, badness, name)
+  pdef = playerDef(playerNumber, false, tankType, name)
   pdef.badness = badness
 
   pdef.generate = function() as object
@@ -220,10 +223,10 @@ function AIRangerPlayerDef(playerNumber, tankType, badness)
 
     tank = AITankRanger(2, 100, 100,0, faceRight, m.tankType)
     tank.badness = m.badness
+    tank.name = m.name
 
     return tank
   end function
-
 
   return pdef
 
@@ -241,6 +244,30 @@ function gameDefinition(rounds as integer, tank1, tank2, windspeed, levelPlayers
   GDef.levelPlayers = levelPlayers
 
   return GDef
+
+end function
+
+function getAIPlayerDefForLevel(playerNumber, level as integer) as object
+
+      pdef = invalid
+
+      if level = 1 then
+        pdef = PlayerDef(playerNumber, false, "igloo_blue", "Eli The Iceman")
+      else if level = 2 then
+        pdef = AIRangerPlayerDef(playerNumber, "igloo_green", 2.0, "The Green Giant")
+      else if level = 3 then
+        pdef = AIRangerPlayerDef(playerNumber, "igloo_red", 1.0, "Rudolf")
+      else if level = 4 then
+        pdef = AIRangerPlayerDef(playerNumber, "igloo_pink", 0.5, "Popper")
+      else if level = 5 then
+        pdef = AIRangerPlayerDef(playerNumber, "igloo_grey", 0.1, "The Ghost")
+      else if level = 6 then
+        pdef = AIRangerPlayerDef(playerNumber, "igloo_black", 0.0, "Black Licorice")
+      else
+        ?"Warning got unhandled level ";level
+      end if
+
+      return pdef
 
 end function
 
@@ -264,14 +291,15 @@ function rg2dMenuItemSelected() as void
     end if
 
     if(shortName = "play") then ' New Game
+      yourName = "Human"
 
       gameDefs = []
-      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo"), PlayerDef(2, false, "igloo_blue"), invalid, false ) )
-      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo"), AIRangerPlayerDef(2, "igloo_green", 2.0), invalid, false) )
-      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo"), AIRangerPlayerDef(2, "igloo_red", 1.0), invalid, false) )
-      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo"), AIRangerPlayerDef(2, "igloo_pink", 0.5), invalid, false) )
-      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo"), AIRangerPlayerDef(2, "igloo_grey", 0.1), invalid, true) )
-      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo"), AIRangerPlayerDef(2, "igloo_black", 0.0), 0, true) )
+      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo", yourName), getAIPlayerDefForLevel(2, 1), invalid, false ) )
+      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo", yourName), getAIPlayerDefForLevel(2, 2), invalid, false) )
+      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo", yourName), getAIPlayerDefForLevel(2, 3), invalid, false) )
+      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo", yourName), getAIPlayerDefForLevel(2, 4), invalid, false) )
+      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo", yourName), getAIPlayerDefForLevel(2, 5), invalid, true) )
+      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo", yourName), getAIPlayerDefForLevel(2, 6), 0, true) )
 
       idx = 0
       stillAlive = True
@@ -293,15 +321,19 @@ function rg2dMenuItemSelected() as void
       end while
 
 
-
     else if(shortName = "two_player") then ' New Game
+      iglooTypes = twoPlayerSelectScreen()
 
-      gdef = gameDefinition(1, playerDef(1, true, "igloo"), playerDef(2, true, "igloo_pink"), invalid, false)
+      if iglooTypes = invalid then
+        return
+      end if
+
+      gdef = gameDefinition(1, playerDef(1, true, iglooTypes[0]), playerDef(2, true, iglooTypes[1]), invalid, false)
       stat = rg2dPlayGame(gdef)
 
     else if(shortName = "ai_v_ai") then ' New Game
 
-      gdef = gameDefinition(1, AIRangerPlayerDef(1, "igloo_blue", 0.5), AIRangerPlayerDef(2, "igloo_pink", 0.5), invalid, false)
+      gdef = gameDefinition(1, getAIPlayerDefForLevel(1, rnd(6)), getAIPlayerDefForLevel(2, rnd(6)), invalid, false)
       stat = rg2dPlayGame(gdef)
 
     else if(shortName = "options") then ' Settings
@@ -323,6 +355,154 @@ function rg2dMenuItemSelected() as void
         'rg2dPlaySound(m.sounds.warp_in)
     end if
 
+end function
+
+function twoPlayerSelectScreen() as object ' returns 2 element array of igloo types'
+  g = GetGlobalAA()
+  myCodes = g.settings.controlCodes
+
+  playerSelect = 1
+  idx1 = 0
+  idx2 = 0
+
+  idx = 0
+  titleString = "Select Player 1 Igloo"
+
+  iglooTypes = g.iglooSprites.keys()
+  ?"IGLOO TYPES ";iglooTypes
+
+  drawTwoPlayerSelectScreen(titleString, idx1, idx2, playerSelect)
+
+  while true
+      event = m.port.GetMessage()
+
+      if (type(event) = "roUniversalControlEvent") then
+          id = event.GetInt()
+
+          if (id = myCodes.MENU_UP_A) or (id = myCodes.MENU_UP_B) then
+              rg2dPlaySound(m.sounds.navSingle)
+
+              idx = (idx-1)
+              if( idx < 0) then
+                idx = iglooTypes.count()-1
+              else if (idx > iglooTypes.count()-1) then
+                idx = 0
+              end if
+
+              if playerSelect = 1 then
+                idx1 = idx
+              else
+                idx2 = idx
+              end if
+
+              ?titleString;" ";iglooTypes[idx]
+
+              drawTwoPlayerSelectScreen(titleString, idx1, idx2, playerSelect)
+
+          else if(id = myCodes.MENU_DOWN_A) or (id = myCodes.MENU_DOWN_B)then
+
+              idx = (idx+1)
+              if( idx < 0) then
+                idx = iglooTypes.count()-1
+              else if (idx > iglooTypes.count()-1) then
+                idx = 0
+              end if
+              if playerSelect = 1 then
+                idx1 = idx
+              else
+                idx2 = idx
+              end if
+              ?titleString;" ";iglooTypes[idx]
+
+              drawTwoPlayerSelectScreen(titleString, idx1, idx2, playerSelect)
+
+          else if(id = myCodes.SELECT1A_PRESSED) or (id = myCodes.SELECT1B_PRESSED) or (id = myCodes.SELECT2_PRESSED)
+              rg2dPlaySound(m.sounds.foomp12)
+
+              if playerSelect = 1 then ' go on to player 2'
+                sleep(500)
+                titleString = "Select Player 2 Igloo"
+                playerSelect = 2
+                idx1 = idx
+                idx = 0
+                drawTwoPlayerSelectScreen(titleString, idx1, idx2, playerSelect)
+              else
+
+                playerSelect = 3
+                drawTwoPlayerSelectScreen(titleString, idx1, idx2, playerSelect)
+                sleep(700)
+                returnTypes = []
+                returnTypes.push(iglooTypes[idx1])' push player 1'
+                returnTypes.push(iglooTypes[idx]) ' push player 2'
+
+                ' TODO play "Let's go!" Sound'
+
+                return returnTypes
+              end if
+
+          else if(id = myCodes.BACK_PRESSED) then
+              ' Exit Game
+              return invalid
+          end if
+
+      end if
+
+  end while
+
+end function
+
+'' Draw
+function drawTwoPlayerSelectScreen(titleString, idx1, idx2, playerSelect) as void
+  g = GetGlobalAA()
+  myCodes = g.settings.controlCodes
+
+  maskColor = &h334488AA
+  bgColor = &h334488FF
+  fontColor = &hFFFF22FF
+  g.screen.clear(bgColor)
+  g.font_registry = CreateObject("roFontRegistry")
+  fontTitle = g.font_registry.GetDefaultFont(56, True, false)
+  fontHeader = g.font_registry.GetDefaultFont(30, True, false)
+
+  tWidth = fontTitle.GetOneLineWidth(titleString, 1280)
+  indent = (1280-tWidth)/2
+  g.screen.DrawText(titleString,indent,100,fontColor,fontTitle)
+
+  iglooSpriteTypes = g.iglooSprites.keys()
+
+  x1 = 400
+  x2 = 800
+  y_ = 260
+
+  g.screen.DrawText("Player 1 Igloo",x1-50,200,fontColor,fontHeader)
+  g.screen.DrawText("Player 2 Igloo",x2-50,200,fontColor,fontHeader)
+  g.screen.DrawText("Vs.",(x1+x2)/2,300,fontColor,fontHeader)
+
+  For i=0 to iglooSpriteTypes.count()-1 step 1
+
+    if playerSelect = 1 or (i = idx1) then '' Only draw player 1 igloos on player 1 selection, except for selected igloo
+      g.screen.DrawObject(x1, y_, g.iglooSprites.lookup(iglooSpriteTypes[i])[0])
+      if (i <> idx1) then
+        g.screen.DrawRect(x1, y_, 64, 49, maskColor)
+      end if
+    end if
+
+    if playerSelect < 3 or (i = idx2) then '' Only draw player 2 igloos on player 1 or 2 selection, except for selected igloo
+      g.screen.DrawObject(x2, y_, g.iglooSprites.lookup(iglooSpriteTypes[i])[0])
+      if (i <> idx2) then
+        g.screen.DrawRect(x2, y_, 64, 49, maskColor)
+      end if
+    end if
+
+    y_ += 60
+  End For
+
+  if playerSelect = 1 then ' Grey out player 2 selection'
+    g.screen.DrawRect(x2, 260, 64, 49*iglooSpriteTypes.count(), maskColor)
+  end if
+
+
+  g.screen.swapBuffers()
 end function
 
 
@@ -496,9 +676,9 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
         msg = ""
 
         if (g.tank1.health <= 0) then
-          msg = "Player 2 Wins!"
+          msg = g.tank2.name + " Wins!"
         else if (g.tank2.health <= 0) then
-          msg = "Player 1 Wins!"
+          msg = g.tank1.name + " Wins!"
         end if
 
         g.mouseController.startPlaneBanner(msg)

@@ -65,6 +65,7 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
   tank.health = 100
   tank.playerNumber = playerNumber
   tank.isHumanPlayer = isHumanPlayer
+  tank.name = "Snow Baller"
 
   tank.turret.updateDisplay()
 

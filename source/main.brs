@@ -51,6 +51,9 @@ function Main() as void
     '''''''''''''''''''''''''''''''''
     '''' MAIN Menu
     rg2dSetupMainScreen()
+    URLLibSetup()
+    success = URLLibGetAsync("http://httpstat.us/200")
+    ?success
 
     while true
         event = m.port.GetMessage()
@@ -79,6 +82,11 @@ function Main() as void
                 ' Exit Game
                 return
             end if
+        else if (type(event) = "roUrlEvent") then
+          ?"Got URL EVENT"
+
+          URLLibHandleUrlEvent(event)
+
         end if
 
     end while
