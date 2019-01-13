@@ -47,13 +47,15 @@ function Main() as void
     ' Load images
     rg2dLoadSprites()
 
+    ' Load fonts'
+    rg2dLoadFonts()
 
     '''''''''''''''''''''''''''''''''
     '''' MAIN Menu
     rg2dSetupMainScreen()
-    URLLibSetup()
-    success = URLLibGetAsync("http://httpstat.us/200")
-    ?success
+    'URLLibSetup()
+    'success = URLLibGetAsync("http://httpstat.us/200")
+    ''?success
 
     while true
         event = m.port.GetMessage()
@@ -98,21 +100,22 @@ function rg2dSetupMainScreen() as void
 
     g = GetGlobalAA()
 
-    m.screen.clear(0)
+    g.screen.clear(0)
     g.compositor.DrawAll()
 
     numMenuOptions = g.menuArray.getCount()
     selectedMenuOption = g.menuArray.selectedIndex
 
-    g.font_registry = CreateObject("roFontRegistry")
-    font = g.font_registry.GetDefaultFont(56, True, false)
+    'font = g.font_registry.GetDefaultFont(56, True, false)
+    font = g.font_registry.GetFont("Almonte Snow", 56, false, false)
 
-    regColor = &hFFFFFFFF
-    selColor = &hFFFF22FF
+    regColor = &h96a3b7FF
+    selColor = &h366cbcFF
 
     topIndent = 200
-    leftIndent = 400
-    vertSpace = font.GetOneLineHeight() + 10
+    leftIndent = 450
+    vertSpace = font.GetOneLineHeight() + 8
+    g.screen.DrawRect(leftIndent-50, topIndent-30, 1280-2*(leftIndent-50), 720-2*(topIndent-80), &hFFFFFFCC)
 
     for t = 0 to (numMenuOptions -1)
         if(t = selectedMenuOption) then

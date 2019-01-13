@@ -13,7 +13,6 @@ function rg2dPlayGame(gdef) as object
 
     'Load screen
     screen.clear(0)
-    g.font_registry = CreateObject("roFontRegistry")
     font = g.font_registry.GetDefaultFont()
     screen.DrawText("Loading...",300, 300, &hFFFFFFFF, font)
     screen.SwapBuffers()

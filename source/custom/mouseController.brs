@@ -36,16 +36,17 @@ function mouseController()
 
   mc.createMousePlaneBanner = function(msg as string)
     g = GetGlobalAA()
-    font = g.font_registry.GetDefaultFont(20, True, false)
+    font = g.font_registry.GetFont("HannaHandwriting",20, True, false)
+    'font = g.font_registry.GetFont("Almonte Snow", 56, false, false)
 
     m.BANNER_WIDTH = font.GetOneLineWidth(msg, 1280) + 8
 
     m.bmBanner = CreateObject("roBitmap", {width:m.PLANE_WIDTH+m.BANNER_WIDTH, height:m.PLANE_HEIGHT, AlphaEnable:true})
     m.bmBanner.DrawObject(0, 0, g.rMousePlaneStrings)
 
-    m.bmBanner.drawRect(m.PLANE_WIDTH, 20, m.BANNER_WIDTH, 30, &hFFFFFFFF) ' Draw banner'
+    m.bmBanner.drawRect(m.PLANE_WIDTH, 20, m.BANNER_WIDTH, 30, &hfefff2FF) ' Draw banner'
     'Write message'
-    m.bmBanner.DrawText(msg, m.PLANE_WIDTH+2, 20, &h002222FF, font)
+    m.bmBanner.DrawText(msg, m.PLANE_WIDTH+2, 20, &h020c30FF, font)
 
     m.rBanner = CreateObject("roRegion", m.bmBanner, 0, 0, m.PLANE_WIDTH+m.BANNER_WIDTH, m.PLANE_HEIGHT)
 

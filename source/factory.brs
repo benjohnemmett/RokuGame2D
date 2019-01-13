@@ -63,7 +63,7 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
   tank.timeSinceFire = 0
 
   tank.health = 100
-  tank.playerNumber = playerNumber
+  tank.playerNumber = playerNumber ' Corresponse to g.tank1 or g.tank2'
   tank.isHumanPlayer = isHumanPlayer
   tank.name = "Snow Baller"
 
@@ -77,8 +77,8 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
   ''''''''''''''''''''''''''''''''''''''''''''''''''''''
   '''''' Projectile Stuff
   ''''''''''''''''''''''''''''''''''''''''''''''''''''''
-  tank.projectile_list = getProjectileList()
-  tank.projectile_idx = 0
+  'tank.projectile_list = getProjectileList()
+  'tank.projectile_idx = 0
 
   'tank.projectile_selector = projectileSelector()
   'tank.projectile_selector.updateDisplay()
@@ -151,6 +151,7 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
 
   end function
 
+' This is allows for multiple projectiles in a single turn, by
   tank.runProjectileControl = function(dt)
     m.timeSinceFire += dt
 
@@ -183,7 +184,15 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
     return newState
   end function
 
+  ' THis allows projectiles to be updated & take actions in flight
+  tank.updateProjectilesInFlight = function(dt) as void
 
+    for each p in m.activeProjectiles
+      ''?"UPdating ";p
+      p.inFlightUpdate(dt)
+    end for
+
+  end function
 
 'm.turret.angle'
 '        ^

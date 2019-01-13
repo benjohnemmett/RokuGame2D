@@ -79,11 +79,15 @@ function rg2dLoadSprites() as void
     g.SB.pellet_3p = CreateObject("roRegion", bmSnowBallIcons, 96, 32, 32, 32)
     g.SB.pellet_5p = CreateObject("roRegion", bmSnowBallIcons, 128, 32, 32, 32)
     g.SB.baked_alaska_1 = CreateObject("roRegion", bmSnowBallIcons, 0, 64, 32, 32)
+    'g.SB.ice_see_you_A1 = CreateObject("roRegion", bmSnowBallIcons, 0, 96, 32, 32)
+    'g.SB.ice_see_you_A2 = CreateObject("roRegion", bmSnowBallIcons, 32, 96, 32, 32)
+    g.SB.ice_see_you_A1 = CreateObject("roRegion", bmSnowBallIcons, 64, 96, 32, 32)
+    g.SB.ice_see_you_A2 = CreateObject("roRegion", bmSnowBallIcons, 96, 96, 32, 32)
 
-    g.rSnowBall = rg2dLoadRegion("pkg:/components/sprites/snowball_p21.png", 0, 0, 21, 21)
-    g.rSnowBallFire = rg2dLoadRegion("pkg:/components/sprites/snowball_fire_p21.png", 0, 0, 21, 21)
-    g.rSnowBall11 = rg2dLoadRegion("pkg:/components/sprites/snowball_p11.png", 0, 0, 11, 11)
-    g.rSnowBall5 = rg2dLoadRegion("pkg:/components/sprites/snowball_p5.png", 0, 0, 5, 5)
+    'g.rSnowBall = rg2dLoadRegion("pkg:/components/sprites/snowball_p21.png", 0, 0, 21, 21)
+    'g.rSnowBallFire = rg2dLoadRegion("pkg:/components/sprites/snowball_fire_p21.png", 0, 0, 21, 21)
+    'g.rSnowBall11 = rg2dLoadRegion("pkg:/components/sprites/snowball_p11.png", 0, 0, 11, 11)
+    'g.rSnowBall5 = rg2dLoadRegion("pkg:/components/sprites/snowball_p5.png", 0, 0, 5, 5)
     'g.rTerrain_ice = rg2dLoadRegion("pkg:/components/sprites/terrain_ice_288_44.png", 0, 0, 288, 44)
     'g.rIgloo_right = rg2dLoadRegion("pkg:/components/sprites/igloo2_right_63_42.png", 0, 0, 63, 42)
     'g.rIgloo_left = rg2dLoadRegion("pkg:/components/sprites/igloo2_left_63_42.png", 0, 0, 63, 42)
@@ -168,12 +172,24 @@ function rg2dLoadSounds() as void
     'g.sounds.foompB = CreateObject("roAudioResource", "pkg:/components/audio/foompB.wav")
     g.sounds.foomp12 = CreateObject("roAudioResource", "pkg:/components/audio/foomp12.wav")
     g.sounds.ouch1 = CreateObject("roAudioResource", "pkg:/components/audio/ouch1.wav")
+    g.sounds.ouch2 = CreateObject("roAudioResource", "pkg:/components/audio/ouch2.wav")
     g.sounds.poof1 = CreateObject("roAudioResource", "pkg:/components/audio/poof1.wav")
+    g.sounds.poof2 = CreateObject("roAudioResource", "pkg:/components/audio/poof2.wav")
+    g.sounds.phaser1 = CreateObject("roAudioResource", "pkg:/components/audio/phaser1.wav")
     g.sounds.navSingle = CreateObject("roAudioResource", "navsingle")
 
     '?"Max Streams ";g.sounds.astroid_blast.maxSimulStreams()
     g.audioStream = 1
     g.maxAudioStreams = 1 'g.sounds.astroid_blast.maxSimulStreams()
+
+end function
+
+function rg2dLoadFonts() as void
+  g = GetGlobalAA()
+  g.font_registry = CreateObject("roFontRegistry")
+
+  g.font_registry.Register("pkg:/components/fonts/AlmonteSnow.ttf")
+  g.font_registry.Register("pkg:/components/fonts/HannaHandwriting.ttf")
 
 end function
 
@@ -456,13 +472,15 @@ function drawTwoPlayerSelectScreen(titleString, idx1, idx2, playerSelect) as voi
   g = GetGlobalAA()
   myCodes = g.settings.controlCodes
 
-  maskColor = &h334488AA
-  bgColor = &h334488FF
-  fontColor = &hFFFF22FF
+  bgColor = &hf2f7ffFF
+  maskColor = &hf2f7ffAA ' Same as bg Color but with alpha'
+  fontColor = &h3764adFF
   g.screen.clear(bgColor)
-  g.font_registry = CreateObject("roFontRegistry")
-  fontTitle = g.font_registry.GetDefaultFont(56, True, false)
-  fontHeader = g.font_registry.GetDefaultFont(30, True, false)
+
+  fontTitle = g.font_registry.GetFont("Almonte Snow", 72, true, false)
+  fontHeader = g.font_registry.GetFont("Almonte Snow", 48, true, false)
+  'fontTitle = g.font_registry.GetDefaultFont(56, True, false)
+  'fontHeader = g.font_registry.GetDefaultFont(30, True, false)
 
   tWidth = fontTitle.GetOneLineWidth(titleString, 1280)
   indent = (1280-tWidth)/2
@@ -474,8 +492,8 @@ function drawTwoPlayerSelectScreen(titleString, idx1, idx2, playerSelect) as voi
   x2 = 800
   y_ = 260
 
-  g.screen.DrawText("Player 1 Igloo",x1-50,200,fontColor,fontHeader)
-  g.screen.DrawText("Player 2 Igloo",x2-50,200,fontColor,fontHeader)
+  g.screen.DrawText("Player 1",x1-50,200,fontColor,fontHeader)
+  g.screen.DrawText("Player 2",x2-50,200,fontColor,fontHeader)
   g.screen.DrawText("Vs.",(x1+x2)/2,300,fontColor,fontHeader)
 
   For i=0 to iglooSpriteTypes.count()-1 step 1
@@ -567,7 +585,7 @@ function rg2dLoadLevel(gdef, level as integer) as void
         p.ttl = 0.0
         p.state = "DEAD"
         p.NotifyOwnerOfCollision(t)
-        rg2dPlaySound(g.sounds.ouch1)
+        rg2dPlaySound(g.sounds.ouch2)
       end if
       return 1 ' Indicate not to perform normal collision
     end function
@@ -586,7 +604,7 @@ function rg2dLoadLevel(gdef, level as integer) as void
         p.ttl = 0.1
         p.state = "DEAD"
         p.NotifyOwnerOfCollision(t)
-        rg2dPlaySound(g.sounds.poof1)
+        rg2dPlaySound(g.sounds.poof2)
       end if
       return 1
     end function
@@ -772,7 +790,9 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
           g.gameState.setState(newState) ' Let the projectile control determine when to transition
 
         else if g.gameState.state = "WAITING_IMPACT"
-          if active_player.hasActiveProjectiles() = False
+          if active_player.hasActiveProjectiles() then
+            active_player.updateProjectilesInFlight(dt)
+          else
             g.gameState.setState("IMPACTED")
             g.wind.clearDead()
           end if
@@ -839,7 +859,9 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
 
         else if g.gameState.state = "WAITING_IMPACT"
           ''?" - WAITING_IMPACT"
-          if active_player.hasActiveProjectiles() = False
+          if active_player.hasActiveProjectiles() then
+            active_player.updateProjectilesInFlight(dt)
+          else
             g.gameState.setState("IMPACTED")
             g.wind.clearDead()
           end if

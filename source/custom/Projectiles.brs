@@ -6,16 +6,16 @@
 '   Notify owner of collision/timeout death
 
 
-function getProjectileList()
-  return ["standard","baked_alaska","snowman_pellet"]
-end function
+'function getProjectileList()''
+''  return ["standard","baked_alaska","snowman_pellet"]
+'end function
 
 function getShotTypeList()
   return ["standard_1","standard_3p","standard_5p","standard_3s","standard_5s",
           "pellet_1","pellet_3p","pellet_5p","pellet_3s","pellet_5s",
-          "baked_alaska_1"]
+          "baked_alaska_1","ice_see_you_A1"]
   ' return ["baked_alaska_1"]
-  ' return ["baked_alaska_1","pellet_5s"]
+   'return ["ice_see_you_A1"]
 end function
 
 ''' Creates an array of oneShots
@@ -30,6 +30,8 @@ function createShot(owner, sType, x, y, power, angle, faceRight)
   STD_DMG = 8
   BA_RAD = 11
   BA_DMG = 25
+  ICU_RAD = 11
+  ICU_DMG = 20
 
   ?" Creating Shot ";sType
   if(sType = "standard_1") then
@@ -64,6 +66,45 @@ function createShot(owner, sType, x, y, power, angle, faceRight)
 
   else if(sType = "baked_alaska_1") then
     shotArray = subCreateShot(owner, g.SB.baked_alaska_1, 1, true, BA_RAD, BA_DMG, x, y, power, angle, faceRight)
+
+  else if(sType = "ice_see_you_A1") then
+    shotArray = subCreateShot(owner, g.SB.ice_see_you_A1, 1, true, ICU_RAD, ICU_DMG, x, y, power, angle, faceRight)
+
+    s = shotArray[0] 'Get the projectile out'
+    s.proj.inFlightUpdate = function(dt) as void
+      ''?"ice_see_you_1 Update"
+      if m.vy > 0 then
+        ''?"ICU On it's way down!!"
+
+        'If no target set, then set it'
+        if(m.target = invalid) then
+          g = GetGlobalAA()
+          rg2dPlaySound(g.sounds.phaser1)
+          sp = m.elementArray[0].sprite
+          sp.SetRegion(g.SB.ice_see_you_A2)
+
+          if(m.owner.playerNumber = 1) then
+            m.target = g.tank2
+          else
+            m.target = g.tank1
+          end if
+        else
+          ' '
+          VEL = 900 ' Zoom to the target'
+          dx = m.target.x - m.x
+          dy = m.target.y - m.y
+
+          l = sqr(dx*dx + dy*dy)
+
+          ndx = dx/l
+          ndy = dy/l
+
+          m.vx = ndx * VEL
+          m.vy = ndy * VEL
+        end if
+
+      end if
+    end function
 
   else
       ?"*** Warning *** Unhandled shotType requested ";sType
@@ -135,6 +176,7 @@ function projectile(owner as object, region, radius, damage_power, x,y,vx,vy) as
   proj.damage_power = damage_power
 
   proj.owner = owner
+  proj.target = invalid ' by default, projectiles are dumb, but this allows for configuring to seek a target'
 
   proj.state = "ALIVE"
 
@@ -149,11 +191,16 @@ function projectile(owner as object, region, radius, damage_power, x,y,vx,vy) as
     return m.owner
   end function
 
+  ' Empty function to be used for projectiles that require in flight updates'
+  proj.inFlightUpdate = function(dt) as void
+  ''?"Defualt inFlightUpdate called "
+  end function
+
   ' This is here in case the object has not collided but is about to time out'
   proj.dyingWish = function() as void
-  ?"Projectile dying wish"
+  ''?"Projectile dying wish"
     if(m.state = "ALIVE") then
-      ?"I was alive"
+      ''?"I was alive"
       m.owner.projectileNotification(m, invalid)
       m.state = "DEAD"
     end if
