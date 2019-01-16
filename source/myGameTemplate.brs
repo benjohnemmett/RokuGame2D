@@ -57,6 +57,8 @@ function rg2dLoadSprites() as void
     g.rScore[9] = CreateObject("roRegion", bmScore, 9*32, 0, 32, 32)
 
 
+    g.regions = {}
+
     bmPauseScreen = CreateObject("roBitmap", "pkg:/components/sprites/Pause_Menu_Screen.png")
     g.rPauseScreen = CreateObject("roRegion", bmPauseScreen, 0, 0, 640, 200)
 
@@ -91,6 +93,9 @@ function rg2dLoadSprites() as void
     'g.rTerrain_ice = rg2dLoadRegion("pkg:/components/sprites/terrain_ice_288_44.png", 0, 0, 288, 44)
     'g.rIgloo_right = rg2dLoadRegion("pkg:/components/sprites/igloo2_right_63_42.png", 0, 0, 63, 42)
     'g.rIgloo_left = rg2dLoadRegion("pkg:/components/sprites/igloo2_left_63_42.png", 0, 0, 63, 42)
+
+    bmTrees = CreateObject("roBitmap", "pkg:/components/sprites/tree_56_90.png")
+    g.regions.tree_1_A = CreateObject("roRegion", bmTrees, 0, 0, 56, 90)
 
     bmIgloos = CreateObject("roBitmap", "pkg:/components/sprites/igloos_II_128_294.png")
 

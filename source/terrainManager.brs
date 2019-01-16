@@ -157,6 +157,9 @@ function laydownTerrainInOneSprite(physModel, compositor, terrainRegions, terrai
   prevX_ = 0
   numSections = terrainDef.sectionList.count()
   'for each s in terrainDef.sectionList
+
+  prevH = 0
+  nextH = 0
   for si = 0 to (numSections-1)
 
     s = terrainDef.sectionList[si]
@@ -166,14 +169,30 @@ function laydownTerrainInOneSprite(physModel, compositor, terrainRegions, terrai
     terrain.colliders.push(fpc)
     g.pogTerr.addPhysObj(fpc)
 
+    if si > 1 then
+      prevH = terrainDef.sectionList[si-1].height
+    end if
+    if si < (numSections-1) then
+      nextH = terrainDef.sectionList[si+1].height
+    else
+      nextH = 100000
+    end if
+
+
     ' Create sprites'
     sx_ = x_
     N = int(s.width/21)
-    for i = 0 to N
-      bm.DrawObject(sx_, g.sHeight-s.height, terrainRegions.rTopBlock_center)
+    for i = 0 to N ' N blocks in this section'
+      if (i = 0) AND ((s.height - prevH) > 30) then ' Corner where this is higher than the previous'
+        bm.DrawObject(sx_, g.sHeight-s.height, terrainRegions.rTopBlock_left) ' Top '
+      else if (i = N) AND ((s.height - nextH) > 30) ' Corner where this is higher than the next'
+        bm.DrawObject(sx_, g.sHeight-s.height, terrainRegions.rTopBlock_right) ' Top '
+      else
+        bm.DrawObject(sx_, g.sHeight-s.height, terrainRegions.rTopBlock_center) ' Top '
+      end if
 
       for j = 1 to int((g.sHeight-s.height)/21)
-        bm.DrawObject(sx_, g.sHeight-s.height + j*21, terrainRegions.rCenterBlock)
+        bm.DrawObject(sx_, g.sHeight-s.height + j*21, terrainRegions.rCenterBlock) 'going down'
       end for
 
       sx_ += 21
@@ -195,9 +214,33 @@ function laydownTerrainInOneSprite(physModel, compositor, terrainRegions, terrai
       end if
     end if
 
+    'trees ' Only on non-tank sections, higher sections
+    TREE_HEIGHT = 90
+    if (si > 0) and (si < (numSections-1)) then
+      if ((s.height - prevH) > 0) and ((s.height - nextH) > 0) then
+        down = 10
+        for i = 1 to rnd(3)
+          bm.DrawObject(x_-10 + rnd(s.width-40), g.sHeight - s.height - TREE_HEIGHT + down, g.regions.tree_1_A)
+          down += rnd(10)
+        end for
+
+      else if ((s.height - prevH) > 0) or ((s.height - nextH) > 0) then
+            down = 10
+            for i = 1 to rnd(5)
+              bm.DrawObject(x_-10 + rnd(s.width-40), g.sHeight - s.height - TREE_HEIGHT + down, g.regions.tree_1_A)
+              down += rnd(10)
+            end for
+      else
+          if rnd(10) > 8 then
+            bm.DrawObject(x_-10 + rnd(s.width-40), g.sHeight - s.height - TREE_HEIGHT + 10 + rnd(10), g.regions.tree_1_A)
+          end if
+      end if
+    end if
+
     prevX_ = x_
     x_ += s.width
   end for
+
 
   return terrain
 
