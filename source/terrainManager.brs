@@ -191,7 +191,7 @@ function laydownTerrainInOneSprite(physModel, compositor, terrainRegions, terrai
         bm.DrawObject(sx_, g.sHeight-s.height, terrainRegions.rTopBlock_center) ' Top '
       end if
 
-      for j = 1 to int((g.sHeight-s.height)/21)
+      for j = 1 to int((s.height)/21)
         bm.DrawObject(sx_, g.sHeight-s.height + j*21, terrainRegions.rCenterBlock) 'going down'
       end for
 
