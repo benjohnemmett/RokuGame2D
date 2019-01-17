@@ -214,9 +214,11 @@ function playerDef(playerNumber, isHumanPlayer, tankType, name)
     end if
 
     if(m.isHumanPlayer) then
-      tank = createTank(1, true, 100, 200, 0, faceRight, m.tankType)
+            'createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_type)'
+      tank = createTank(m.playerNumber, true, 100, 200, 0, faceRight, m.tankType)
     else
-      tank = AITankRandy(2, 100, 100,0, faceRight, m.tankType)
+      'AITankRanger(playerNumber, x, y, angle, faceRight, tank_type)'
+      tank = AITankRandy(m.playerNumber, 100, 100,0, faceRight, m.tankType)
     end if
 
     tank.name = m.name
@@ -242,7 +244,7 @@ function AIRangerPlayerDef(playerNumber, tankType, badness, name)
       faceRight = False
     end if
 
-    tank = AITankRanger(2, 100, 100,0, faceRight, m.tankType)
+    tank = AITankRanger(m.playerNumber, 100, 100,0, faceRight, m.tankType)
     tank.badness = m.badness
     tank.name = m.name
 
@@ -560,7 +562,6 @@ function rg2dLoadLevel(gdef, level as integer) as void
 
     '''''''''''''''''''''
     '''''' TANKS
-
     g.tank1 = gdef.tank1.generate()
     g.tank2 = gdef.tank2.generate()
 

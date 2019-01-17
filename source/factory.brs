@@ -443,6 +443,7 @@ function AITankRanger(playerNumber, x, y, angle, faceRight, tank_type)
 
     m.last_shot_target = target
 
+    ' First Guess'
     if m.last_shot = invalid then
       shot.angle = 45 * (pi()/180)' Choose high loft to avoid terrain'
 
@@ -467,6 +468,11 @@ function AITankRanger(playerNumber, x, y, angle, faceRight, tank_type)
           shot.power -= 10
         else ' Not far enough'
           shot.power += 10
+          if m.last_shot_miss_distance < 100 then ' If it fell short by a lot, then aim up a bit'
+            shot.angle = shot.angle + rnd(3)* (pi()/180)
+
+            shot.power += 5
+          end if
         end if
       end if
     end if
