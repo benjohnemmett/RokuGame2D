@@ -20,6 +20,7 @@ function rg2dSetGameParameters() as void
     ' Front' 100
     g.layers.FastSnow = 60
     g.layers.playerControl = 50
+    g.layers.Trees = 45
     g.layers.Flags = 42
     g.layers.Igloos = 41
     g.layers.Turret = 40
@@ -85,14 +86,8 @@ function rg2dLoadSprites() as void
     'g.SB.ice_see_you_A2 = CreateObject("roRegion", bmSnowBallIcons, 32, 96, 32, 32)
     g.SB.ice_see_you_A1 = CreateObject("roRegion", bmSnowBallIcons, 64, 96, 32, 32)
     g.SB.ice_see_you_A2 = CreateObject("roRegion", bmSnowBallIcons, 96, 96, 32, 32)
-
-    'g.rSnowBall = rg2dLoadRegion("pkg:/components/sprites/snowball_p21.png", 0, 0, 21, 21)
-    'g.rSnowBallFire = rg2dLoadRegion("pkg:/components/sprites/snowball_fire_p21.png", 0, 0, 21, 21)
-    'g.rSnowBall11 = rg2dLoadRegion("pkg:/components/sprites/snowball_p11.png", 0, 0, 11, 11)
-    'g.rSnowBall5 = rg2dLoadRegion("pkg:/components/sprites/snowball_p5.png", 0, 0, 5, 5)
-    'g.rTerrain_ice = rg2dLoadRegion("pkg:/components/sprites/terrain_ice_288_44.png", 0, 0, 288, 44)
-    'g.rIgloo_right = rg2dLoadRegion("pkg:/components/sprites/igloo2_right_63_42.png", 0, 0, 63, 42)
-    'g.rIgloo_left = rg2dLoadRegion("pkg:/components/sprites/igloo2_left_63_42.png", 0, 0, 63, 42)
+    g.SB.digger_1 = CreateObject("roRegion", bmSnowBallIcons, 0, 128, 32, 32)
+    g.SB.digger_shadow = CreateObject("roRegion", bmSnowBallIcons, 32, 128, 32, 32)
 
     bmTrees = CreateObject("roBitmap", "pkg:/components/sprites/tree_56_90.png")
     g.regions.tree_1_A = CreateObject("roRegion", bmTrees, 0, 0, 56, 90)
@@ -127,14 +122,6 @@ function rg2dLoadSprites() as void
     g.iglooSprites.igloo_black = []
     g.iglooSprites.igloo_black.push(CreateObject("roRegion", bmIgloos, 0, 42*6, 63, 42))' left'
     g.iglooSprites.igloo_black.push(CreateObject("roRegion", bmIgloos, 64, 42*6, 63, 42))' right'
-
-
-    '
-    '
-    ' g.rIgloo_left = CreateObject("roRegion", bmIgloos, 0, 0, 63, 42)
-    ' g.rIgloo_right = CreateObject("roRegion", bmIgloos, 64, 0, 63, 42)
-    ' g.rIgloo_blue_left = CreateObject("roRegion", bmIgloos, 0, 42, 63, 42)
-    ' g.rIgloo_blue_right = CreateObject("roRegion", bmIgloos, 64, 42, 63, 42)
 
     g.rFlagRed = rg2dLoadRegion("pkg:/components/sprites/Flag_red_white.png", 0, 0, 40, 30)
     g.rFlagBlue = rg2dLoadRegion("pkg:/components/sprites/Flag_orange_blue.png", 0, 0, 40, 30)
@@ -606,12 +593,41 @@ function rg2dLoadLevel(gdef, level as integer) as void
     cpProjTerr.overlapCallback = function(p,t) as integer
       ?"Projectile hitting ICE"
       if p.state = "ALIVE" then
+
         g = GetGlobalAA()
-        p.ttl = 0.1
-        p.state = "DEAD"
-        p.NotifyOwnerOfCollision(t)
-        rg2dPlaySound(g.sounds.poof2)
+        if p.isDigger then
+          ?"We have a digger here"
+          ?"p: (";p.x;" ";p.y;")"
+
+          if p.x_atTargetY = invalid and p.target <> invalid then ' check to see if we passed targets Y'
+            if p.y > p.target.y then
+              p.x_atTargetY = p.x
+            end if
+          end if
+
+          ' If it is off screen -> ttl = 0.1'
+          if (p.x < 0) or (p.x > g.sWidth) or (p.y < 0) or (p.y > g.sHeight) then
+            ?"Offscreen, kill it!"
+            p.ttl = 0.1
+            p.state = "DEAD"
+            p.NotifyOwnerOfCollision(t)
+            rg2dPlaySound(g.sounds.poof2)
+          ' else -> put mark on the terrain'
+          else
+            if (g.terrain.td.getheightatxpoint(p.x) - (g.sHeight - p.y)) > 5 then ' Make sure it's fully under the ground
+              g.terrain.bm.DrawObject(p.x-16, p.y-16, g.SB.digger_shadow)
+              g.terrain.bm.DrawObject(p.x + (p.vx*0.01)-16, p.y + (p.vy*0.01) - 16, g.SB.digger_shadow)
+              g.terrain.bm.DrawObject(p.x - (p.vx*0.01)-16, p.y - (p.vy*0.01) - 16, g.SB.digger_shadow)
+            end if
+          end if
+        else ' Normal collision'
+          p.ttl = 0.1
+          p.state = "DEAD"
+          p.NotifyOwnerOfCollision(t)
+          rg2dPlaySound(g.sounds.poof2)
+        end if
       end if
+
       return 1
     end function
 
@@ -630,7 +646,7 @@ function rg2dLoadLevel(gdef, level as integer) as void
 
     end if
 
-    terrain = laydownTerrainInOneSprite(g.pm, g.compositor, g.terrain_ice, td)
+    g.terrain = laydownTerrainInOneSprite(g.pm, g.compositor, g.terrain_ice, td)
 
     ''' mouse
     g.mouseController = mouseController()

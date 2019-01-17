@@ -13,9 +13,10 @@
 function getShotTypeList()
   return ["standard_1","standard_3p","standard_5p","standard_3s","standard_5s",
           "pellet_1","pellet_3p","pellet_5p","pellet_3s","pellet_5s",
-          "baked_alaska_1","ice_see_you_A1"]
+          "baked_alaska_1","ice_see_you_A1","digger_1"]
   ' return ["baked_alaska_1"]
    'return ["ice_see_you_A1"]
+   'return ["digger_1"]
 end function
 
 ''' Creates an array of oneShots
@@ -32,6 +33,8 @@ function createShot(owner, sType, x, y, power, angle, faceRight)
   BA_DMG = 25
   ICU_RAD = 11
   ICU_DMG = 20
+  DIG_RAD = 4
+  DIG_DMG = 20
 
   ?" Creating Shot ";sType
   if(sType = "standard_1") then
@@ -66,6 +69,20 @@ function createShot(owner, sType, x, y, power, angle, faceRight)
 
   else if(sType = "baked_alaska_1") then
     shotArray = subCreateShot(owner, g.SB.baked_alaska_1, 1, true, BA_RAD, BA_DMG, x, y, power, angle, faceRight)
+
+  else if(sType = "digger_1") then
+    shotArray = subCreateShot(owner, g.SB.digger_1, 1, true, DIG_RAD, DIG_DMG, x, y, power, angle, faceRight)
+    s = shotArray[0] 'Get the projectile out'
+    s.proj.isDigger = true
+    s.proj.x_atTargetY = invalid
+
+    ' Set target, for checking x at targets Y later
+    g = GetGlobalAA()
+    if(s.proj.owner.playerNumber = 1) then
+      s.proj.target = g.tank2
+    else
+      s.proj.target = g.tank1
+    end if
 
   else if(sType = "ice_see_you_A1") then
     shotArray = subCreateShot(owner, g.SB.ice_see_you_A1, 1, true, ICU_RAD, ICU_DMG, x, y, power, angle, faceRight)
@@ -177,6 +194,8 @@ function projectile(owner as object, region, radius, damage_power, x,y,vx,vy) as
 
   proj.owner = owner
   proj.target = invalid ' by default, projectiles are dumb, but this allows for configuring to seek a target'
+
+  proj.isDigger = false
 
   proj.state = "ALIVE"
 

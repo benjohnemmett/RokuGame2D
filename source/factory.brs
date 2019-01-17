@@ -400,10 +400,20 @@ function AITankRanger(playerNumber, x, y, angle, faceRight, tank_type)
   ranger.projectileNotification = function(proj, obj)
     ?"Ranger Got notice."
     if m.last_shot_target <> invalid then ' we can calulate miss distance'
-      if(m.faceRight) then
-        m.last_shot_miss_distance = proj.x - m.last_shot_target.x
+
+      if proj.isDigger then
+        if proj.x_atTargetY <> invalid then
+          the_proj_x = proj.x_atTargetY ' Use the x point where the projectile y crossed the target Y'
+        else
+          the_proj_x = proj.x
+        end if
       else
-        m.last_shot_miss_distance = m.last_shot_target.x - proj.x
+        the_proj_x = proj.x
+      end if
+      if(m.faceRight) then
+        m.last_shot_miss_distance = the_proj_x - m.last_shot_target.x
+      else
+        m.last_shot_miss_distance = m.last_shot_target.x - the_proj_x
       end if
       ?"last_shot_miss_distance ";m.last_shot_miss_distance
     end if

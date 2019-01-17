@@ -131,18 +131,28 @@ function laydownTerrainInOneSprite(physModel, compositor, terrainRegions, terrai
   g = GetGlobalAA()
 
   terrain = {
+    bm : invalid,
+    region : invalid,
     sprites : [],
-    colliders : []
+    colliders : [],
+    td : terrainDef
   }
 
   bm = CreateObject("roBitmap", {width:1280, height:720, AlphaEnable:true})
-  bm.clear(&h00000000)
-  reg = CreateObject("roRegion", bm, 0, 0, 1280, 720)
+  bm2 = CreateObject("roBitmap", {width:1280, height:720, AlphaEnable:true})
+  terrain.bm = bm
+  terrain.bm2 = bm2
+  terrain.bm.clear(&h00000000)
+  terrain.bm2.clear(&h00000000)
+  terrain.reg = CreateObject("roRegion", terrain.bm, 0, 0, 1280, 720) 'Ground'
+  terrain.reg2 = CreateObject("roRegion", terrain.bm2, 0, 0, 1280, 720) 'Trees'
+  sprite = g.compositor.NewSprite(0, 0, terrain.reg, g.layers.Terrain)
+  sprite2 = g.compositor.NewSprite(0, 0, terrain.reg2, g.layers.Trees) 'trees in front'
 
-  sprite = g.compositor.NewSprite(0, 0, reg, 0)
   terrain.sprites.push(sprite)
+  terrain.sprites.push(sprite2)
 
-  ' Add colliders around left & right edges of screen and far above the top'
+  ' Add colliders around left & right edges of screen and far above the top' (x,y,w,h)
   left = fixedBoxCollider(-100, -3*g.sHeight, 100, 4*g.sHeight)
   terrain.colliders.push(left)
   g.pogTerr.addPhysObj(left)
@@ -152,6 +162,9 @@ function laydownTerrainInOneSprite(physModel, compositor, terrainRegions, terrai
   top = fixedBoxCollider(-100, -3*g.sHeight, g.sWidth + 200, 100)
   terrain.colliders.push(top)
   g.pogTerr.addPhysObj(top)
+  bottom = fixedBoxCollider(-100, g.sHeight, g.sWidth + 200, 100)
+  terrain.colliders.push(bottom)
+  g.pogTerr.addPhysObj(bottom)
 
   x_ = 0
   prevX_ = 0
@@ -220,19 +233,19 @@ function laydownTerrainInOneSprite(physModel, compositor, terrainRegions, terrai
       if ((s.height - prevH) > 0) and ((s.height - nextH) > 0) then
         down = 10
         for i = 1 to rnd(3)
-          bm.DrawObject(x_-10 + rnd(s.width-40), g.sHeight - s.height - TREE_HEIGHT + down, g.regions.tree_1_A)
+          bm2.DrawObject(x_-10 + rnd(s.width-40), g.sHeight - s.height - TREE_HEIGHT + down, g.regions.tree_1_A)
           down += rnd(10)
         end for
 
       else if ((s.height - prevH) > 0) or ((s.height - nextH) > 0) then
             down = 10
             for i = 1 to rnd(5)
-              bm.DrawObject(x_-10 + rnd(s.width-40), g.sHeight - s.height - TREE_HEIGHT + down, g.regions.tree_1_A)
+              bm2.DrawObject(x_-10 + rnd(s.width-40), g.sHeight - s.height - TREE_HEIGHT + down, g.regions.tree_1_A)
               down += rnd(10)
             end for
       else
           if rnd(10) > 8 then
-            bm.DrawObject(x_-10 + rnd(s.width-40), g.sHeight - s.height - TREE_HEIGHT + 10 + rnd(10), g.regions.tree_1_A)
+            bm2.DrawObject(x_-10 + rnd(s.width-40), g.sHeight - s.height - TREE_HEIGHT + 10 + rnd(10), g.regions.tree_1_A)
           end if
       end if
     end if
