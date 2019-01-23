@@ -123,9 +123,17 @@ function rg2dSetupMainScreen() as void
         else
             g.screen.DrawText(g.menuArray.getItemName(t),leftIndent, topIndent + t*vertSpace,regColor,font)
         end if
-
     end for
 
     g.screen.swapBuffers()
+
+    if(g.settings.music = "On") then
+        ?"Play that funky music!!!"
+        g.audioplayer.setContentList([{url:"pkg:/components/audio/MakeMyDay.mp3"}])
+        g.audioplayer.setloop(true)
+        g.audioPlayer.play()
+    else
+        g.audioPlayer.Stop()
+    end if
 
 end function

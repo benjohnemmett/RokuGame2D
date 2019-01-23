@@ -399,7 +399,11 @@ function AITankRanger(playerNumber, x, y, angle, faceRight, tank_type)
   'OVERRIDE notification with AI code'
   ranger.projectileNotification = function(proj, obj)
     ?"Ranger Got notice."
-    if m.last_shot_target <> invalid then ' we can calulate miss distance'
+
+    m.last_shot = m.current_shot
+    m.current_shot = invalid
+
+    if (m.last_shot_target <> invalid) and (proj.isHoming = false) then ' if we can calulate miss distance'
 
       if proj.isDigger then
         if proj.x_atTargetY <> invalid then
@@ -410,24 +414,14 @@ function AITankRanger(playerNumber, x, y, angle, faceRight, tank_type)
       else
         the_proj_x = proj.x
       end if
+      
       if(m.faceRight) then
         m.last_shot_miss_distance = the_proj_x - m.last_shot_target.x
       else
         m.last_shot_miss_distance = m.last_shot_target.x - the_proj_x
       end if
+
       ?"last_shot_miss_distance ";m.last_shot_miss_distance
-    end if
-
-    if obj = invalid then ' Object timed out without hitting anything'
-      return invalid
-    end if
-
-    if obj.DoesExist("playerNumber") then
-      n = obj.playerNumber
-      ?"Randy (";m.playerNumber;") hit player ";n
-      m.last_shot_hit = true
-    else
-      m.last_shot_hit = false
     end if
 
     ' Remove projectile from active list'
@@ -439,10 +433,24 @@ function AITankRanger(playerNumber, x, y, angle, faceRight, tank_type)
         end if
     end for
 
+    if obj = invalid then ' Object timed out without hitting anything'
+      m.last_shot_hit = false
+      return invalid
+    end if
+
+    if obj.DoesExist("playerNumber") then
+      n = obj.playerNumber
+      ?"Randy (";m.playerNumber;") hit player ";n
+      m.last_shot_hit = true
+    else
+      m.last_shot_hit = false
+    end if
+
   end function
 
   ranger.badness = .5 ' TODO make this setable'
 
+  ranger.current_shot = invalid
   ranger.last_shot = invalid
   ranger.last_shot_hit = false
   ranger.last_shot_miss_distance = invalid ' projectile_ground_range - target_ground_range'
@@ -491,7 +499,8 @@ function AITankRanger(playerNumber, x, y, angle, faceRight, tank_type)
     shot.angle += m.badness * (5*rnd(0) - 2.5) * (pi()/180) ' Max +/- 5 deg angle error'
 
     ?"**** Shot Power";shot.power
-    m.last_shot = shot
+    m.last_shot = invalid
+    m.current_shot = shot
 
     return shot
   end function

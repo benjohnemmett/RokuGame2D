@@ -11,7 +11,7 @@ function rg2dSetGameParameters() as void
     g.menuArray = rg2dMenuItemList()
     g.menuArray.addItem("Play", "play")
     g.menuArray.addItem("Two Player Match", "two_player")
-    g.menuArray.addItem("Just Watching", "ai_v_ai")
+    g.menuArray.addItem("Just Here to Watch", "ai_v_ai")
     g.menuArray.addItem("Options", "options")
     g.menuArray.addItem("High Scores", "high_scores")
     g.menuArray.addItem("About", "about")
@@ -30,6 +30,8 @@ function rg2dSetGameParameters() as void
     g.layers.Terrain = 10
     g.layers.SlowSnow = 9
     'Back' 1
+
+    g.RoundUnlocked = 0
 
 end function
 
@@ -122,6 +124,8 @@ function rg2dLoadSprites() as void
     g.iglooSprites.igloo_black = []
     g.iglooSprites.igloo_black.push(CreateObject("roRegion", bmIgloos, 0, 42*6, 63, 42))' left'
     g.iglooSprites.igloo_black.push(CreateObject("roRegion", bmIgloos, 64, 42*6, 63, 42))' right'
+
+    g.rIglooLock = rg2dLoadRegion("pkg:/components/sprites/igloo_lock_64_49.png", 0, 0, 64, 49)
 
     g.rFlagRed = rg2dLoadRegion("pkg:/components/sprites/Flag_red_white.png", 0, 0, 40, 30)
     g.rFlagBlue = rg2dLoadRegion("pkg:/components/sprites/Flag_orange_blue.png", 0, 0, 40, 30)
@@ -301,7 +305,7 @@ function rg2dMenuItemSelected() as void
     end if
 
     if(shortName = "play") then ' New Game
-      yourName = "Human"
+      yourName = "Player 1"
 
       gameDefs = []
       gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo", yourName), getAIPlayerDefForLevel(2, 1), invalid, false ) )
@@ -311,22 +315,26 @@ function rg2dMenuItemSelected() as void
       gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo", yourName), getAIPlayerDefForLevel(2, 5), invalid, true) )
       gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo", yourName), getAIPlayerDefForLevel(2, 6), 0, true) )
 
-      idx = 0
       stillAlive = True
 
       while stillAlive
-        stat = rg2dPlayGame(gameDefs[idx])
 
-        if stat.winningPlayer <> 1 then
-          stillAlive = false
+        select = tournamentSelectScreen(gameDefs, g.RoundUnlocked)
+
+        if select.idx = invalid then
+          return
         end if
 
-        if idx = gameDefs.count() then
+        stat = rg2dPlayGame(gameDefs[select.idx])
+
+        if stat.winningPlayer = 1 then
+          g.RoundUnlocked = maxFloat(g.RoundUnlocked, select.idx+1)
+        end if
+
+        if select.idx = gameDefs.count() then
           ?"YOU WINN!!!!"
           exit while
         end if
-
-        idx += 1
 
       end while
 
@@ -338,7 +346,7 @@ function rg2dMenuItemSelected() as void
         return
       end if
 
-      gdef = gameDefinition(1, playerDef(1, true, iglooTypes[0]), playerDef(2, true, iglooTypes[1]), invalid, false)
+      gdef = gameDefinition(1, playerDef(1, true, iglooTypes[0], "Player 1"), playerDef(2, true, iglooTypes[1], "Player 2"), invalid, false)
       stat = rg2dPlayGame(gdef)
 
     else if(shortName = "ai_v_ai") then ' New Game
@@ -518,6 +526,119 @@ function drawTwoPlayerSelectScreen(titleString, idx1, idx2, playerSelect) as voi
 end function
 
 
+''
+function tournamentSelectScreen(gameDefs, numUnlocked) as object
+
+  g = GetGlobalAA()
+  myCodes = g.settings.controlCodes
+
+  idx = numUnlocked
+
+  iglooTypes = g.iglooSprites.keys()
+  ?"IGLOO TYPES ";iglooTypes
+
+  drawTournamentSelectScreen(gameDefs, idx, numUnlocked)
+
+  select = {}
+  select.idx = idx
+
+  while true
+      event = m.port.GetMessage()
+
+      if (type(event) = "roUniversalControlEvent") then
+          id = event.GetInt()
+
+          if (id = myCodes.MENU_LEFT_A) or (id = myCodes.MENU_LEFT_B) then
+              rg2dPlaySound(m.sounds.navSingle)
+
+              if( idx > 0) then
+                idx = (idx-1)
+              else
+                rg2dPlaySound(m.sounds.navSingle)
+              end if
+
+              drawTournamentSelectScreen(gameDefs, idx, numUnlocked)
+
+          else if(id = myCodes.MENU_RIGHT_A) or (id = myCodes.MENU_RIGHT_B)then
+
+              if (idx < numUnlocked) then
+                idx = (idx+1)
+              else
+                rg2dPlaySound(m.sounds.navSingle)
+              end if
+
+              drawTournamentSelectScreen(gameDefs, idx, numUnlocked)
+
+          else if(id = myCodes.SELECT1A_PRESSED) or (id = myCodes.SELECT1B_PRESSED) or (id = myCodes.SELECT2_PRESSED)
+              rg2dPlaySound(m.sounds.foomp12)
+
+              select.idx = idx
+
+              return select
+
+          else if(id = myCodes.BACK_PRESSED) then
+              ' Exit Game
+              select.idx = invalid
+              return select
+          end if
+
+      end if
+
+  end while
+
+end function
+
+''
+function drawTournamentSelectScreen(gameDefs, idxSelected, numUnlocked) as void
+  g = GetGlobalAA()
+  myCodes = g.settings.controlCodes
+
+  bgColor = &hf2f7ffFF
+  maskColor = &hf2f7ffAA ' Same as bg Color but with alpha'
+  fontColor = &h3764adFF
+  g.screen.clear(bgColor)
+
+  fontTitle = g.font_registry.GetFont("Almonte Snow", 72, true, false)
+  fontHeader = g.font_registry.GetFont("Almonte Snow", 48, true, false)
+  fontNames = g.font_registry.GetFont("Almonte Snow", 28, true, false)
+
+  titleString = "Tournament Mode"
+
+  tWidth = fontTitle.GetOneLineWidth(titleString, 1280)
+  indent = (1280-tWidth)/2
+  g.screen.DrawText(titleString,indent,100,fontColor,fontTitle)
+
+  iglooSpriteTypes = g.iglooSprites.keys()
+
+  dx = 180
+  x_ = (g.sWidth - 6*dx)/2
+  y = 260
+
+
+  For i=0 to gameDefs.count()-1 step 1
+
+      g.screen.DrawObject(x_, y, g.iglooSprites.lookup(gameDefs[i].tank2.tanktype)[0])
+      if (i <> idxSelected) then
+        g.screen.DrawRect(x_, y, 64, 49, maskColor)
+      end if
+
+      if (i > numUnlocked) then
+        g.screen.DrawObject(x_, y, g.rIglooLock)
+        g.screen.DrawText("?", x_+15, y+64,fontColor,fontNames)
+      else
+        name_width = fontNames.GetOneLineWidth(gameDefs[i].tank2.name, 300)
+        dx_font = (name_width - 64)/2
+        g.screen.DrawText(gameDefs[i].tank2.name, x_-dx_font, y+64,fontColor,fontNames)
+      end if
+
+      x_ += dx
+  End For
+
+  g.screen.swapBuffers()
+
+end function
+
+
 ' Stuff that needs to be done at the start of each game goes here.
 function rg2dGameInit(gdef) as void
     g = GetGlobalAA()
@@ -650,6 +771,8 @@ function rg2dLoadLevel(gdef, level as integer) as void
 
     ''' mouse
     g.mouseController = mouseController()
+    msg = g.tank1.name + " vs "  + g.tank2.name + ". Go!"
+    g.mouseController.startPlaneBanner(msg)
 
     'g.sMouse = g.compositor.NewSprite(600,g.sHeight-td.getHeightAtXPoint(600)-20,g.rMouseUp,1)
 
@@ -759,7 +882,7 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
             ?"Trucking Left"
             'g.wind.offsetWind(10,0)
             'active_player.select_projectile(active_player.projectile_idx+1)
-            inactive_player.takeDamage(1)
+            inactive_player.takeDamage(10)
         else if(button.bLeft) then
             ?"Trucking Right"
             'g.wind.offsetWind(-10,0)

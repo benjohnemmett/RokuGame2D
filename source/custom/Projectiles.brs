@@ -11,11 +11,11 @@
 'end function
 
 function getShotTypeList()
-  return ["standard_1","standard_3p","standard_5p","standard_3s","standard_5s",
-          "pellet_1","pellet_3p","pellet_5p","pellet_3s","pellet_5s",
-          "baked_alaska_1","ice_see_you_A1","digger_1"]
+  'return ["standard_1","standard_3p","standard_5p","standard_3s","standard_5s",
+  ''        "pellet_1","pellet_3p","pellet_5p","pellet_3s","pellet_5s",
+  ''        "baked_alaska_1","ice_see_you_A1","digger_1"]
   ' return ["baked_alaska_1"]
-   'return ["ice_see_you_A1"]
+   return ["ice_see_you_A1","standard_1"]
    'return ["digger_1"]
 end function
 
@@ -88,6 +88,7 @@ function createShot(owner, sType, x, y, power, angle, faceRight)
     shotArray = subCreateShot(owner, g.SB.ice_see_you_A1, 1, true, ICU_RAD, ICU_DMG, x, y, power, angle, faceRight)
 
     s = shotArray[0] 'Get the projectile out'
+    s.proj.isHoming = true
     s.proj.inFlightUpdate = function(dt) as void
       ''?"ice_see_you_1 Update"
       if m.vy > 0 then
@@ -196,6 +197,7 @@ function projectile(owner as object, region, radius, damage_power, x,y,vx,vy) as
   proj.target = invalid ' by default, projectiles are dumb, but this allows for configuring to seek a target'
 
   proj.isDigger = false
+  proj.isHoming = false
 
   proj.state = "ALIVE"
 
