@@ -4,6 +4,7 @@ function uiExtender(width as Integer, height as Integer) as object
   width : width,
   height : height,
   borderColor : &hAA5511FF,
+  ticColor : &h11111111,
   bgColor : &h111111FF,
   fgColor : &h111100FF,
   value : 0.75, ' Between 0 & 1.0'
@@ -17,6 +18,11 @@ function uiExtender(width as Integer, height as Integer) as object
     fgYStart = Cint((1.0-m.value) * m.barHeight) 'Round to nearest int'
 
     cShift = int(m.value * &hEE) << 24
+
+    'Draw tics '
+    m.bm.drawLine(m.width-10, m.height/4, m.width-3, m.height/4, m.bgColor)
+    m.bm.drawLine(m.width-10, m.height/2, m.width-3, m.height/2, m.bgColor)
+    m.bm.drawLine(m.width-10, 3*m.height/4, m.width-3, 3*m.height/4, m.bgColor)
 
 
     m.bm.drawRect(m.borderWidth, m.borderWidth, m.width-m.borderWidth*2, m.height-m.borderWidth*2, m.bgColor) 'Draw background'

@@ -94,7 +94,7 @@ function rg2dLoadSprites() as void
     bmTrees = CreateObject("roBitmap", "pkg:/components/sprites/tree_56_90.png")
     g.regions.tree_1_A = CreateObject("roRegion", bmTrees, 0, 0, 56, 90)
 
-    bmIgloos = CreateObject("roBitmap", "pkg:/components/sprites/igloos_II_128_294.png")
+    bmIgloos = CreateObject("roBitmap", "pkg:/components/sprites/igloos_III_128_294.png")
 
     g.iglooSprites = {}
     g.iglooSprites.igloo = []
@@ -171,12 +171,28 @@ function rg2dLoadSounds() as void
     g.sounds.ouch2 = CreateObject("roAudioResource", "pkg:/components/audio/ouch2.wav")
     g.sounds.poof1 = CreateObject("roAudioResource", "pkg:/components/audio/poof1.wav")
     g.sounds.poof2 = CreateObject("roAudioResource", "pkg:/components/audio/poof2.wav")
+    g.sounds.poof3 = CreateObject("roAudioResource", "pkg:/components/audio/poof3.wav")
     g.sounds.phaser1 = CreateObject("roAudioResource", "pkg:/components/audio/phaser1.wav")
     g.sounds.navSingle = CreateObject("roAudioResource", "navsingle")
 
     '?"Max Streams ";g.sounds.astroid_blast.maxSimulStreams()
     g.audioStream = 1
     g.maxAudioStreams = 1 'g.sounds.astroid_blast.maxSimulStreams()
+
+    g.songURLS = {}
+    g.songURLS.makeMyDay_local = "pkg:/components/audio/MakeMyDay.mp3"
+    g.songURLS.sliding_local = "pkg:/components/audio/Sliding.mp3"
+    g.songURLS.slowWalk = "https://s3.amazonaws.com/goodthinggames/snowballfight/SlowWalkShort.mp3"
+    g.songURLS.cosmic = "https://s3.amazonaws.com/goodthinggames/snowballfight/Cosmic.mp3"
+    g.songURLS.goingDown = "https://s3.amazonaws.com/goodthinggames/snowballfight/GoingDown.mp3"
+    g.songURLS.snowCannon2 = "https://s3.amazonaws.com/goodthinggames/snowballfight/SnowCannon2.mp3"
+    g.songURLS.snowCannon3 = "https://s3.amazonaws.com/goodthinggames/snowballfight/SnowCannon3.mp3"
+    g.songURLS.stuff = "https://s3.amazonaws.com/goodthinggames/snowballfight/Stuff.mp3"
+
+    'g.songURLS.still = "http://cf-media.sndcdn.com/YOpYBdeBhkEr?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiKjovL2NmLW1lZGlhLnNuZGNkbi5jb20vWU9wWUJkZUJoa0VyIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNTQ4Mjk2NDQxfX19XX0_&Signature=tH8BOlp8SxkoE9~0cOcoBPl2iUgKdwkkU2o9P9UEUYxTVGagFCDlUzQd1BP6JzoBfo~5G1bqE9LZBGhBDlOvEQEEzyrfVdMW0Ixa6jlfFSCoOG~dSNE4QFPsrpMuCz6RDRoWB1r9jBIX~mKVEReCt5Pu5Pq-2d1Be3A0sBf4tsYGNSpZ8xfqWCyj-1Ej4IHx~3BGgilGwdKqoWKgvqyrJcC1ckELk5AxwcChS8iQpjmW9Y89g~c9ufwNSaXJwdvc~85MQusgQCpUiSNo9ULzkr-tGboAkYdUJ35OXcM2sbzyufN1Vz-KQBMD262ldKGbKmSsnuqHj7FPSqw-KFmYuQ__&Key-Pair-Id=APKAJAGZ7VMH2PFPW6UQ"
+    'g.songURLS.awesome = "http://cf-media.sndcdn.com/7sr6k4zORCj9?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiKjovL2NmLW1lZGlhLnNuZGNkbi5jb20vN3NyNms0ek9SQ2o5IiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNTQ4Mjk5NTM0fX19XX0_&Signature=X04MR0lY-vFezXWOq7lkRqNIQIb9h1S0fqseR9gFEl-9iNbpG81kExfxgnT-4GvYhVECxBnWnyIBavLtOg4ihXPuVuue-SdWfY1gQyuaRO2WPfj1GC~GbyULn3QkHtA1ktU9cALYEXHSpBgyCatgBMRR4MizYHoMztM9ndjoZe3bu7iDTR3hOazNDJgOXGZE1WzXmjKGarJwAOdhC6E5IxWwRssKGNoZjNCWn9F70~OmQ8DBTbQn8bpcK6WT~soGlkeYu12k1WSViEHitTf1LI6lgK9SCpnJYghVzumXMLsNey8Te7XrS7on4i9CeDV~Gifdg3GpAFsC2xk9oY0G5g__&Key-Pair-Id=APKAJAGZ7VMH2PFPW6UQ"
+
+    g.audioManager.defaultBackupURL = g.songURLS.sliding_local
 
 end function
 
@@ -248,7 +264,7 @@ end function
 
 ' Defines how a game will be played'
 ' tank1 & tank2 are player defninition objects with a generate() function'
-function gameDefinition(rounds as integer, tank1, tank2, windspeed, levelPlayers) as object
+function gameDefinition(rounds as integer, tank1, tank2, windspeed, levelPlayers, songURL) as object
 
   GDef = {rounds : rounds,
           tank1 : tank1,
@@ -256,6 +272,7 @@ function gameDefinition(rounds as integer, tank1, tank2, windspeed, levelPlayers
 
   GDef.windspeed = windspeed ' INvalid selects random wind speed'
   GDef.levelPlayers = levelPlayers
+  GDef.songURL = songURL
 
   return GDef
 
@@ -308,12 +325,12 @@ function rg2dMenuItemSelected() as void
       yourName = "Player 1"
 
       gameDefs = []
-      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo", yourName), getAIPlayerDefForLevel(2, 1), invalid, false ) )
-      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo", yourName), getAIPlayerDefForLevel(2, 2), invalid, false) )
-      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo", yourName), getAIPlayerDefForLevel(2, 3), invalid, false) )
-      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo", yourName), getAIPlayerDefForLevel(2, 4), invalid, false) )
-      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo", yourName), getAIPlayerDefForLevel(2, 5), invalid, true) )
-      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo", yourName), getAIPlayerDefForLevel(2, 6), 0, true) )
+      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo", yourName), getAIPlayerDefForLevel(2, 1), invalid, false, g.songURLS.cosmic) )
+      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo", yourName), getAIPlayerDefForLevel(2, 2), invalid, false, g.songURLS.slowWalk ) )
+      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo", yourName), getAIPlayerDefForLevel(2, 3), invalid, false, g.songURLS.makeMyDay_local) )
+      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo", yourName), getAIPlayerDefForLevel(2, 4), invalid, false, g.songURLS.stuff) )
+      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo", yourName), getAIPlayerDefForLevel(2, 5), invalid,  true, g.songURLS.snowCannon3) )
+      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo", yourName), getAIPlayerDefForLevel(2, 6),       0,  true, g.songURLS.snowCannon2) )
 
       stillAlive = True
 
@@ -346,12 +363,12 @@ function rg2dMenuItemSelected() as void
         return
       end if
 
-      gdef = gameDefinition(1, playerDef(1, true, iglooTypes[0], "Player 1"), playerDef(2, true, iglooTypes[1], "Player 2"), invalid, false)
+      gdef = gameDefinition(1, playerDef(1, true, iglooTypes[0], "Player 1"), playerDef(2, true, iglooTypes[1], "Player 2"), invalid, false,  g.songURLS.sliding_local)
       stat = rg2dPlayGame(gdef)
 
     else if(shortName = "ai_v_ai") then ' New Game
 
-      gdef = gameDefinition(1, getAIPlayerDefForLevel(1, rnd(6)), getAIPlayerDefForLevel(2, rnd(6)), invalid, false)
+      gdef = gameDefinition(1, getAIPlayerDefForLevel(1, rnd(6)), getAIPlayerDefForLevel(2, rnd(6)), invalid, false,  g.songURLS.slowWalk)
       stat = rg2dPlayGame(gdef)
 
     else if(shortName = "options") then ' Settings
@@ -699,7 +716,7 @@ function rg2dLoadLevel(gdef, level as integer) as void
         p.ttl = 0.0
         p.state = "DEAD"
         p.NotifyOwnerOfCollision(t)
-        rg2dPlaySound(g.sounds.ouch2)
+        rg2dPlaySound(g.sounds.poof2)
       end if
       return 1 ' Indicate not to perform normal collision
     end function
@@ -732,7 +749,7 @@ function rg2dLoadLevel(gdef, level as integer) as void
             p.ttl = 0.1
             p.state = "DEAD"
             p.NotifyOwnerOfCollision(t)
-            rg2dPlaySound(g.sounds.poof2)
+            rg2dPlaySound(g.sounds.poof3)
           ' else -> put mark on the terrain'
           else
             if (g.terrain.td.getheightatxpoint(p.x) - (g.sHeight - p.y)) > 5 then ' Make sure it's fully under the ground
@@ -745,7 +762,7 @@ function rg2dLoadLevel(gdef, level as integer) as void
           p.ttl = 0.1
           p.state = "DEAD"
           p.NotifyOwnerOfCollision(t)
-          rg2dPlaySound(g.sounds.poof2)
+          rg2dPlaySound(g.sounds.poof3)
         end if
       end if
 
@@ -834,7 +851,7 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
 
       if g.gameState.subState = "ENTRY" then
         ' TODO Play victory sound'
-        g.audioPlayer.stop()
+        g.audioManager.stop()
         ' TODO  Start mouse banner'
         msg = ""
 
@@ -1018,6 +1035,29 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
       end if  ' End of player handling'
 
     end if ' end of if EXIT'
+
+    'Handle tank blinking'
+    if g.tank1.blinkTime > 0.0 then
+      ?" Tank 1 blinking ";g.tank1.blinkTime
+      g.tank1.blinkTime -= dt
+      if g.tank1.blinkTime <= 0.0 then ' Time to stop blinking'
+        g.tank1.setVisibilily(true)
+        g.tank1.blinkTime = 0.0
+      else ' blink on'
+        g.tank1.setVisibilily(NOT g.tank1.isVisible)
+      end if
+    end if
+
+    if g.tank2.blinkTime > 0.0 then
+      ?" Tank 2 blinking ";g.tank2.blinkTime
+      g.tank2.blinkTime -= dt
+      if g.tank2.blinkTime <= 0.0 then ' Time to stop blinking'
+        g.tank2.setVisibilily(true)
+        g.tank2.blinkTime = 0.0
+      else ' blink on'
+        g.tank2.setVisibilily(NOT g.tank2.isVisible)
+      end if
+    end if
 
     'Progress Game State'
     g.gameState.tick(dt) ' Calling this to update state counters

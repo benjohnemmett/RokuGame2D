@@ -29,13 +29,12 @@ function rg2dPlayGame(gdef) as object
 
     'Audio
     ' Play Background music
-    if(g.settings.music = "On") then
-        ?"Play that funky music!!!"
-        g.audioplayer.setContentList([{url:"pkg:/components/audio/Sliding.mp3"}])
-        g.audioplayer.setloop(true)
-        g.audioPlayer.play()
+    g.audioManager.stop() ' Stop what was playing'
+    ?"Playing ";gdef.songURL
+    if gdef.songURL = invalid then
+      g.audioManager.playDefaultSong()
     else
-        g.audioPlayer.Stop()
+      g.audioManager.playsong(gdef.songURL)
     end if
 
     refreshPeriod = 20 ' ms
@@ -149,7 +148,7 @@ function rg2dPlayGame(gdef) as object
                     sPauseMenu.SetDrawableFlag(true)
 
                     if(g.settings.music = "On") then
-                        g.audioPlayer.pause()
+                        g.audioManager.pause()
                     end if
 
                     while game_paused
@@ -171,7 +170,7 @@ function rg2dPlayGame(gdef) as object
                                 sPauseMenu.SetDrawableFlag(false)
 
                                 if(g.settings.music = "On") then
-                                    g.audioPlayer.resume()
+                                    g.audioManager.resume()
                                 end if
 
                                 clock.Mark()

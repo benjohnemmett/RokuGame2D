@@ -37,9 +37,7 @@ function Main() as void
     myCodes = m.settings.controlCodes
 
     ' Audio
-    m.audioPlayer = CreateObject("roAudioPlayer")
-    m.audioPort = CreateObject("roMessagePort")
-    m.audioPlayer.SetMessagePort(m.audioPort)
+    m.audioManager = audioManager()
 
     ' Load Sounds in to m.sounds array
     rg2dLoadSounds()
@@ -127,13 +125,7 @@ function rg2dSetupMainScreen() as void
 
     g.screen.swapBuffers()
 
-    if(g.settings.music = "On") then
-        ?"Play that funky music!!!"
-        g.audioplayer.setContentList([{url:"pkg:/components/audio/MakeMyDay.mp3"}])
-        g.audioplayer.setloop(true)
-        g.audioPlayer.play()
-    else
-        g.audioPlayer.Stop()
-    end if
+    g.audioManager.playSong(g.songURLS.makeMyDay_local)
+
 
 end function

@@ -23,7 +23,6 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
     ty = y
   end if
 
-
   sTurret1 = g.compositor.NewSprite(x, y, g.rCircleGrey8, g.layers.Turret)
   sTurret2 = g.compositor.NewSprite(x, y, g.rCircleGrey8, g.layers.Turret)
   sTurret3 = g.compositor.NewSprite(x, y, g.rCircleGrey8, g.layers.Turret)
@@ -66,6 +65,8 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
   tank.playerNumber = playerNumber ' Corresponse to g.tank1 or g.tank2'
   tank.isHumanPlayer = isHumanPlayer
   tank.name = "Snow Baller"
+  tank.blinkTime = 0 ' The time (in seconds) left in which the tank should be blinking'
+  tank.isVisible = true
 
   tank.turret.updateDisplay()
 
@@ -99,6 +100,19 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
   '   m.projectile_selector.setProjectileIdx(m.projectile_idx) ' Update selector'
   '   ?"-> To projectile ";m.projectile_list[m.projectile_idx]
   ' end function
+
+  tank.setVisibilily = function(isVisible) as void
+    m.isVisible = isVisible
+
+    For each e in m.elementArray
+      e.sprite.SetDrawableFlag(isVisible)
+    End For
+
+    For each e in m.turret.elementArray
+      e.sprite.SetDrawableFlag(isVisible)
+    End For
+
+  end function
 
   tank.selectShot = function(idx)
     ''?"Swapping Shot from ";m.shotTypeList[m.shotTypeIdx]
@@ -296,6 +310,8 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
 
   tank.takeDamage = function(damage_points) as void
     m.health -= damage_points
+    m.blinkTime = 1.0
+    ?" I'm hit -> blink time = ";m.blinkTime
     ''?"Taking damage ";damage_points
     ''?" Health = ";m.health
     ''?" Flag = ";m.bmFlag.flagHeight
@@ -414,7 +430,7 @@ function AITankRanger(playerNumber, x, y, angle, faceRight, tank_type)
       else
         the_proj_x = proj.x
       end if
-      
+
       if(m.faceRight) then
         m.last_shot_miss_distance = the_proj_x - m.last_shot_target.x
       else

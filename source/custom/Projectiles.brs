@@ -11,11 +11,11 @@
 'end function
 
 function getShotTypeList()
-  'return ["standard_1","standard_3p","standard_5p","standard_3s","standard_5s",
-  ''        "pellet_1","pellet_3p","pellet_5p","pellet_3s","pellet_5s",
-  ''        "baked_alaska_1","ice_see_you_A1","digger_1"]
+  return ["standard_1","standard_3p","standard_5p","standard_3s","standard_5s",
+          "pellet_1","pellet_3p","pellet_5p","pellet_3s","pellet_5s",
+          "baked_alaska_1","ice_see_you_A1","digger_1"]
   ' return ["baked_alaska_1"]
-   return ["ice_see_you_A1","standard_1"]
+  '' return ["ice_see_you_A1","standard_1"]
    'return ["digger_1"]
 end function
 
