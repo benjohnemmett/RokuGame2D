@@ -6,6 +6,8 @@ End Function
 Function URLLibGetAsync(url as String)
   g = GetGlobalAA()
     newXfer = CreateObject("roUrlTransfer")
+    newXfer.EnableHostVerification(false)
+    newXfer.EnablePeerVerification(false)
     newXfer.SetUrl(url)
     newXfer.SetRequest("GET")
     newXfer.SetMessagePort(g.port)
@@ -30,4 +32,5 @@ Function URLLibHandleUrlEvent(event as Object)
     end if
 
     ?"Event ";event.GetString()
+    
 End Function

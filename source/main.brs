@@ -51,9 +51,9 @@ function Main() as void
     '''''''''''''''''''''''''''''''''
     '''' MAIN Menu
     rg2dSetupMainScreen()
-    'URLLibSetup()
-    'success = URLLibGetAsync("http://httpstat.us/200")
-    ''?success
+    URLLibSetup()
+    success = URLLibGetAsync("https://462fhdcle1.execute-api.us-east-1.amazonaws.com/default/MouseMessageMaker")
+    ?"URL Send Success ";success
 
     while true
         event = m.port.GetMessage()
@@ -84,8 +84,12 @@ function Main() as void
             end if
         else if (type(event) = "roUrlEvent") then
           ?"Got URL EVENT"
-
           URLLibHandleUrlEvent(event)
+
+          ?event.getstring()
+          mouseMessageData = ParseJson(event.getstring())
+          ?mouseMessageData
+          setMouseMessageData(mouseMessageData)
 
         end if
 

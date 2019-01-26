@@ -255,6 +255,20 @@ Function rg2dGetRegistryString(key as String, default = "") As String
     return default
 End Function
 
+function rg2dSaveRegistryString(key, string) as void
+    'json = FormatJSON(data, 1)
+    sec = CreateObject("roRegistrySection", "PoP")
+    sec.Write(key, string)
+    sec.Flush()
+end function
+
+function rg2dSaveRegistryData(key, data) as void
+    json = FormatJSON(data, 1)
+    sec = CreateObject("roRegistrySection", "PoP")
+    sec.Write(key, json)
+    sec.Flush()
+end function
+
 function rg2dLoadRegion(path as String, x1,y1,x2,y2) as object
 
   bm = CreateObject("roBitmap", path)

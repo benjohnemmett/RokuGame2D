@@ -21,7 +21,8 @@ function rg2dSetGameParameters() as void
     g.layers.FastSnow = 60
     g.layers.playerControl = 50
     g.layers.Trees = 45
-    g.layers.Flags = 42
+    g.layers.Flags = 43
+    g.layers.snowsplosion = 42
     g.layers.Igloos = 41
     g.layers.Turret = 40
     g.layers.Projectiles = 30
@@ -31,7 +32,22 @@ function rg2dSetGameParameters() as void
     g.layers.SlowSnow = 9
     'Back' 1
 
-    g.RoundUnlocked = 0
+    loadMouseMessages()
+
+    g.localDataKey = "local_data"
+    localDataString = rg2dGetRegistryString(g.localDataKey)
+
+    if(localDataString = "") then
+      ?"First time setup localData"
+      g.localData = {}
+      g.localData.RoundUnlocked = 0
+
+      ?"Saving local data"
+      rg2dSaveRegistryData(g.localDataKey, g.localData)
+    else
+      g.localData = ParseJSON(localDataString)
+    end if
+
 
 end function
 
@@ -90,6 +106,13 @@ function rg2dLoadSprites() as void
     g.SB.ice_see_you_A2 = CreateObject("roRegion", bmSnowBallIcons, 96, 96, 32, 32)
     g.SB.digger_1 = CreateObject("roRegion", bmSnowBallIcons, 0, 128, 32, 32)
     g.SB.digger_shadow = CreateObject("roRegion", bmSnowBallIcons, 32, 128, 32, 32)
+
+
+    bmSnowsplosion = CreateObject("roBitmap", "pkg:/components/sprites/snowsplosion_300_50.png")
+    g.rSnowsplosion = []
+    for i = 0 to 5 step 1
+      g.rSnowsplosion[i] = CreateObject("roRegion", bmSnowsplosion, i*50, 0, 50, 50)
+    end For
 
     bmTrees = CreateObject("roBitmap", "pkg:/components/sprites/tree_56_90.png")
     g.regions.tree_1_A = CreateObject("roRegion", bmTrees, 0, 0, 56, 90)
@@ -336,7 +359,7 @@ function rg2dMenuItemSelected() as void
 
       while stillAlive
 
-        select = tournamentSelectScreen(gameDefs, g.RoundUnlocked)
+        select = tournamentSelectScreen(gameDefs, g.localData.RoundUnlocked)
 
         if select.idx = invalid then
           return
@@ -345,8 +368,11 @@ function rg2dMenuItemSelected() as void
         stat = rg2dPlayGame(gameDefs[select.idx])
 
         if stat.winningPlayer = 1 then
-          g.RoundUnlocked = maxFloat(g.RoundUnlocked, select.idx+1)
+          g.localData.RoundUnlocked = maxFloat(g.localData.RoundUnlocked, select.idx+1)
         end if
+
+        ' Save the fact that we have progressed'
+        rg2dSaveRegistryData(g.localDataKey, g.localData)
 
         if select.idx = gameDefs.count() then
           ?"YOU WINN!!!!"
@@ -717,6 +743,7 @@ function rg2dLoadLevel(gdef, level as integer) as void
         p.state = "DEAD"
         p.NotifyOwnerOfCollision(t)
         rg2dPlaySound(g.sounds.poof2)
+        g.explosionGroup.addPhysObj(createExplosion(p.x, p.y))
       end if
       return 1 ' Indicate not to perform normal collision
     end function
@@ -750,6 +777,7 @@ function rg2dLoadLevel(gdef, level as integer) as void
             p.state = "DEAD"
             p.NotifyOwnerOfCollision(t)
             rg2dPlaySound(g.sounds.poof3)
+            g.explosionGroup.addPhysObj(createExplosion(p.x, p.y))
           ' else -> put mark on the terrain'
           else
             if (g.terrain.td.getheightatxpoint(p.x) - (g.sHeight - p.y)) > 5 then ' Make sure it's fully under the ground
@@ -763,6 +791,7 @@ function rg2dLoadLevel(gdef, level as integer) as void
           p.state = "DEAD"
           p.NotifyOwnerOfCollision(t)
           rg2dPlaySound(g.sounds.poof3)
+          g.explosionGroup.addPhysObj(createExplosion(p.x, p.y))
         end if
       end if
 
@@ -788,7 +817,7 @@ function rg2dLoadLevel(gdef, level as integer) as void
 
     ''' mouse
     g.mouseController = mouseController()
-    msg = g.tank1.name + " vs "  + g.tank2.name + ". Go!"
+    msg = g.tank1.name + " vs "  + g.tank2.name + "! " + g.mouseController.getRandomMessage("matchStart")
     g.mouseController.startPlaneBanner(msg)
 
     'g.sMouse = g.compositor.NewSprite(600,g.sHeight-td.getHeightAtXPoint(600)-20,g.rMouseUp,1)
@@ -809,6 +838,10 @@ function rg2dLoadLevel(gdef, level as integer) as void
     if(rnd(4) <> 1) ' 1 in 4 chance of snow'
       g.snowMaker.randomInit(20 + rnd(30), g.rFlakesArray) ' Randomize snow severity'
     end if
+
+    'splosion'
+    g.explosionGroup = g.pm.createPhysObjGroup()
+
 
 
 end function
@@ -856,10 +889,12 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
         msg = ""
 
         if (g.tank1.health <= 0) then
-          msg = g.tank2.name + " Wins!"
+          msg = g.tank2.name + " Wins! "
         else if (g.tank2.health <= 0) then
-          msg = g.tank1.name + " Wins!"
+          msg = g.tank1.name + " Wins! "
         end if
+
+        msg += g.mouseController.getRandomMessage("matchOver")
 
         g.mouseController.startPlaneBanner(msg)
         g.gameState.setSubState("FLYING")
@@ -1058,6 +1093,11 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
         g.tank2.setVisibilily(NOT g.tank2.isVisible)
       end if
     end if
+
+    'Handle explosions'
+    for each e in g.explosionGroup.physObjList
+        e.updateState(dt)
+    end for
 
     'Progress Game State'
     g.gameState.tick(dt) ' Calling this to update state counters

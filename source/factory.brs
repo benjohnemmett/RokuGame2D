@@ -310,8 +310,8 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
 
   tank.takeDamage = function(damage_points) as void
     m.health -= damage_points
-    m.blinkTime = 1.0
-    ?" I'm hit -> blink time = ";m.blinkTime
+    m.blinkTime = damage_points/50.0
+    ''?" I'm hit -> blink time = ";m.blinkTime
     ''?"Taking damage ";damage_points
     ''?" Health = ";m.health
     ''?" Flag = ";m.bmFlag.flagHeight
