@@ -111,7 +111,8 @@ function rg2dSetupMainScreen() as void
     selectedMenuOption = g.menuArray.selectedIndex
 
     'font = g.font_registry.GetDefaultFont(56, True, false)
-    font = g.font_registry.GetFont("Almonte Snow", 56, false, false)
+    'font = g.font_registry.GetFont("Almonte Snow", 56, false, false)
+    font = g.font_registry.GetFont("FrozenRita", 48, false, false)
 
     regColor = &h96a3b7FF
     selColor = &h366cbcFF

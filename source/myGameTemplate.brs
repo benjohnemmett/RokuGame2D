@@ -12,8 +12,8 @@ function rg2dSetGameParameters() as void
     g.menuArray.addItem("Play", "play")
     g.menuArray.addItem("Two Player Match", "two_player")
     g.menuArray.addItem("Just Here to Watch", "ai_v_ai")
-    g.menuArray.addItem("Options", "options")
-    g.menuArray.addItem("High Scores", "high_scores")
+    'g.menuArray.addItem("Options", "options")
+    g.menuArray.addItem("Screen Saver", "screen_saver")
     g.menuArray.addItem("About", "about")
 
     g.layers = {}
@@ -249,6 +249,7 @@ function rg2dLoadFonts() as void
 
   g.font_registry.Register("pkg:/components/fonts/AlmonteSnow.ttf")
   g.font_registry.Register("pkg:/components/fonts/HannaHandwriting.ttf")
+  g.font_registry.Register("pkg:/components/fonts/FrozenRita.ttf")
 
 end function
 
@@ -430,10 +431,11 @@ function rg2dMenuItemSelected() as void
         stat = rg2dOpenSettingsScreen(m.screen, m.port)
         'rg2dPlaySound(m.sounds.warp_in)
 
-    else if(shortName = "high_scores") then
+    else if(shortName = "screen_saver") then
 
         'rg2dPlaySound(m.sounds.warp_out)
-        stat = rg2dOpenHighScoresScreen(m.screen, m.port)
+        gdef = gameDefinition(1, getAIPlayerDefForLevel(1, rnd(6)), getAIPlayerDefForLevel(2, rnd(6)), invalid, false,  g.songURLS.sliding_local)
+        stat = playScreenSaver(gdef)
         'rg2dPlaySound(m.sounds.warp_in)
 
     else if(shortName = "about") then
@@ -719,14 +721,41 @@ function rg2dGameInit(gdef) as void
 
 end function
 
+' Just load terrain, nothing else'
+function loadScreenSaver() as void
+  g = GetGlobalAA()
 
+
+  g.pogTerr = g.pm.createPhysObjGroup()
+
+  '''''''''''''''''''''
+  '''''' WIND '''''''''
+  g.wind = windMaker()
+  g.wind.setWindAcc(rnd(50)-25,0)
+
+  'g.windViewer = windicator(g.wind, 500, 100)
+  'g.windViewer.updateDisplay()
+
+  '' Terrain
+  NUM_TERRAIN_SECTIONS = 10
+
+  td = terrainDefinition()
+  randomizeTerrainDefinition(td, NUM_TERRAIN_SECTIONS)
+
+  g.terrain = laydownTerrainInOneSprite(g.pm, g.compositor, g.terrain_ice, td)
+
+  '' Snow
+  ' Make snow '
+  g.snowMaker = snowMaker(g.wind, g.compositor)
+  g.snowMaker.randomInit(20 + rnd(30), g.rFlakesArray) ' Randomize snow severity'
+
+end function
 
 
 '''''''''' OUTER LOOP STUFF
 ' Stuff to be done at the start of each level goes here.
 function rg2dLoadLevel(gdef, level as integer) as void
     g = GetGlobalAA()
-
 
     '''''''''''''''''''''
     '''''' WIND '''''''''
@@ -827,6 +856,7 @@ function rg2dLoadLevel(gdef, level as integer) as void
 
       return 1
     end function
+
 
     NUM_TERRAIN_SECTIONS = 10
 
