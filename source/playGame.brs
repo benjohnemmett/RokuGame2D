@@ -200,6 +200,10 @@ function rg2dPlayGame(gdef) as object
                 hold_time = holdButtonClock.TotalMilliseconds()
                 stat = rg2dInnerGameLoopUpdate(dt, button, hold_time)
 
+                if stat.game_ending then
+                  gs.game_time = stat.game_time
+                end if
+
                 if stat.level_complete then
                   ?"Level complete"
                   exit while
@@ -238,6 +242,11 @@ function rg2dPlayGame(gdef) as object
     gs.score = g.game_score
     gs.wave = g.game_wave
     gs.winningPlayer = stat.winningPlayer
+
+    gs.tank1HitCount = g.tank1.hitCount
+    gs.tank2HitCount = g.tank2.hitCount
+    gs.tank1MissCount = g.tank1.missCount
+    gs.tank2MissCount = g.tank2.missCount
     return gs
 
 end function

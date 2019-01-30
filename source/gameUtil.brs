@@ -269,6 +269,11 @@ function rg2dSaveRegistryData(key, data) as void
     sec.Flush()
 end function
 
+function rg2dDeleteRegistry(key) as boolean
+  sec = CreateObject("roRegistrySection", "PoP")
+  return sec.delete(key)
+end function
+
 function rg2dLoadRegion(path as String, x1,y1,x2,y2) as object
 
   bm = CreateObject("roBitmap", path)

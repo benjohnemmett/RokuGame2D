@@ -8,12 +8,14 @@ function mouseController()
   mc.PLANE_WIDTH = 148
   mc.PLANE_HEIGHT = 86
 
-  mc.vx = 170
+  mc.vx = 200
+
+  mc.timeSinceLastFlight = 0
 
   ' dt seconds since last update in seconds'
   mc.update = function(dt)
     if m.state = "IDLE" then
-
+      m.timeSinceLastFlight += dt
     else if m.state = "FLYING" then
 
       m.x -= dt * m.vx
@@ -30,7 +32,12 @@ function mouseController()
   end function
 
   mc.startPlaneBanner = function(msg as string)
+    if(m.sBanner <> invalid) then
+      m.sBanner.Remove()
+    end if
+
     m.createMousePlaneBanner(msg)
+
     m.state = "FLYING"
   end function
 
@@ -79,33 +86,38 @@ function loadMouseMessages() as void
   mouseMessageKey = "mouse_msg"
 
   mouseMessageStrings = rg2dGetRegistryString(mouseMessageKey)
+  mouseMessageData = {}
 
-  if(mouseMessageStrings = "") then
-    ?"First time setup mouse messages"
-    g.mouseMessageData = {}
+  'NOTE Using only lower case for AA keys. they seem to go all lower case anyway'
+  mouseMessageData.match_start = []
+  mouseMessageData.match_start[0] = "Go! Go! Go!"
+  mouseMessageData.match_start[1] = "Now let's have a nice clean snow battle folks!"
+  mouseMessageData.match_start[2] = "Have fun you two!"
 
-    g.mouseMessageData.matchStart = []
-    g.mouseMessageData.matchStart[0] = "Go! Go! Go!"
-    g.mouseMessageData.matchStart[1] = "Now let's have a nice clean snow battle folks!"
-    g.mouseMessageData.matchStart[2] = "Have fun you two!"
+  mouseMessageData.match_over = []
+  mouseMessageData.match_over[0] = "Move along folks, nothing left to see here!"
+  mouseMessageData.match_over[1] = "What a shot, what a play, what a match!"
+  mouseMessageData.match_over[2] = "Tune in next time for another Snow Battle Adventure!"
 
-    g.mouseMessageData.matchOver = []
-    g.mouseMessageData.matchOver[0] = "Move along folks, nothing left to see here!"
-    g.mouseMessageData.matchOver[1] = "What a shot, what a play, what a match!"
-    g.mouseMessageData.matchOver[2] = "Tune in next time for another Snow Battle Adventure!"
+  ''" Ex: <NAME> <encouragement string>"
+  ''" Player 1, You are still in the game, don't give up yet!"
+  mouseMessageData.encouragement = []
+  mouseMessageData.encouragement[0] = "You are still in the game, don't give up yet!"
+
+  mouseMessageData.shot_compliment = []
+  mouseMessageData.shot_compliment[0] = "Wow, what amazing skills!"
+  mouseMessageData.shot_compliment[1] = "What a shot!"
+  mouseMessageData.shot_compliment[2] = "This guy is on fire!"
+
+  mouseMessageData.shot_criticism = []
+  mouseMessageData.shot_criticism[0] = "Well, that could have gone better..."
+  mouseMessageData.shot_criticism[1] = "Can't be happy with that one"
 
 
-    g.mouseMessageData.test = []
-    g.mouseMessageData.test[0] = "Mouse Plane Banner Printalizer is experiencing technical difficulties. Please stand by..."
+  mouseMessageData.test = []
+  mouseMessageData.test[0] = "Mouse Plane Banner Printalizer is experiencing technical difficulties. Please stand by..."
 
-
-
-    ?"Saving local data"
-    rg2dSaveRegistryData(mouseMessageKey, g.mouseMessageData)
-  else
-    ?mouseMessageStrings
-    g.mouseMessageData = ParseJSON(mouseMessageStrings)
-  end if
+  g.mouseMessageData = mouseMessageData
 
 
 end function
@@ -113,9 +125,19 @@ end function
 function setMouseMessageData(data) as void
   g = GetGlobalAA()
 
-  g.mouseMessageData = data
 
-  ?"Saving local data"
+  keys = g.mouseMessageData.keys()
+
+  For each k in keys
+    if data.DoesExist(k) then ' If aws update exists, use it
+    ''?" Mouse Message Data: Adding remote values for field ";k
+      g.mouseMessageData.AddReplace(k, data.lookup(k))
+    else
+    ''?" Mouse Message Data: Using local data for field ";k
+    end if
+  End For
+
+  ''?"Saving mouse message data"
   mouseMessageKey = "mouse_msg"
   rg2dSaveRegistryData(mouseMessageKey, g.mouseMessageData)
 

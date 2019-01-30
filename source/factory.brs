@@ -68,6 +68,10 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
   tank.blinkTime = 0 ' The time (in seconds) left in which the tank should be blinking'
   tank.isVisible = true
 
+  tank.iHitTheTarget = invalid ' set to false at fire, set to true if anything hits'
+  tank.hitCount = 0 ' Count for a single match'
+  tank.missCount = 0' Count for a single match'
+
   tank.turret.updateDisplay()
 
   tank.state = "ALIVE"
@@ -134,6 +138,8 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
 
     m.timeSinceFire = 0.0
 
+    m.iHitTheTarget = false ' Reset at fire'
+
     return shotArray
   end function
 
@@ -152,6 +158,7 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
     if obj.DoesExist("playerNumber") then
       n = obj.playerNumber
       ?"player ";m.playerNumber;" hit player ";n
+      m.iHitTheTarget = true
     end if
 
     ' Remove projectile from active list'
@@ -162,6 +169,27 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
             exit for
         end if
     end for
+
+    ' Check for completed shot & update hit/miss count'
+    if(m.activeProjectiles.count() = 0) then
+      if(m.iHitTheTarget) then
+        g = GetGlobalAA()
+        m.hitCount += 1
+        ?"Hit count";m.hitCount
+        if(g.tank1.health > 40) and (g.tank2.health > 40) and (g.mouseController.state = "IDLE")  and ((m.hitCount mod 2) = 1) then
+          msg = g.mouseController.getRandomMessage("shot_compliment")
+          g.mouseController.startPlaneBanner(msg)
+        end if
+      else
+        g = GetGlobalAA()
+        m.missCount += 1
+        ?"Miss count";m.missCount
+        if(g.tank1.health > 40) and (g.tank2.health > 40) and (g.mouseController.state = "IDLE")  and ((m.missCount mod 2) = 0) then
+          msg = g.mouseController.getRandomMessage("shot_criticism")
+          g.mouseController.startPlaneBanner(msg)
+        end if
+      end if
+    end if
 
   end function
 
@@ -379,6 +407,7 @@ function AITankRandy(playerNumber, x, y, angle, faceRight, tank_type)
     if obj.DoesExist("playerNumber") then
       n = obj.playerNumber
       ?"Randy (";m.playerNumber;") hit player ";n
+      m.iHitTheTarget = true
     end if
 
     ' Remove projectile from active list'
@@ -389,6 +418,27 @@ function AITankRandy(playerNumber, x, y, angle, faceRight, tank_type)
             exit for
         end if
     end for
+
+    ' Check for completed shot & update hit/miss count'
+    if(m.activeProjectiles.count() = 0) then
+      if(m.iHitTheTarget) then
+        m.hitCount += 1
+        ?"Hit count";m.hitCount
+        g = GetGlobalAA()
+        if(g.tank1.health > 40) and (g.tank2.health > 40) and (g.mouseController.state = "IDLE")  and ((m.hitCount mod 2) = 1) then
+          msg = g.mouseController.getRandomMessage("shot_compliment")
+          g.mouseController.startPlaneBanner(msg)
+        end if
+      else
+        m.missCount += 1
+        ?"Miss count";m.missCount
+        g = GetGlobalAA()
+        if(g.tank1.health > 40) and (g.tank2.health > 40) and (g.mouseController.state = "IDLE")  and ((m.missCount mod 2) = 0) then
+          msg = g.mouseController.getRandomMessage("shot_criticism")
+          g.mouseController.startPlaneBanner(msg)
+        end if
+      end if
+    end if
 
   end function
 
@@ -456,10 +506,33 @@ function AITankRanger(playerNumber, x, y, angle, faceRight, tank_type)
 
     if obj.DoesExist("playerNumber") then
       n = obj.playerNumber
-      ?"Randy (";m.playerNumber;") hit player ";n
+      ?"Ranger (";m.playerNumber;") hit player ";n
+
+      m.iHitTheTarget = true
       m.last_shot_hit = true
     else
       m.last_shot_hit = false
+    end if
+
+        ' Check for completed shot & update hit/miss count'
+    if(m.activeProjectiles.count() = 0) then
+      if(m.iHitTheTarget) then
+        m.hitCount += 1
+        ?"Hit count";m.hitCount
+        g = GetGlobalAA()
+        if(g.tank1.health > 25) and (g.tank2.health > 25) and (g.mouseController.state = "IDLE") and ((m.hitCount mod 2) = 1) then
+          msg = g.mouseController.getRandomMessage("shot_compliment")
+          g.mouseController.startPlaneBanner(msg)
+        end if
+      else
+        m.missCount += 1
+        ?"Miss count";m.missCount
+        g = GetGlobalAA()
+        if(g.tank1.health > 25) and (g.tank2.health > 25) and (g.mouseController.state = "IDLE")  and ((m.missCount mod 2) = 0) then
+          msg = g.mouseController.getRandomMessage("shot_criticism")
+          g.mouseController.startPlaneBanner(msg)
+        end if
+      end if
     end if
 
   end function

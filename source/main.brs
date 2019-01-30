@@ -53,7 +53,7 @@ function Main() as void
     rg2dSetupMainScreen()
     URLLibSetup()
     success = URLLibGetAsync("https://462fhdcle1.execute-api.us-east-1.amazonaws.com/default/MouseMessageMaker")
-    ?"URL Send Success ";success
+    ''?"URL Send Success ";success
 
     while true
         event = m.port.GetMessage()
@@ -89,7 +89,9 @@ function Main() as void
           ?event.getstring()
           mouseMessageData = ParseJson(event.getstring())
           ?mouseMessageData
-          setMouseMessageData(mouseMessageData)
+          if mouseMessageData <> invalid then
+            setMouseMessageData(mouseMessageData)
+          end if
 
         end if
 

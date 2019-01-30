@@ -32,22 +32,46 @@ function rg2dSetGameParameters() as void
     g.layers.SlowSnow = 9
     'Back' 1
 
+    rg2dDeleteRegistry("mouse_msg")
     loadMouseMessages()
+
+    ''''''''''''''''''''''''''''''''''
+    ' Local Data'
+    'rg2dDeleteRegistry("local_data")
 
     g.localDataKey = "local_data"
     localDataString = rg2dGetRegistryString(g.localDataKey)
-
-    if(localDataString = "") then
-      ?"First time setup localData"
+    ?"Loaded local data -> ";localDataString
+    if(localDataString <> "") then '' If it is not empty then parse to associative array
+      g.localData = ParseJSON(localDataString) ' Pull everything from the registry'
+    else ' if empty then create a new empty associative array
       g.localData = {}
-      g.localData.RoundUnlocked = 0
-
-      ?"Saving local data"
-      rg2dSaveRegistryData(g.localDataKey, g.localData)
-    else
-      g.localData = ParseJSON(localDataString)
     end if
 
+
+    ''Default localData"
+    defaultLocalData = {}
+    defaultLocalData.RoundUnlocked = 0
+    defaultLocalData.medals = {}
+    defaultLocalData.medals.lightning = []
+    defaultLocalData.medals.sharpshooter = []
+    For i=0 to 5 step 1
+      defaultLocalData.medals.lightning.push(false)
+      defaultLocalData.medals.sharpshooter.push(false)
+    End For
+    defaultLocalData.junk = "fake news!"
+
+    ' Apply defaults to any missing data fields'
+    defaultKeys = defaultLocalData.keys()
+    For each k in defaultKeys
+      if not g.localData.DoesExist(k) then
+      ?" Adding default value for field not in registry data ";k
+        g.localData.AddReplace(k, defaultLocalData.lookup(k))
+      end if
+    End For
+
+    ' Write back to registry, in case something changed'
+    rg2dSaveRegistryData(g.localDataKey, g.localData)
 
 end function
 
@@ -367,6 +391,9 @@ function rg2dMenuItemSelected() as void
 
         stat = rg2dPlayGame(gameDefs[select.idx])
 
+        ?"Game stats"
+        ?stat
+
         if stat.winningPlayer = 1 then
           g.localData.RoundUnlocked = maxFloat(g.localData.RoundUnlocked, select.idx+1)
         end if
@@ -430,7 +457,7 @@ function twoPlayerSelectScreen() as object ' returns 2 element array of igloo ty
   titleString = "Select Player 1 Igloo"
 
   iglooTypes = g.iglooSprites.keys()
-  ?"IGLOO TYPES ";iglooTypes
+  ''?"IGLOO TYPES ";iglooTypes
 
   drawTwoPlayerSelectScreen(titleString, idx1, idx2, playerSelect)
 
@@ -456,7 +483,7 @@ function twoPlayerSelectScreen() as object ' returns 2 element array of igloo ty
                 idx2 = idx
               end if
 
-              ?titleString;" ";iglooTypes[idx]
+              ''?titleString;" ";iglooTypes[idx]
 
               drawTwoPlayerSelectScreen(titleString, idx1, idx2, playerSelect)
 
@@ -473,7 +500,7 @@ function twoPlayerSelectScreen() as object ' returns 2 element array of igloo ty
               else
                 idx2 = idx
               end if
-              ?titleString;" ";iglooTypes[idx]
+              ''?titleString;" ";iglooTypes[idx]
 
               drawTwoPlayerSelectScreen(titleString, idx1, idx2, playerSelect)
 
@@ -578,7 +605,7 @@ function tournamentSelectScreen(gameDefs, numUnlocked) as object
   idx = numUnlocked
 
   iglooTypes = g.iglooSprites.keys()
-  ?"IGLOO TYPES ";iglooTypes
+  ''?"IGLOO TYPES ";iglooTypes
 
   drawTournamentSelectScreen(gameDefs, idx, numUnlocked)
 
@@ -688,6 +715,8 @@ function rg2dGameInit(gdef) as void
 
     g.bgColor = &h114488FF
 
+    g.gameTimer = CreateObject("roTimespan")
+
 end function
 
 
@@ -732,7 +761,7 @@ function rg2dLoadLevel(gdef, level as integer) as void
 
     cpTankProj.overlapCallback = function(t,p) as integer
       if(p.ttl > 14) then
-        ?"Projectile must be firing still!";p.ttl
+        ''?"Projectile must be firing still!";p.ttl
         return 1
       end if
       if p.state = "ALIVE" then
@@ -744,6 +773,7 @@ function rg2dLoadLevel(gdef, level as integer) as void
         p.NotifyOwnerOfCollision(t)
         rg2dPlaySound(g.sounds.poof2)
         g.explosionGroup.addPhysObj(createExplosion(p.x, p.y))
+
       end if
       return 1 ' Indicate not to perform normal collision
     end function
@@ -756,13 +786,13 @@ function rg2dLoadLevel(gdef, level as integer) as void
     ''''' TERRAIN
     cpProjTerr = g.pm.createCollisionPair(g.pogProjs,g.pogTerr)
     cpProjTerr.overlapCallback = function(p,t) as integer
-      ?"Projectile hitting ICE"
+      ''?"Projectile hitting ICE"
       if p.state = "ALIVE" then
 
         g = GetGlobalAA()
         if p.isDigger then
-          ?"We have a digger here"
-          ?"p: (";p.x;" ";p.y;")"
+          ''?"We have a digger here"
+          ''?"p: (";p.x;" ";p.y;")"
 
           if p.x_atTargetY = invalid and p.target <> invalid then ' check to see if we passed targets Y'
             if p.y > p.target.y then
@@ -817,7 +847,7 @@ function rg2dLoadLevel(gdef, level as integer) as void
 
     ''' mouse
     g.mouseController = mouseController()
-    msg = g.tank1.name + " vs "  + g.tank2.name + "! " + g.mouseController.getRandomMessage("matchStart")
+    msg = g.tank1.name + " vs "  + g.tank2.name + "! " + g.mouseController.getRandomMessage("match_start")
     g.mouseController.startPlaneBanner(msg)
 
     'g.sMouse = g.compositor.NewSprite(600,g.sHeight-td.getHeightAtXPoint(600)-20,g.rMouseUp,1)
@@ -842,7 +872,7 @@ function rg2dLoadLevel(gdef, level as integer) as void
     'splosion'
     g.explosionGroup = g.pm.createPhysObjGroup()
 
-
+    g.gameTimer.mark() ' Start Game timer'
 
 end function
 
@@ -867,6 +897,8 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
     stat = {}
     stat.level_complete = false
     stat.game_complete = false
+    stat.game_ending  = false
+    stat.game_time = invalid
 
     angle_inc = pi()/180
 
@@ -894,7 +926,7 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
           msg = g.tank1.name + " Wins! "
         end if
 
-        msg += g.mouseController.getRandomMessage("matchOver")
+        msg += g.mouseController.getRandomMessage("match_over")
 
         g.mouseController.startPlaneBanner(msg)
         g.gameState.setSubState("FLYING")
@@ -1031,7 +1063,7 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
           end if
 
         else if g.gameState.state = "POWER_SELECT" ' Animate power select bar'
-          ?" - POWER_SELECT"
+          ''?" - POWER_SELECT"
 
           desired_val = minFloat(maxFloat(active_player.shot.powerBar, 0.1), 0.9)
           dp =  desired_val - active_player.getPowerBarValue()
@@ -1046,7 +1078,7 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
           end if
 
         else if g.gameState.state = "FIRE"
-          ?" - POWER_SELECT"
+          ''?" - POWER_SELECT"
           newProj = active_player.fireProjectile(active_player.shot.power)
           g.gameState.setState("PROJECTILE_CONTROL")
 
@@ -1073,7 +1105,7 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
 
     'Handle tank blinking'
     if g.tank1.blinkTime > 0.0 then
-      ?" Tank 1 blinking ";g.tank1.blinkTime
+      ''?" Tank 1 blinking ";g.tank1.blinkTime
       g.tank1.blinkTime -= dt
       if g.tank1.blinkTime <= 0.0 then ' Time to stop blinking'
         g.tank1.setVisibilily(true)
@@ -1084,7 +1116,7 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
     end if
 
     if g.tank2.blinkTime > 0.0 then
-      ?" Tank 2 blinking ";g.tank2.blinkTime
+      ''?" Tank 2 blinking ";g.tank2.blinkTime
       g.tank2.blinkTime -= dt
       if g.tank2.blinkTime <= 0.0 then ' Time to stop blinking'
         g.tank2.setVisibilily(true)
@@ -1113,6 +1145,8 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
 
     ' If one player is dead, then begin exiting the level'
     if (g.tank1.health <= 0) OR (g.tank2.health <= 0) then
+      stat.game_time = g.gameTimer.TotalSeconds()
+      stat.game_ending = true
       g.gameState.setState("EXITING")
     end if
 
