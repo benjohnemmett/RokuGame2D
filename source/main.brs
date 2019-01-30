@@ -107,20 +107,35 @@ function rg2dSetupMainScreen() as void
     g.screen.clear(0)
     g.compositor.DrawAll()
 
+    dfDrawImage(g.screen, "pkg:/images/snowbattle_bg_screenshot.jpg", 0, 0)
+
     numMenuOptions = g.menuArray.getCount()
     selectedMenuOption = g.menuArray.selectedIndex
 
     'font = g.font_registry.GetDefaultFont(56, True, false)
-    'font = g.font_registry.GetFont("Almonte Snow", 56, false, false)
+    titleFont = g.font_registry.GetFont("Almonte Snow", 96, false, false)
     font = g.font_registry.GetFont("FrozenRita", 48, false, false)
 
     regColor = &h96a3b7FF
     selColor = &h366cbcFF
 
-    topIndent = 200
-    leftIndent = 450
+    'TITLE'
+    title = "Snow Battle"
+    tWidth = titleFont.GetOneLineWidth(title, g.sWidth)
+    tHeight = titleFont.GetOneLineHeight()
+    tIndent = (g.sWidth - tWidth)/2
+    tTopMargin = 70
+
+    tPad = 20
+
+    g.screen.DrawRect(tIndent-tPad, tTopMargin-tPad, tWidth + 2*tPad, tHeight + 2*tPad, &hFFFFFFEE)
+    g.screen.DrawText(title, tIndent, tTopMargin, selColor,titleFont)
+
+
+    topIndent = tTopMargin + tHeight + tPad + 50
+    leftIndent = 400
     vertSpace = font.GetOneLineHeight() + 8
-    g.screen.DrawRect(leftIndent-50, topIndent-30, 1280-2*(leftIndent-50), 720-2*(topIndent-80), &hFFFFFFCC)
+    g.screen.DrawRect(leftIndent-50, topIndent-30, 1280-2*(leftIndent-50), vertSpace*numMenuOptions + 50, &hFFFFFFDD)
 
     for t = 0 to (numMenuOptions -1)
         if(t = selectedMenuOption) then

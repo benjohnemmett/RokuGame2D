@@ -73,6 +73,9 @@ function rg2dSetGameParameters() as void
     ' Write back to registry, in case something changed'
     rg2dSaveRegistryData(g.localDataKey, g.localData)
 
+    ' Constants'
+    g.QUICK_GAME_TIME = 120 ' Seconds'
+
 end function
 
 '
@@ -110,7 +113,7 @@ function rg2dLoadSprites() as void
     g.rCircleFire16 = rg2dLoadRegion("pkg:/components/sprites/circle_fire_16p.png", 0, 0, 16, 16)
     g.rCircleGrey8 = rg2dLoadRegion("pkg:/components/sprites/circle_grey_8p.png", 0, 0, 8, 8)
 
-    ' Kenny's stuff
+
     bmSnowBallIcons = CreateObject("roBitmap", "pkg:/components/sprites/SnowballSelectIcons.png")
     g.SB = {}
     g.SB.standard_1  = CreateObject("roRegion", bmSnowBallIcons, 0, 0, 32, 32)
@@ -130,6 +133,13 @@ function rg2dLoadSprites() as void
     g.SB.ice_see_you_A2 = CreateObject("roRegion", bmSnowBallIcons, 96, 96, 32, 32)
     g.SB.digger_1 = CreateObject("roRegion", bmSnowBallIcons, 0, 128, 32, 32)
     g.SB.digger_shadow = CreateObject("roRegion", bmSnowBallIcons, 32, 128, 32, 32)
+
+    bmMedals = CreateObject("roBitmap", "pkg:/components/sprites/Medals_300_50.png")
+    g.medalSprites = {}
+    g.medalSprites.quick_vic = CreateObject("roRegion", bmMedals, 0, 0, 50, 50)
+    g.medalSprites.sharpshooter = CreateObject("roRegion", bmMedals, 50, 0, 50, 50)
+    g.medalSprites.quick_vic_empty = CreateObject("roRegion", bmMedals, 100, 0, 50, 50)
+    g.medalSprites.sharpshooter_empty = CreateObject("roRegion", bmMedals, 150, 0, 50, 50)
 
 
     bmSnowsplosion = CreateObject("roBitmap", "pkg:/components/sprites/snowsplosion_300_50.png")
@@ -373,7 +383,7 @@ function rg2dMenuItemSelected() as void
       yourName = "Player 1"
 
       gameDefs = []
-      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo", yourName), getAIPlayerDefForLevel(2, 1), invalid, false, g.songURLS.cosmic) )
+      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo", yourName), getAIPlayerDefForLevel(2, 1), 0, false, g.songURLS.cosmic) )
       gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo", yourName), getAIPlayerDefForLevel(2, 2), invalid, false, g.songURLS.slowWalk ) )
       gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo", yourName), getAIPlayerDefForLevel(2, 3), invalid, false, g.songURLS.makeMyDay_local) )
       gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo", yourName), getAIPlayerDefForLevel(2, 4), invalid, false, g.songURLS.stuff) )
@@ -382,9 +392,14 @@ function rg2dMenuItemSelected() as void
 
       stillAlive = True
 
+      'msg = invalid
+      msg = "You earned a Sharp Shooter Medal for your flawless match!"
+
       while stillAlive
 
-        select = tournamentSelectScreen(gameDefs, g.localData.RoundUnlocked)
+        select = tournamentSelectScreen(gameDefs, g.localData.RoundUnlocked, msg)
+
+        msg = invalid
 
         if select.idx = invalid then
           return
@@ -397,6 +412,20 @@ function rg2dMenuItemSelected() as void
 
         if stat.winningPlayer = 1 then
           g.localData.RoundUnlocked = maxFloat(g.localData.RoundUnlocked, select.idx+1)
+
+          if stat.game_time < g.QUICK_GAME_TIME then
+            g.localData.medals.lightning[select.idx] = true
+            ' TODO PLay a victory sound'
+            msg = "You earned a Lighting Medal for a quick victory!"
+          end if
+
+          if stat.tank1misscount = 0 then
+            g.localData.medals.sharpshooter[select.idx] = true
+            ' TODO PLay a victory sound'
+            msg = "You earned a Sharp Shooter Medal for a flawless match!"
+          end if
+
+
         end if
 
         ' Save the fact that we have progressed'
@@ -599,7 +628,7 @@ end function
 
 
 ''
-function tournamentSelectScreen(gameDefs, numUnlocked) as object
+function tournamentSelectScreen(gameDefs, numUnlocked, msg) as object
 
   g = GetGlobalAA()
   myCodes = g.settings.controlCodes
@@ -609,7 +638,7 @@ function tournamentSelectScreen(gameDefs, numUnlocked) as object
   iglooTypes = g.iglooSprites.keys()
   ''?"IGLOO TYPES ";iglooTypes
 
-  drawTournamentSelectScreen(gameDefs, idx, numUnlocked)
+  drawTournamentSelectScreen(gameDefs, idx, numUnlocked, msg)
 
   select = {}
   select.idx = idx
@@ -629,7 +658,7 @@ function tournamentSelectScreen(gameDefs, numUnlocked) as object
                 rg2dPlaySound(m.sounds.navSingle)
               end if
 
-              drawTournamentSelectScreen(gameDefs, idx, numUnlocked)
+              drawTournamentSelectScreen(gameDefs, idx, numUnlocked, msg)
 
           else if(id = myCodes.MENU_RIGHT_A) or (id = myCodes.MENU_RIGHT_B)then
 
@@ -639,7 +668,7 @@ function tournamentSelectScreen(gameDefs, numUnlocked) as object
                 rg2dPlaySound(m.sounds.navSingle)
               end if
 
-              drawTournamentSelectScreen(gameDefs, idx, numUnlocked)
+              drawTournamentSelectScreen(gameDefs, idx, numUnlocked, msg)
 
           else if(id = myCodes.SELECT1A_PRESSED) or (id = myCodes.SELECT1B_PRESSED) or (id = myCodes.SELECT2_PRESSED)
               rg2dPlaySound(m.sounds.foomp12)
@@ -661,7 +690,7 @@ function tournamentSelectScreen(gameDefs, numUnlocked) as object
 end function
 
 ''
-function drawTournamentSelectScreen(gameDefs, idxSelected, numUnlocked) as void
+function drawTournamentSelectScreen(gameDefs, idxSelected, numUnlocked, msg) as void
   g = GetGlobalAA()
   myCodes = g.settings.controlCodes
 
@@ -669,38 +698,85 @@ function drawTournamentSelectScreen(gameDefs, idxSelected, numUnlocked) as void
   maskColor = &hf2f7ffAA ' Same as bg Color but with alpha'
   fontColor = &h3764adFF
   g.screen.clear(bgColor)
+  dfDrawImage(g.screen, "pkg:/images/snowbattle_bg_screenshot2.jpg", 0, 0)
 
-  fontTitle = g.font_registry.GetFont("Almonte Snow", 72, true, false)
-  fontHeader = g.font_registry.GetFont("Almonte Snow", 48, true, false)
-  fontNames = g.font_registry.GetFont("Almonte Snow", 28, true, false)
+  titleFont = g.font_registry.GetFont("Almonte Snow", 96, false, false)
+  fontNames = g.font_registry.GetFont("FrozenRita", 24, false, false)
+  fontMsg = g.font_registry.GetFont("FrozenRita", 32, false, false)
 
-  titleString = "Tournament Mode"
+  regColor = &h96a3b7FF
+  selColor = &h366cbcFF
+  selBorderColor = &hAA5511FF
 
-  tWidth = fontTitle.GetOneLineWidth(titleString, 1280)
-  indent = (1280-tWidth)/2
-  g.screen.DrawText(titleString,indent,100,fontColor,fontTitle)
+  'TITLE'
+  title = "Tournament Mode"
+  tWidth = titleFont.GetOneLineWidth(title, g.sWidth)
+  tHeight = titleFont.GetOneLineHeight()
+  tIndent = (g.sWidth - tWidth)/2
+  tTopMargin = 70
+
+  tPad = 20
+
+  g.screen.DrawRect(tIndent-tPad, tTopMargin-tPad, tWidth + 2*tPad, tHeight + 2*tPad, &hFFFFFFEE)
+  g.screen.DrawText(title, tIndent, tTopMargin, selColor,titleFont)
+
+  ' msg'
+  if msg <> invalid then
+    mPad = 20
+
+    mWidth = fontMsg.GetOneLineWidth(msg, g.sWidth)
+    mHeight = fontMsg.GetOneLineHeight()
+    mIndent = (g.sWidth - mWidth)/2
+    mTopMargin = tTopMargin + tHeight + tPad + mPad
+    msgColor = &h996cbcFF
+
+
+    g.screen.DrawRect(mIndent-mPad, mTopMargin-mPad, mWidth + 2*mPad, mHeight + 2*mPad, &hFFFFFFEE)
+    g.screen.DrawText(msg, mIndent, mTopMargin, msgColor, fontMsg)
+  end if
+
 
   iglooSpriteTypes = g.iglooSprites.keys()
 
-  dx = 180
-  x_ = (g.sWidth - 6*dx)/2
-  y = 260
+  dx = 190
+  x_ = (g.sWidth - 6*dx)/2 + 50
+  y = 400
 
+
+  g.screen.DrawRect(x_-60, y-20 - 60, 6*dx + 20, 220, &hFFFFFFEE)
 
   For i=0 to gameDefs.count()-1 step 1
 
+      if (i = idxSelected) then
+        g.screen.DrawRect(x_-5, y-5, 74, 59, selBorderColor)
+        g.screen.DrawRect(x_, y, 64, 49, selColor)
+      end if
+
       g.screen.DrawObject(x_, y, g.iglooSprites.lookup(gameDefs[i].tank2.tanktype)[0])
-      if (i <> idxSelected) then
-        g.screen.DrawRect(x_, y, 64, 49, maskColor)
+      'if (i <> idxSelected) then
+      ''  g.screen.DrawRect(x_, y, 64, 49, maskColor)
+      'end if
+
+      '' Draw medals
+      if(g.localData.medals.lightning[i]) then
+        g.screen.DrawObject(x_-15, y-60, g.medalSprites.quick_vic)
+      else
+        g.screen.DrawObject(x_-15, y-60, g.medalSprites.quick_vic_empty)
+      end if
+
+      if(g.localData.medals.sharpshooter[i]) then
+        g.screen.DrawObject(x_+35, y-60, g.medalSprites.sharpshooter)
+      else
+        g.screen.DrawObject(x_+35, y-60, g.medalSprites.sharpshooter_empty)
       end if
 
       if (i > numUnlocked) then
         g.screen.DrawObject(x_, y, g.rIglooLock)
-        g.screen.DrawText("?", x_+15, y+64,fontColor,fontNames)
+        g.screen.DrawText("?", x_+15, y+64,regColor,fontNames)
       else
         name_width = fontNames.GetOneLineWidth(gameDefs[i].tank2.name, 300)
         dx_font = (name_width - 64)/2
-        g.screen.DrawText(gameDefs[i].tank2.name, x_-dx_font, y+64,fontColor,fontNames)
+        g.screen.DrawText(gameDefs[i].tank2.name, x_-dx_font, y+64,regColor,fontNames)
       end if
 
       x_ += dx
@@ -963,7 +1039,7 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
 
       else if g.gameState.subState = "FLYING" then
         ' TODO Upate mouse controller
-        if g.gameState.timeInSubState > 10.0 then
+        if g.gameState.timeInSubState > 5.0 then
           g.gameState.setSubState("DONE")
         end if
 
