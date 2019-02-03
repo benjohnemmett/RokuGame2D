@@ -38,7 +38,7 @@ function rg2dSetGameParameters() as void
 
     ''''''''''''''''''''''''''''''''''
     ' Local Data'
-    rg2dDeleteRegistry("local_data")
+    'rg2dDeleteRegistry("local_data")
 
     g.localDataKey = "local_data"
     localDataString = rg2dGetRegistryString(g.localDataKey)
@@ -50,17 +50,28 @@ function rg2dSetGameParameters() as void
     end if
 
 
+    di = CreateObject("roDeviceInfo")
+
     ''Default localData"
     defaultLocalData = {}
-    defaultLocalData.RoundUnlocked = 0
+    defaultLocalData.round_unlocked = 0
+    defaultLocalData.num_opens = 0
     defaultLocalData.medals = {}
     defaultLocalData.medals.lightning = []
     defaultLocalData.medals.sharpshooter = []
+    defaultLocalData.tournament_matches_played = []
+    defaultLocalData.tournament_matches_won = []
     For i=0 to 5 step 1
       defaultLocalData.medals.lightning.push(false)
       defaultLocalData.medals.sharpshooter.push(false)
+      defaultLocalData.tournament_matches_played.push(0)
+      defaultLocalData.tournament_matches_won.push(0)
     End For
-    'defaultLocalData.junk = "fake news!"
+    defaultLocalData.two_player_matches = 0
+    defaultLocalData.just_watching_matches = 0
+    defaultLocalData.screen_saver_plays = 0
+    defaultLocalData.channel_client_id  = di.GetChannelClientId()
+    defaultLocalData.user_country_code = di.GetUserCountryCode()
 
     ' Apply defaults to any missing data fields'
     defaultKeys = defaultLocalData.keys()
@@ -71,11 +82,13 @@ function rg2dSetGameParameters() as void
       end if
     End For
 
+    g.localData.num_opens += 1
+
     ' Write back to registry, in case something changed'
     rg2dSaveRegistryData(g.localDataKey, g.localData)
 
     ' Constants'
-    g.QUICK_GAME_TIME = 120 ' Seconds'
+    g.QUICK_GAME_TIME = 180 ' Seconds'
 
 end function
 
@@ -403,7 +416,7 @@ function rg2dMenuItemSelected() as void
 
       while stillAlive
 
-        select = tournamentSelectScreen(gameDefs, g.localData.RoundUnlocked, msg)
+        select = tournamentSelectScreen(gameDefs, g.localData.round_unlocked, msg)
 
         msg = invalid
 
@@ -412,12 +425,14 @@ function rg2dMenuItemSelected() as void
         end if
 
         stat = rg2dPlayGame(gameDefs[select.idx])
+        g.localData.tournament_matches_played[select.idx] += 1
 
         ?"Game stats"
         ?stat
 
         if stat.winningPlayer = 1 then
-          g.localData.RoundUnlocked = minFloat(maxFloat(g.localData.RoundUnlocked, select.idx+1),5)
+          g.localData.tournament_matches_won[select.idx] += 1
+          g.localData.round_unlocked = minFloat(maxFloat(g.localData.round_unlocked, select.idx+1),5)
 
           if (stat.game_time < g.QUICK_GAME_TIME) and (g.localData.medals.lightning[select.idx] = false)then
             g.localData.medals.lightning[select.idx] = true
@@ -431,11 +446,11 @@ function rg2dMenuItemSelected() as void
             msg = "You earned a Sharp Shooter Medal for a flawless match!"
           end if
 
-
         end if
 
         ' Save the fact that we have progressed'
         rg2dSaveRegistryData(g.localDataKey, g.localData)
+        sendLocaldata()
 
         if select.idx = gameDefs.count() then
           ?"YOU WINN!!!!"
@@ -455,10 +470,19 @@ function rg2dMenuItemSelected() as void
       gdef = gameDefinition(1, playerDef(1, true, iglooTypes[0], "Player 1"), playerDef(2, true, iglooTypes[1], "Player 2"), invalid, false,  g.songURLS.sliding_local)
       stat = rg2dPlayGame(gdef)
 
+      g.localData.two_player_matches += 1
+      rg2dSaveRegistryData(g.localDataKey, g.localData)
+      sendLocaldata()
+
     else if(shortName = "ai_v_ai") then ' New Game
 
       gdef = gameDefinition(1, getAIPlayerDefForLevel(1, rnd(6)), getAIPlayerDefForLevel(2, rnd(6)), invalid, false,  g.songURLS.slowWalk)
       stat = rg2dPlayGame(gdef)
+
+
+      g.localData.just_watching_matches += 1
+      rg2dSaveRegistryData(g.localDataKey, g.localData)
+      sendLocaldata()
 
     else if(shortName = "options") then ' Settings
         '?"Going to settings screen"
@@ -472,6 +496,10 @@ function rg2dMenuItemSelected() as void
         gdef = gameDefinition(1, getAIPlayerDefForLevel(1, rnd(6)), getAIPlayerDefForLevel(2, rnd(6)), invalid, false,  g.songURLS.sliding_local)
         stat = playScreenSaver(gdef)
         'rg2dPlaySound(m.sounds.warp_in)
+
+        g.localData.screen_saver_plays += 1
+        rg2dSaveRegistryData(g.localDataKey, g.localData)
+        sendLocaldata()
 
     else if(shortName = "about") then
 

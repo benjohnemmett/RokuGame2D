@@ -26,6 +26,8 @@ function Main() as void
 
     m.compositor = CreateObject("roCompositor")
     m.compositor.SetDrawTo(m.screen, &h000000FF)
+    dfDrawImage(m.screen, "pkg:/images/snowbattle_load_screen.jpg", 0, 0)
+    m.screen.SwapBuffers()
 
     'PHysics model is passed as a global variable'
     m.pm = physModel(m.compositor)
@@ -50,32 +52,47 @@ function Main() as void
 
     '''''''''''''''''''''''''''''''''
     '''' MAIN Menu
-    rg2dSetupMainScreen()
     URLLibSetup()
 
     ' Get mouse messages'
     success = URLLibGetAsync("https://462fhdcle1.execute-api.us-east-1.amazonaws.com/default/MouseMessageMaker")
 
-    ' Post user info'
-    di = CreateObject("roDeviceInfo")
+    'Send local data'
+    sendLocaldata()
 
-    myData = {}
-    myData.msg_type = "open_channel"
-    myData.channel_client_id  = di.GetChannelClientId()
-    myData.user_country_code = di.GetUserCountryCode()
-    myData.round_unlocked = m.localData.RoundUnlocked
-    myData.medals_lightning = m.localData.medals.lightning
-    myData.medals_sharpshooter = m.localData.medals.sharpshooter
+    urlTimer = CreateObject("roTimespan")
+    urlTimer.mark()
 
-    myDataString = FormatJSON(myData,0)
+    urlWait = 5
 
-    ?"MyDataString"
-    ?myDataString
+    while urlTimer.TotalSeconds() < urlWait
+      event = m.port.GetMessage()
+      if (type(event) = "roUrlEvent") then
+        rcode = event.GetResponseCode()
+        ?"Got URL EVENT ";rcode
+        if(rcode = 201) then ' Successful Post'
+          ?"Successful post"
+          ?event.getstring()
 
-    dbPostURL = "https://ohh7ckjw0g.execute-api.us-east-1.amazonaws.com/default/SnowBattleData_Test"
+          exit while
 
-    rPost = URLLibPostStringAsync(dbPostURL, myDataString)
+        else if(rcode = 200) then ' Got data back'
+          URLLibHandleUrlEvent(event)
 
+          ?event.getstring()
+          mouseMessageData = ParseJson(event.getstring())
+          ?mouseMessageData
+          if mouseMessageData <> invalid then
+            setMouseMessageData(mouseMessageData)
+          end if
+
+          'exit while ' Get out of here'
+
+        end if
+      end if
+    end while
+
+    rg2dSetupMainScreen()
     ' Menu loop'
     while true
         event = m.port.GetMessage()
@@ -104,24 +121,7 @@ function Main() as void
                 ' Exit Game
                 return
             end if
-        else if (type(event) = "roUrlEvent") then
-          rcode = event.GetResponseCode()
-          ?"Got URL EVENT ";rcode
-          if(rcode = 201) then ' Successful Post'
-            ?"Successful post"
-            ?event.getstring()
 
-          else if(rcode = 200) then ' Got data back'
-            URLLibHandleUrlEvent(event)
-
-            ?event.getstring()
-            mouseMessageData = ParseJson(event.getstring())
-            ?mouseMessageData
-            if mouseMessageData <> invalid then
-              setMouseMessageData(mouseMessageData)
-            end if
-
-          end if
         end if ' End roURLEvent'
 
     end while
@@ -132,6 +132,8 @@ end function
 function rg2dSetupMainScreen() as void
 
     g = GetGlobalAA()
+
+    g.audioManager.playSong(g.songURLS.makeMyDay_local)
 
     g.screen.clear(0)
     g.compositor.DrawAll()
@@ -176,7 +178,6 @@ function rg2dSetupMainScreen() as void
 
     g.screen.swapBuffers()
 
-    g.audioManager.playSong(g.songURLS.makeMyDay_local)
 
 
 end function
