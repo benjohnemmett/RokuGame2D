@@ -13,9 +13,12 @@ function rg2dPlayGame(gdef) as object
 
     'Load screen
     screen.clear(0)
-    font = g.font_registry.GetDefaultFont()
-    screen.DrawText("Loading...",300, 300, &hFFFFFFFF, font)
+    'font = g.font_registry.GetDefaultFont()
+    'screen.DrawText("Loading...",300, 300, &hFFFFFFFF, font)
+    'screen.SwapBuffers()
+    dfDrawImage(g.screen, "pkg:/images/snowbattle_load_screen.jpg", 0, 0)
     screen.SwapBuffers()
+
 
     ' Score, (wave) level
     gs = rg2dGameStats(0, 1)
@@ -23,9 +26,6 @@ function rg2dPlayGame(gdef) as object
     level_state = "Normal"
     g.game_sore = 0
 
-    game_paused = false
-    sPauseMenu = g.compositor.NewSprite(300, 200, g.rPauseScreen, 50)
-    sPauseMenu.SetDrawableFlag(false)
 
     'Audio
     ' Play Background music
@@ -80,12 +80,19 @@ function rg2dPlayGame(gdef) as object
 
         g.pm.setCompositor(g.compositor)
 
+
         ' Exit when set number of rounds has been played'
         if(gs.wave > gdef.rounds) then
           exit while
         end if
 
         rg2dLoadLevel(gdef, gs.wave)
+
+
+        ' Pause screen'
+        game_paused = false
+        sPauseMenu = g.compositor.NewSprite(300, 200, g.rPauseScreen, g.layers.pauseScreen)
+        sPauseMenu.SetDrawableFlag(false)
 
         ''''''''''''''''''''''''''''''''''''''''''''''
         ' Enter inner run loop

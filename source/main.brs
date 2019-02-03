@@ -52,9 +52,31 @@ function Main() as void
     '''' MAIN Menu
     rg2dSetupMainScreen()
     URLLibSetup()
-    success = URLLibGetAsync("https://462fhdcle1.execute-api.us-east-1.amazonaws.com/default/MouseMessageMaker")
-    ''?"URL Send Success ";success
 
+    ' Get mouse messages'
+    success = URLLibGetAsync("https://462fhdcle1.execute-api.us-east-1.amazonaws.com/default/MouseMessageMaker")
+
+    ' Post user info'
+    di = CreateObject("roDeviceInfo")
+
+    myData = {}
+    myData.msg_type = "open_channel"
+    myData.channel_client_id  = di.GetChannelClientId()
+    myData.user_country_code = di.GetUserCountryCode()
+    myData.round_unlocked = m.localData.RoundUnlocked
+    myData.medals_lightning = m.localData.medals.lightning
+    myData.medals_sharpshooter = m.localData.medals.sharpshooter
+
+    myDataString = FormatJSON(myData,0)
+
+    ?"MyDataString"
+    ?myDataString
+
+    dbPostURL = "https://ohh7ckjw0g.execute-api.us-east-1.amazonaws.com/default/SnowBattleData_Test"
+
+    rPost = URLLibPostStringAsync(dbPostURL, myDataString)
+
+    ' Menu loop'
     while true
         event = m.port.GetMessage()
 
@@ -83,17 +105,24 @@ function Main() as void
                 return
             end if
         else if (type(event) = "roUrlEvent") then
-          ?"Got URL EVENT"
-          URLLibHandleUrlEvent(event)
+          rcode = event.GetResponseCode()
+          ?"Got URL EVENT ";rcode
+          if(rcode = 201) then ' Successful Post'
+            ?"Successful post"
+            ?event.getstring()
 
-          ?event.getstring()
-          mouseMessageData = ParseJson(event.getstring())
-          ?mouseMessageData
-          if mouseMessageData <> invalid then
-            setMouseMessageData(mouseMessageData)
+          else if(rcode = 200) then ' Got data back'
+            URLLibHandleUrlEvent(event)
+
+            ?event.getstring()
+            mouseMessageData = ParseJson(event.getstring())
+            ?mouseMessageData
+            if mouseMessageData <> invalid then
+              setMouseMessageData(mouseMessageData)
+            end if
+
           end if
-
-        end if
+        end if ' End roURLEvent'
 
     end while
 

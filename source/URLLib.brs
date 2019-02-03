@@ -18,6 +18,21 @@ Function URLLibGetAsync(url as String)
     return success
 End Function
 
+Function URLLibPostStringAsync(url as String, val as String)
+  g = GetGlobalAA()
+    newXfer = CreateObject("roUrlTransfer")
+    newXfer.EnableHostVerification(false)
+    newXfer.EnablePeerVerification(false)
+    newXfer.SetUrl(url)
+    newXfer.SetRequest("POST")
+    newXfer.SetMessagePort(g.port)
+    success = newXfer.AsyncPostFromString(val)
+    requestId = newXfer.GetIdentity().ToStr()
+    g.pendingXfers[requestId] = newXfer
+
+    return success
+End Function
+
 Function URLLibHandleUrlEvent(event as Object)
     g = GetGlobalAA()
     ?"URL EVENT, huh... I'll handle this."
@@ -32,5 +47,5 @@ Function URLLibHandleUrlEvent(event as Object)
     end if
 
     ?"Event ";event.GetString()
-    
+
 End Function

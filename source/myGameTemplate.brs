@@ -18,6 +18,7 @@ function rg2dSetGameParameters() as void
 
     g.layers = {}
     ' Front' 100
+    g.layers.pauseScreen = 70
     g.layers.FastSnow = 60
     g.layers.playerControl = 50
     g.layers.Trees = 45
@@ -32,12 +33,12 @@ function rg2dSetGameParameters() as void
     g.layers.SlowSnow = 9
     'Back' 1
 
-    rg2dDeleteRegistry("mouse_msg")
+    'rg2dDeleteRegistry("mouse_msg")
     loadMouseMessages()
 
     ''''''''''''''''''''''''''''''''''
     ' Local Data'
-    'rg2dDeleteRegistry("local_data")
+    rg2dDeleteRegistry("local_data")
 
     g.localDataKey = "local_data"
     localDataString = rg2dGetRegistryString(g.localDataKey)
@@ -59,7 +60,7 @@ function rg2dSetGameParameters() as void
       defaultLocalData.medals.lightning.push(false)
       defaultLocalData.medals.sharpshooter.push(false)
     End For
-    defaultLocalData.junk = "fake news!"
+    'defaultLocalData.junk = "fake news!"
 
     ' Apply defaults to any missing data fields'
     defaultKeys = defaultLocalData.keys()
@@ -231,6 +232,8 @@ function rg2dLoadSounds() as void
     g.sounds.poof3 = CreateObject("roAudioResource", "pkg:/components/audio/poof3.wav")
     g.sounds.phaser1 = CreateObject("roAudioResource", "pkg:/components/audio/phaser1.wav")
     g.sounds.navSingle = CreateObject("roAudioResource", "navsingle")
+    g.sounds.matchVictory = CreateObject("roAudioResource", "pkg:/components/audio/SnowBattleVictory.wav")
+    g.sounds.metalAward = CreateObject("roAudioResource", "pkg:/components/audio/SnowBattleMedalAward.wav")
 
     '?"Max Streams ";g.sounds.astroid_blast.maxSimulStreams()
     g.audioStream = 1
@@ -239,12 +242,15 @@ function rg2dLoadSounds() as void
     g.songURLS = {}
     g.songURLS.makeMyDay_local = "pkg:/components/audio/MakeMyDay.mp3"
     g.songURLS.sliding_local = "pkg:/components/audio/Sliding.mp3"
-    g.songURLS.slowWalk = "https://s3.amazonaws.com/goodthinggames/snowballfight/SlowWalkShort.mp3"
-    g.songURLS.cosmic = "https://s3.amazonaws.com/goodthinggames/snowballfight/Cosmic.mp3"
-    g.songURLS.goingDown = "https://s3.amazonaws.com/goodthinggames/snowballfight/GoingDown.mp3"
-    g.songURLS.snowCannon2 = "https://s3.amazonaws.com/goodthinggames/snowballfight/SnowCannon2.mp3"
-    g.songURLS.snowCannon3 = "https://s3.amazonaws.com/goodthinggames/snowballfight/SnowCannon3.mp3"
-    g.songURLS.stuff = "https://s3.amazonaws.com/goodthinggames/snowballfight/Stuff.mp3"
+    g.songURLS.slowWalk_local = "pkg:/components/audio/SlowWalkShort.mp3"
+    'g.songURLS.slowWalk = "https://s3.amazonaws.com/goodthinggames/snowballfight/SlowWalkShort.mp3"
+    'g.songURLS.cosmic = "https://s3.amazonaws.com/goodthinggames/snowballfight/CosmicShort.mp3"
+    g.songURLS.cosmic_local = "pkg:/components/audio/CosmicShort.mp3"
+    g.songURLS.goingDown_local = "pkg:/components/audio/GoingDown.mp3"
+    'g.songURLS.snowCannon2 = "https://s3.amazonaws.com/goodthinggames/snowballfight/SnowCannon2.mp3"
+    'g.songURLS.snowCannon3 = "https://s3.amazonaws.com/goodthinggames/snowballfight/SnowCannon3.mp3"
+    'g.songURLS.stuff = "https://s3.amazonaws.com/goodthinggames/snowballfight/Stuff.mp3"
+    g.songURLS.stuff_local = "pkg:/components/audio/StuffShort.mp3"
 
     'g.songURLS.still = "http://cf-media.sndcdn.com/YOpYBdeBhkEr?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiKjovL2NmLW1lZGlhLnNuZGNkbi5jb20vWU9wWUJkZUJoa0VyIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNTQ4Mjk2NDQxfX19XX0_&Signature=tH8BOlp8SxkoE9~0cOcoBPl2iUgKdwkkU2o9P9UEUYxTVGagFCDlUzQd1BP6JzoBfo~5G1bqE9LZBGhBDlOvEQEEzyrfVdMW0Ixa6jlfFSCoOG~dSNE4QFPsrpMuCz6RDRoWB1r9jBIX~mKVEReCt5Pu5Pq-2d1Be3A0sBf4tsYGNSpZ8xfqWCyj-1Ej4IHx~3BGgilGwdKqoWKgvqyrJcC1ckELk5AxwcChS8iQpjmW9Y89g~c9ufwNSaXJwdvc~85MQusgQCpUiSNo9ULzkr-tGboAkYdUJ35OXcM2sbzyufN1Vz-KQBMD262ldKGbKmSsnuqHj7FPSqw-KFmYuQ__&Key-Pair-Id=APKAJAGZ7VMH2PFPW6UQ"
     'g.songURLS.awesome = "http://cf-media.sndcdn.com/7sr6k4zORCj9?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiKjovL2NmLW1lZGlhLnNuZGNkbi5jb20vN3NyNms0ek9SQ2o5IiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNTQ4Mjk5NTM0fX19XX0_&Signature=X04MR0lY-vFezXWOq7lkRqNIQIb9h1S0fqseR9gFEl-9iNbpG81kExfxgnT-4GvYhVECxBnWnyIBavLtOg4ihXPuVuue-SdWfY1gQyuaRO2WPfj1GC~GbyULn3QkHtA1ktU9cALYEXHSpBgyCatgBMRR4MizYHoMztM9ndjoZe3bu7iDTR3hOazNDJgOXGZE1WzXmjKGarJwAOdhC6E5IxWwRssKGNoZjNCWn9F70~OmQ8DBTbQn8bpcK6WT~soGlkeYu12k1WSViEHitTf1LI6lgK9SCpnJYghVzumXMLsNey8Te7XrS7on4i9CeDV~Gifdg3GpAFsC2xk9oY0G5g__&Key-Pair-Id=APKAJAGZ7VMH2PFPW6UQ"
@@ -341,17 +347,17 @@ function getAIPlayerDefForLevel(playerNumber, level as integer) as object
       pdef = invalid
 
       if level = 1 then
-        pdef = PlayerDef(playerNumber, false, "igloo_blue", "Eli The Iceman")
+        pdef = PlayerDef(playerNumber, false, "igloo_blue", "Iceman")
       else if level = 2 then
-        pdef = AIRangerPlayerDef(playerNumber, "igloo_green", 2.0, "The Green Giant")
+        pdef = AIRangerPlayerDef(playerNumber, "igloo_green", 2.0, "Green Giant")
       else if level = 3 then
-        pdef = AIRangerPlayerDef(playerNumber, "igloo_red", 1.0, "Rudolf")
+        pdef = AIRangerPlayerDef(playerNumber, "igloo_red", 1.0, "Rudolph")
       else if level = 4 then
         pdef = AIRangerPlayerDef(playerNumber, "igloo_pink", 0.5, "Popper")
       else if level = 5 then
-        pdef = AIRangerPlayerDef(playerNumber, "igloo_grey", 0.1, "The Ghost")
+        pdef = AIRangerPlayerDef(playerNumber, "igloo_grey", 0.1, "Ghost")
       else if level = 6 then
-        pdef = AIRangerPlayerDef(playerNumber, "igloo_black", 0.0, "Black Licorice")
+        pdef = AIRangerPlayerDef(playerNumber, "igloo_black", 0.0, "Jet")
       else
         ?"Warning got unhandled level ";level
       end if
@@ -383,17 +389,17 @@ function rg2dMenuItemSelected() as void
       yourName = "Player 1"
 
       gameDefs = []
-      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo", yourName), getAIPlayerDefForLevel(2, 1), 0, false, g.songURLS.cosmic) )
-      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo", yourName), getAIPlayerDefForLevel(2, 2), invalid, false, g.songURLS.slowWalk ) )
-      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo", yourName), getAIPlayerDefForLevel(2, 3), invalid, false, g.songURLS.makeMyDay_local) )
-      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo", yourName), getAIPlayerDefForLevel(2, 4), invalid, false, g.songURLS.stuff) )
-      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo", yourName), getAIPlayerDefForLevel(2, 5), invalid,  true, g.songURLS.snowCannon3) )
-      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo", yourName), getAIPlayerDefForLevel(2, 6),       0,  true, g.songURLS.snowCannon2) )
+      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo", yourName), getAIPlayerDefForLevel(2, 1), 0, false, g.songURLS.cosmic_local) )
+      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo", yourName), getAIPlayerDefForLevel(2, 2), invalid, false, g.songURLS.makeMyDay_local ) )
+      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo", yourName), getAIPlayerDefForLevel(2, 3), invalid, false, g.songURLS.stuff_local) )
+      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo", yourName), getAIPlayerDefForLevel(2, 4), invalid, false, g.songURLS.stuff_local) )
+      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo", yourName), getAIPlayerDefForLevel(2, 5), invalid,  true, g.songURLS.slowWalk_local) )
+      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo", yourName), getAIPlayerDefForLevel(2, 6),       0,  true, g.songURLS.slowWalk_local) )
 
       stillAlive = True
 
-      'msg = invalid
-      msg = "You earned a Sharp Shooter Medal for your flawless match!"
+      msg = invalid
+      'msg = "You earned a Sharp Shooter Medal for your flawless match!"
 
       while stillAlive
 
@@ -411,17 +417,17 @@ function rg2dMenuItemSelected() as void
         ?stat
 
         if stat.winningPlayer = 1 then
-          g.localData.RoundUnlocked = maxFloat(g.localData.RoundUnlocked, select.idx+1)
+          g.localData.RoundUnlocked = minFloat(maxFloat(g.localData.RoundUnlocked, select.idx+1),5)
 
-          if stat.game_time < g.QUICK_GAME_TIME then
+          if (stat.game_time < g.QUICK_GAME_TIME) and (g.localData.medals.lightning[select.idx] = false)then
             g.localData.medals.lightning[select.idx] = true
-            ' TODO PLay a victory sound'
+            rg2dPlaySound(g.sounds.metalAward)
             msg = "You earned a Lighting Medal for a quick victory!"
           end if
 
-          if stat.tank1misscount = 0 then
+          if (stat.tank1misscount = 0) and (g.localData.medals.sharpshooter[select.idx] = false) then
             g.localData.medals.sharpshooter[select.idx] = true
-            ' TODO PLay a victory sound'
+            rg2dPlaySound(g.sounds.metalAward)
             msg = "You earned a Sharp Shooter Medal for a flawless match!"
           end if
 
@@ -662,7 +668,7 @@ function tournamentSelectScreen(gameDefs, numUnlocked, msg) as object
 
           else if(id = myCodes.MENU_RIGHT_A) or (id = myCodes.MENU_RIGHT_B)then
 
-              if (idx < numUnlocked) then
+              if (idx < numUnlocked) and (idx < 5) then
                 idx = (idx+1)
               else
                 rg2dPlaySound(m.sounds.navSingle)
@@ -727,8 +733,8 @@ function drawTournamentSelectScreen(gameDefs, idxSelected, numUnlocked, msg) as 
     mWidth = fontMsg.GetOneLineWidth(msg, g.sWidth)
     mHeight = fontMsg.GetOneLineHeight()
     mIndent = (g.sWidth - mWidth)/2
-    mTopMargin = tTopMargin + tHeight + tPad + mPad
-    msgColor = &h996cbcFF
+    mTopMargin = tTopMargin + tHeight + tPad + 2*mPad
+    msgColor = &h996c6cFF
 
 
     g.screen.DrawRect(mIndent-mPad, mTopMargin-mPad, mWidth + 2*mPad, mHeight + 2*mPad, &hFFFFFFEE)
@@ -980,7 +986,8 @@ function rg2dLoadLevel(gdef, level as integer) as void
 
     g.gameTimer.mark() ' Start Game timer'
 
-end function
+
+end function '  Load level '
 
 function switchActivePlayer() as void
     g = GetGlobalAA()
@@ -1021,9 +1028,7 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
     if g.gameState.state = "EXITING"
 
       if g.gameState.subState = "ENTRY" then
-        ' TODO Play victory sound'
         g.audioManager.stop()
-        ' TODO  Start mouse banner'
         msg = ""
 
         if (g.tank1.health <= 0) then
@@ -1035,7 +1040,14 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
         msg += g.mouseController.getRandomMessage("match_over")
 
         g.mouseController.startPlaneBanner(msg)
+        g.gameState.setSubState("PAUSE")
+
+      else if g.gameState.subState = "PAUSE" then
+
+      if g.gameState.timeInSubState > 0.5 then
+        rg2dPlaySound(g.sounds.matchVictory)
         g.gameState.setSubState("FLYING")
+      end if
 
       else if g.gameState.subState = "FLYING" then
         ' TODO Upate mouse controller
