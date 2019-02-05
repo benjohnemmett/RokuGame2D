@@ -88,7 +88,7 @@ function rg2dSetGameParameters() as void
     rg2dSaveRegistryData(g.localDataKey, g.localData)
 
     ' Constants'
-    g.QUICK_GAME_TIME = 160 ' Seconds'
+    g.QUICK_GAME_TIME = 140 ' Seconds'
     g.MAX_WIND = 40
 
 end function
@@ -281,6 +281,7 @@ function rg2dLoadFonts() as void
   g.font_registry.Register("pkg:/components/fonts/AlmonteSnow.ttf")
   g.font_registry.Register("pkg:/components/fonts/HannaHandwriting.ttf")
   g.font_registry.Register("pkg:/components/fonts/FrozenRita.ttf")
+  g.font_registry.Register("pkg:/components/fonts/minya_nouvelle_rg.ttf")
 
 end function
 
@@ -506,7 +507,7 @@ function rg2dMenuItemSelected() as void
     else if(shortName = "about") then
 
         'rg2dPlaySound(m.sounds.warp_out)
-        stat = rg2dOpenCreditScreen(m.screen, m.port)
+        stat = rg2dOpenCreditScreen()
         'rg2dPlaySound(m.sounds.warp_in)
     end if
 
@@ -737,8 +738,8 @@ function drawTournamentSelectScreen(gameDefs, idxSelected, numUnlocked, msg) as 
   dfDrawImage(g.screen, "pkg:/images/snowbattle_bg_screenshot2.jpg", 0, 0)
 
   titleFont = g.font_registry.GetFont("Almonte Snow", 96, false, false)
-  fontNames = g.font_registry.GetFont("FrozenRita", 24, false, false)
-  fontMsg = g.font_registry.GetFont("FrozenRita", 32, false, false)
+  fontNames = g.font_registry.GetFont("Minya Nouvelle", 24, false, false)
+  fontMsg = g.font_registry.GetFont("Minya Nouvelle", 32, false, false)
 
   regColor = &h96a3b7FF
   selColor = &h366cbcFF

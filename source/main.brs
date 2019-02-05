@@ -145,7 +145,7 @@ function rg2dSetupMainScreen() as void
 
     'font = g.font_registry.GetDefaultFont(56, True, false)
     titleFont = g.font_registry.GetFont("Almonte Snow", 96, false, false)
-    font = g.font_registry.GetFont("FrozenRita", 48, false, false)
+    font = g.font_registry.GetFont("Minya Nouvelle", 48, false, false)
 
     regColor = &h96a3b7FF
     selColor = &h366cbcFF

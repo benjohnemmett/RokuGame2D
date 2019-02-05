@@ -13,8 +13,8 @@ function playScreenSaver(gdef) as object
 
     'Load screen
     screen.clear(0)
-    font = g.font_registry.GetDefaultFont()
-    screen.DrawText("Loading...",300, 300, &hFFFFFFFF, font)
+
+    dfDrawImage(g.screen, "pkg:/images/snowbattle_load_screen.jpg", 0, 0)
     screen.SwapBuffers()
 
     ' Score, (wave) level
@@ -24,8 +24,7 @@ function playScreenSaver(gdef) as object
     g.game_sore = 0
 
     game_paused = false
-    sPauseMenu = g.compositor.NewSprite(300, 200, g.rPauseScreen, 50)
-    sPauseMenu.SetDrawableFlag(false)
+
 
     'Audio
     ' Play Background music
@@ -79,6 +78,10 @@ function playScreenSaver(gdef) as object
         g.compositor.SetDrawTo(g.screen, g.bgColor)
 
         g.pm.setCompositor(g.compositor)
+
+        sPauseMenu = g.compositor.NewSprite(300, 200, g.rPauseScreen, g.layers.pauseScreen)
+        'sPauseMenu = g.compositor.NewSprite(300, 200, g.rPauseScreen, 50)
+        sPauseMenu.SetDrawableFlag(false)
 
         ' Exit when set number of rounds has been played'
         if(gs.wave > gdef.rounds) then

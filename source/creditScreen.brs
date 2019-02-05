@@ -1,17 +1,20 @@
-function rg2dOpenCreditScreen(subScreen, subPort) as void
+function rg2dOpenCreditScreen() as void
     g = GetGlobalAA()
 
-    rg2dSetupCreditScreen(subScreen)
+    rg2dSetupCreditScreen()
 
     codes = bslUniversalControlEventCodes()
 
+    g.audioManager.stop()
+    g.audioManager.playsong(g.songURLS.goingDown_local)
+
     while true
-        event = subPort.GetMessage()
+        event = g.port.GetMessage()
 
         if (type(event) = "roUniversalControlEvent") then
             id = event.GetInt()
              if(id = codes.BUTTON_BACK_PRESSED)
-
+                g.audioManager.stop()
                 return
 
             end if
@@ -21,15 +24,16 @@ function rg2dOpenCreditScreen(subScreen, subPort) as void
 
 end function
 
-function rg2dSetupCreditScreen(subScreen) as Integer
+function rg2dSetupCreditScreen() as Integer
     g = GetGlobalAA()
+    ?"Setting up about screen"
 
-    subScreen.clear(0)
+    g.screen.clear(0)
+    g.compositor.DrawAll()
 
-    g.font_registry = CreateObject("roFontRegistry")
-    font = g.font_registry.GetDefaultFont() 
+    dfDrawImage(g.screen, "pkg:/images/snowbattle_about_screen.jpg", 0, 0)
 
-    subScreen.SwapBuffers()
+    g.screen.SwapBuffers()
 
     return 0
 
