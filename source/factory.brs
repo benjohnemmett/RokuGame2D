@@ -13,13 +13,15 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
     ?"Warning: Unhandled tank type requested ";tank.tank_type
   end if
 
+  tank.turret_shift = 10
+
   if faceRight then
     sTank = g.compositor.NewSprite(x, y, spriteArray[1], g.layers.Igloos) ' Flip this one'
-    tx = x - 15
+    tx = x - tank.turret_shift
     ty = y
   else
     sTank = g.compositor.NewSprite(x, y, spriteArray[0], g.layers.Igloos)
-    tx = x + 15
+    tx = x + tank.turret_shift
     ty = y
   end if
 
@@ -42,6 +44,7 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
   tank.vy = 0
   tank.maxvx = 10
   tank.maxvy = 10
+
   tank.turret = collectiveRotationalPhysObj(tx, ty, 0, pi()/6)
   tank.turret.createElement(sTurret1, 0, 21)
   tank.turret.createElement(sTurret2, 0, 24)
@@ -51,6 +54,7 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
   tank.turret.createElement(sTurret6, 0, 36)
   tank.turret_spacing = 3
   tank.tank_turret_angle = pi()/6 ' angle up from front of tank
+
   tank.faceRight = faceRight
   tank.MIN_TURRET_ANGLE = 0
   tank.MAX_TURRET_ANGLE = pi()
@@ -129,7 +133,14 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
     ?"Fire!!!! ";m.shotTypeList[m.shotTypeIdx]
     g = GetGlobalAA()
 
-    shotArray = createShot(m, m.shotTypeList[m.shotTypeIdx], m.x, m.y, power, m.tank_turret_angle, m.faceRight)
+    if m.faceRight then
+      x0 = m.x - m.turret_shift
+    else
+      x0 = m.x + m.turret_shift
+    end if
+
+
+    shotArray = createShot(m, m.shotTypeList[m.shotTypeIdx], x0, m.y, power, m.tank_turret_angle, m.faceRight)
     for each s in shotArray
       m.shotsInTheHole.push(s)
     end for
@@ -258,12 +269,10 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
   ' Override update display to also update the turret & flag display as well. '
   tank.updateDisplay = function() as void
 
-    turret_shift = 10
-
     if(m.faceRight) then
-      m.turret.x = m.x - turret_shift
+      m.turret.x = m.x - m.turret_shift
     else
-      m.turret.x = m.x + turret_shift
+      m.turret.x = m.x + m.turret_shift
     end if
 
     m.turret.y = m.y
@@ -366,13 +375,15 @@ function createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_ty
 
     if m.faceRight then
       m.sFlag.MoveTo(m.x-100,m.y-380)
+      m.sPowerBar.MoveTo(m.x-50, m.y+30)
+      m.sShotSelector.MoveTo(m.x-10, m.y+30)
     else
       m.sFlag.MoveTo(m.x,m.y-380)
+      m.sPowerBar.MoveTo(m.x+20, m.y+30)
+      m.sShotSelector.MoveTo(m.x-50, m.y+30)
     end if
 
-    m.sPowerBar.MoveTo(m.x, m.y+30)
     'm.sProjectileSelector.MoveTo(m.x-32, m.y+30)
-    m.sShotSelector.MoveTo(m.x-32, m.y+30)
 
   end function
 
@@ -552,6 +563,8 @@ function AITankRanger(playerNumber, x, y, angle, faceRight, tank_type)
 
     ' First Guess'
     if m.last_shot = invalid then
+      g = GetGlobalAA()
+
       shot.angle = 45 * (pi()/180)' Choose high loft to avoid terrain'
 
       R = abs(m.x - target.x) ' pixels'
@@ -562,7 +575,7 @@ function AITankRanger(playerNumber, x, y, angle, faceRight, tank_type)
 
       ?"**** Aiming at something ";R;" pixels away. Power = ";vel
 
-      shot.power = vel ' Yeah... bad variable naming, sorry physicists.'
+      shot.power = vel + g.wind.ax' Yeah... bad variable naming, sorry physicists.'
       shot.powerBar = ((shot.power-300)/200)
 
     else

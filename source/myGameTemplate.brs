@@ -88,7 +88,8 @@ function rg2dSetGameParameters() as void
     rg2dSaveRegistryData(g.localDataKey, g.localData)
 
     ' Constants'
-    g.QUICK_GAME_TIME = 180 ' Seconds'
+    g.QUICK_GAME_TIME = 160 ' Seconds'
+    g.MAX_WIND = 40
 
 end function
 
@@ -247,6 +248,7 @@ function rg2dLoadSounds() as void
     g.sounds.navSingle = CreateObject("roAudioResource", "navsingle")
     g.sounds.matchVictory = CreateObject("roAudioResource", "pkg:/components/audio/SnowBattleVictory.wav")
     g.sounds.metalAward = CreateObject("roAudioResource", "pkg:/components/audio/SnowBattleMedalAward.wav")
+    g.sounds.randomizer = CreateObject("roAudioResource", "pkg:/components/audio/SnowBattle_Randomizer.wav")
 
     '?"Max Streams ";g.sounds.astroid_blast.maxSimulStreams()
     g.audioStream = 1
@@ -362,15 +364,15 @@ function getAIPlayerDefForLevel(playerNumber, level as integer) as object
       if level = 1 then
         pdef = PlayerDef(playerNumber, false, "igloo_blue", "Iceman")
       else if level = 2 then
-        pdef = AIRangerPlayerDef(playerNumber, "igloo_green", 2.0, "Green Giant")
+        pdef = AIRangerPlayerDef(playerNumber, "igloo_green", 1.5, "Green Giant")
       else if level = 3 then
         pdef = AIRangerPlayerDef(playerNumber, "igloo_red", 1.0, "Rudolph")
       else if level = 4 then
         pdef = AIRangerPlayerDef(playerNumber, "igloo_pink", 0.5, "Popper")
       else if level = 5 then
-        pdef = AIRangerPlayerDef(playerNumber, "igloo_grey", 0.1, "Ghost")
+        pdef = AIRangerPlayerDef(playerNumber, "igloo_grey", 0.3, "Ghost")
       else if level = 6 then
-        pdef = AIRangerPlayerDef(playerNumber, "igloo_black", 0.0, "Jet")
+        pdef = AIRangerPlayerDef(playerNumber, "igloo_black", 0.1, "Jet")
       else
         ?"Warning got unhandled level ";level
       end if
@@ -871,10 +873,11 @@ function rg2dLoadLevel(gdef, level as integer) as void
     '''''' WIND '''''''''
     g.wind = windMaker()
     if gdef.windspeed = invalid then
-      g.wind.setWindAcc(rnd(50)-25,0)
+      g.wind.setWindAcc(rnd(g.MAX_WIND*2)-g.MAX_WIND,0)
     else
       g.wind.setWindAcc(gdef.windspeed,0)
     end if
+    ?"Wind speed is ";g.wind.ax
 
     g.windViewer = windicator(g.wind, 500, 100)
     g.windViewer.updateDisplay()
@@ -1052,6 +1055,7 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
     End If
 
     PBT = 2000 'Powerbar period in milliseconds '
+    SHOT_RANDOMIZATION_TIME = 0.8
 
     if g.gameState.state = "EXITING"
 
@@ -1123,14 +1127,20 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
 
         ' Start of Turn state transitions'
         if g.gameState.state = "ENTER" then
+          if(g.gameState.timeInState > 0.2) then
+            g.gameState.setState("TURN_BUFFER")
+          end if
+
+        else if g.gameState.state = "TURN_BUFFER" then
           g.gameState.setState("RANDOMIZE_PROJECTILE")
+          rg2dPlaySound(g.sounds.randomizer)
 
         else if g.gameState.state = "RANDOMIZE_PROJECTILE" then
-          if(g.gameState.framesInState > 50) then
+          if(g.gameState.timeInState > SHOT_RANDOMIZATION_TIME) then
             g.gameState.setState("IDLE")
           end if
           if(g.gameState.framesInState mod 5) = 0 then ' Shuffle projectile type again'
-            active_player.selectShot(active_player.shotTypeIdx + rnd(3))
+            active_player.selectShot(active_player.shotTypeIdx + 3 + rnd(3))
           end if
         end if
 
@@ -1180,15 +1190,22 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
       else ''''''''''''''''   AI Player''''''''''''''''''''''''''''''''
 
         if g.gameState.state = "ENTER" then
+          if(g.gameState.timeInState > 0.2) then
+            g.gameState.setState("TURN_BUFFER")
+          end if
+
+        else if g.gameState.state = "TURN_BUFFER" then
           g.gameState.setState("RANDOMIZE_PROJECTILE")
+          rg2dPlaySound(g.sounds.randomizer)
+
         else if g.gameState.state = "RANDOMIZE_PROJECTILE" then
 
-          if(g.gameState.framesInState > 50) then
+          if(g.gameState.timeInState > SHOT_RANDOMIZATION_TIME) then
             g.gameState.setState("IDLE")
           end if
 
           if(g.gameState.framesInState mod 5) = 0 then
-            active_player.selectShot(active_player.shotTypeIdx + rnd(3))
+            active_player.selectShot(active_player.shotTypeIdx +  3 + rnd(3))
           end if
 
         else if g.gameState.state = "IDLE" then

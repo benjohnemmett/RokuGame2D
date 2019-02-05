@@ -26,9 +26,9 @@ function createShot(owner, sType, x, y, power, angle, faceRight)
   shotArray = []
 
   PELLET_RAD = 5
-  PELLET_DMG = 4
+  PELLET_DMG = 5
   STD_RAD = 11
-  STD_DMG = 8
+  STD_DMG = 10
   BA_RAD = 11
   BA_DMG = 25
   ICU_RAD = 11
@@ -254,17 +254,19 @@ end function
 
 function shotSelector()
 
-  PS_WIDTH = 30
-  PS_HEIGHT = 30
+  PS_WIDTH = 60
+  PS_HEIGHT = 60
 
-  pv = {bm : CreateObject("roBitmap", {width:PS_WIDTH, height:PS_HEIGHT, AlphaEnable:true}),
+  'pv = {bm : CreateObject("roBitmap", {width:PS_WIDTH, height:PS_HEIGHT, AlphaEnable:true}),
+    pv = {bm : CreateObject("roBitmap", {width:PS_WIDTH, height:PS_HEIGHT, AlphaEnable:true}),
         bgColor: &hAAAAFFFF,
-        borderColor : &h111111FF,
-        borderWidth : 2,
+        borderColor : &h111133FF,
+        borderWidth : 3,
         idx : 0,
         width : PS_WIDTH,
         height : PS_HEIGHT,
-        shotTypeList : getShotTypeList()
+        shotTypeList : getShotTypeList(),
+        img_scale : 1.5
         }
 
   pv.updateDisplay = function()
@@ -276,8 +278,10 @@ function shotSelector()
 
     sType = m.shotTypeList[m.idx]
 
+    shift = int((m.width - (m.img_scale*32))/2)
+
     ' Draw selection icon'
-    m.bm.DrawObject(0,0,g.SB.Lookup(sType))
+    m.bm.DrawScaledObject(shift, shift, m.img_scale, m.img_scale, g.SB.Lookup(sType))
 
   end function
 
