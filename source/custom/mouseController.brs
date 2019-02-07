@@ -68,7 +68,7 @@ function mouseController()
     g = GetGlobalAA()
 
     msgArray = g.mouseMessageData.lookup(eventName)
-    msg = msgArray[rnd(msgArray.count()-1)]
+    msg = msgArray[rnd(msgArray.count())-1]
 
     return msg
 
@@ -112,6 +112,7 @@ function loadMouseMessages() as void
   mouseMessageData.shot_criticism = []
   mouseMessageData.shot_criticism[0] = "Well, that could have gone better..."
   mouseMessageData.shot_criticism[1] = "Can't be happy with that one"
+  mouseMessageData.shot_criticism[2] = "Is he factoring in the wind?"
 
 
   mouseMessageData.test = []

@@ -49,6 +49,14 @@ function terrainDefinition() as object
     setSectionHeight : function(idx, height)
       section = m.sectionList[idx]
       section.height = height
+    end function,
+
+    createSections : function(aWidth as Object, aHeight as Object)
+
+      For i=0 to (aHeight.count()-1) step 1
+        m.addSection(aWidth[i], aHeight[i])
+      End For
+
     end function
 
   }

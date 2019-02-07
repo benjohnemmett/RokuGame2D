@@ -239,9 +239,9 @@ function rg2dLoadSounds() as void
     'g.sounds.foomp = CreateObject("roAudioResource", "pkg:/components/audio/foomp.wav")
     'g.sounds.foompB = CreateObject("roAudioResource", "pkg:/components/audio/foompB.wav")
     g.sounds.foomp12 = CreateObject("roAudioResource", "pkg:/components/audio/foomp12.wav")
-    g.sounds.ouch1 = CreateObject("roAudioResource", "pkg:/components/audio/ouch1.wav")
-    g.sounds.ouch2 = CreateObject("roAudioResource", "pkg:/components/audio/ouch2.wav")
-    g.sounds.poof1 = CreateObject("roAudioResource", "pkg:/components/audio/poof1.wav")
+    'g.sounds.ouch1 = CreateObject("roAudioResource", "pkg:/components/audio/ouch1.wav")
+    'g.sounds.ouch2 = CreateObject("roAudioResource", "pkg:/components/audio/ouch2.wav")
+    'g.sounds.poof1 = CreateObject("roAudioResource", "pkg:/components/audio/poof1.wav")
     g.sounds.poof2 = CreateObject("roAudioResource", "pkg:/components/audio/poof2.wav")
     g.sounds.poof3 = CreateObject("roAudioResource", "pkg:/components/audio/poof3.wav")
     g.sounds.phaser1 = CreateObject("roAudioResource", "pkg:/components/audio/phaser1.wav")
@@ -285,103 +285,6 @@ function rg2dLoadFonts() as void
 
 end function
 
-' Wrapper definition with function for generating a player
-function playerDef(playerNumber, isHumanPlayer, tankType, name)
-  pdef =  {playerNumber : playerNumber,
-          isHumanPlayer : isHumanPlayer,
-          tankType : tankType,
-          name : name}
-
-  '''' Generate player function
-  pdef.generate = function() as object
-
-    faceRight = true
-    if(m.playerNumber = 2) then
-      faceRight = False
-    end if
-
-    if(m.isHumanPlayer) then
-            'createTank(playerNumber, isHumanPlayer, x, y, angle, faceRight, tank_type)'
-      tank = createTank(m.playerNumber, true, 100, 200, 0, faceRight, m.tankType)
-    else
-      'AITankRanger(playerNumber, x, y, angle, faceRight, tank_type)'
-      tank = AITankRandy(m.playerNumber, 100, 100,0, faceRight, m.tankType)
-    end if
-
-    tank.name = m.name
-
-    return tank
-  end function
-
-
-  return pdef
-
-end function
-
-' Wrapper definition with function for generating an AIRanger player'
-'' Must be called in level setup so that compisitor for level has been set
-function AIRangerPlayerDef(playerNumber, tankType, badness, name)
-  pdef = playerDef(playerNumber, false, tankType, name)
-  pdef.badness = badness
-
-  pdef.generate = function() as object
-
-    faceRight = true
-    if(m.playerNumber = 2) then
-      faceRight = False
-    end if
-
-    tank = AITankRanger(m.playerNumber, 100, 100,0, faceRight, m.tankType)
-    tank.badness = m.badness
-    tank.name = m.name
-
-    return tank
-  end function
-
-  return pdef
-
-end function
-
-' Defines how a game will be played'
-' tank1 & tank2 are player defninition objects with a generate() function'
-function gameDefinition(rounds as integer, tank1, tank2, windspeed, levelPlayers, songURL) as object
-
-  GDef = {rounds : rounds,
-          tank1 : tank1,
-          tank2 : tank2 }
-
-  GDef.windspeed = windspeed ' INvalid selects random wind speed'
-  GDef.levelPlayers = levelPlayers
-  GDef.songURL = songURL
-
-  return GDef
-
-end function
-
-function getAIPlayerDefForLevel(playerNumber, level as integer) as object
-
-      pdef = invalid
-
-      if level = 1 then
-        pdef = PlayerDef(playerNumber, false, "igloo_blue", "Iceman")
-      else if level = 2 then
-        pdef = AIRangerPlayerDef(playerNumber, "igloo_green", 1.5, "Green Giant")
-      else if level = 3 then
-        pdef = AIRangerPlayerDef(playerNumber, "igloo_red", 1.0, "Rudolph")
-      else if level = 4 then
-        pdef = AIRangerPlayerDef(playerNumber, "igloo_pink", 0.5, "Popper")
-      else if level = 5 then
-        pdef = AIRangerPlayerDef(playerNumber, "igloo_grey", 0.3, "Ghost")
-      else if level = 6 then
-        pdef = AIRangerPlayerDef(playerNumber, "igloo_black", 0.1, "Jet")
-      else
-        ?"Warning got unhandled level ";level
-      end if
-
-      return pdef
-
-end function
-
 '
 ' Use this to set custom actions when a menu item is selected
 '
@@ -404,13 +307,7 @@ function rg2dMenuItemSelected() as void
     if(shortName = "play") then ' New Game
       yourName = "Player 1"
 
-      gameDefs = []
-      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo", yourName), getAIPlayerDefForLevel(2, 1), 0, false, g.songURLS.cosmic_local) )
-      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo", yourName), getAIPlayerDefForLevel(2, 2), invalid, false, g.songURLS.makeMyDay_local ) )
-      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo", yourName), getAIPlayerDefForLevel(2, 3), invalid, false, g.songURLS.stuff_local) )
-      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo", yourName), getAIPlayerDefForLevel(2, 4), invalid, false, g.songURLS.stuff_local) )
-      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo", yourName), getAIPlayerDefForLevel(2, 5), invalid,  true, g.songURLS.slowWalk_local) )
-      gameDefs.push( gameDefinition(1, playerDef(1, true, "igloo", yourName), getAIPlayerDefForLevel(2, 6),       0,  true, g.songURLS.slowWalk_local) )
+      gameDefs = g.gameDefs
 
       stillAlive = True
 
@@ -536,7 +433,7 @@ function twoPlayerSelectScreen() as object ' returns 2 element array of igloo ty
           id = event.GetInt()
 
           if (id = myCodes.MENU_UP_A) or (id = myCodes.MENU_UP_B) then
-              rg2dPlaySound(m.sounds.navSingle)
+              rg2dPlaySound(m.sounds.poof3)
 
               idx = (idx-1)
               if( idx < 0) then
@@ -556,6 +453,7 @@ function twoPlayerSelectScreen() as object ' returns 2 element array of igloo ty
               drawTwoPlayerSelectScreen(titleString, idx1, idx2, playerSelect)
 
           else if(id = myCodes.MENU_DOWN_A) or (id = myCodes.MENU_DOWN_B)then
+              rg2dPlaySound(m.sounds.poof3)
 
               idx = (idx+1)
               if( idx < 0) then
@@ -597,6 +495,7 @@ function twoPlayerSelectScreen() as object ' returns 2 element array of igloo ty
               end if
 
           else if(id = myCodes.BACK_PRESSED) then
+              rg2dPlaySound(m.sounds.foomp12)
               ' Exit Game
               return invalid
           end if
@@ -687,7 +586,7 @@ function tournamentSelectScreen(gameDefs, numUnlocked, msg) as object
           id = event.GetInt()
 
           if (id = myCodes.MENU_LEFT_A) or (id = myCodes.MENU_LEFT_B) then
-              rg2dPlaySound(m.sounds.navSingle)
+              rg2dPlaySound(g.sounds.poof3)
 
               if( idx > 0) then
                 idx = (idx-1)
@@ -698,6 +597,7 @@ function tournamentSelectScreen(gameDefs, numUnlocked, msg) as object
               drawTournamentSelectScreen(gameDefs, idx, numUnlocked, msg)
 
           else if(id = myCodes.MENU_RIGHT_A) or (id = myCodes.MENU_RIGHT_B)then
+              rg2dPlaySound(g.sounds.poof3)
 
               if (idx < numUnlocked) and (idx < 5) then
                 idx = (idx+1)
@@ -715,6 +615,7 @@ function tournamentSelectScreen(gameDefs, numUnlocked, msg) as object
               return select
 
           else if(id = myCodes.BACK_PRESSED) then
+              rg2dPlaySound(g.sounds.poof3)
               ' Exit Game
               select.idx = invalid
               return select
@@ -743,7 +644,7 @@ function drawTournamentSelectScreen(gameDefs, idxSelected, numUnlocked, msg) as 
 
   regColor = &h96a3b7FF
   selColor = &h366cbcFF
-  selBorderColor = &hAA5511FF
+  selBorderColor = &hf2ee3eff ''&hAA5511FF
 
   'TITLE'
   title = "Tournament Mode"
@@ -972,10 +873,15 @@ function rg2dLoadLevel(gdef, level as integer) as void
     end function
 
 
-    NUM_TERRAIN_SECTIONS = 10
 
-    td = terrainDefinition()
-    randomizeTerrainDefinition(td, NUM_TERRAIN_SECTIONS)
+    if(gdef.terrainDef = invalid) then
+      NUM_TERRAIN_SECTIONS = 10
+      td = terrainDefinition()
+      randomizeTerrainDefinition(td, NUM_TERRAIN_SECTIONS)
+    else
+      td = gdef.terrainDef
+      NUM_TERRAIN_SECTIONS = td.sectionList.count()
+    end if
 
     if gdef.levelPlayers then ' Make the first & last sections the same height'
       h = minFloat(td.sectionList[0].height, td.sectionList[NUM_TERRAIN_SECTIONS-1].height)

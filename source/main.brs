@@ -50,6 +50,8 @@ function Main() as void
     ' Load fonts'
     rg2dLoadFonts()
 
+    createGameDefinitions()
+
     '''''''''''''''''''''''''''''''''
     '''' MAIN Menu
     URLLibSetup()
@@ -102,18 +104,19 @@ function Main() as void
 
             if (id = myCodes.MENU_UP_A) or (id = myCodes.MENU_UP_B) then
 
-                rg2dPlaySound(m.sounds.navSingle)
+                rg2dPlaySound(m.sounds.poof3)
                 m.menuArray.moveSelectionUp()
                 rg2dSetupMainScreen()
 
             else if(id = myCodes.MENU_DOWN_A) or (id = myCodes.MENU_DOWN_B)then
 
-                rg2dPlaySound(m.sounds.navSingle)
+                rg2dPlaySound(m.sounds.poof3)
                 m.menuArray.moveSelectionDown()
                 rg2dSetupMainScreen()
 
             else if(id = myCodes.SELECT1A_PRESSED) or (id = myCodes.SELECT1B_PRESSED) or (id = myCodes.SELECT2_PRESSED)
 
+                rg2dPlaySound(m.sounds.foomp12)
                 rg2dMenuItemSelected()
                 rg2dSetupMainScreen()
 
