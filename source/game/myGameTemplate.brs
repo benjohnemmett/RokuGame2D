@@ -159,11 +159,13 @@ function rg2dLoadLevel(level as integer) as void
 end function
 
 ' Stuff to be done at the start of each update loop goes here.
-function rg2dInnerGameLoopUpdate(dt as float, button) as void
+function rg2dInnerGameLoopUpdate(dt as float, button, holdTime) as object
     g = GetGlobalAA()
     if(g.DEBUG) then
       ?"rg2dInnerGameLoopUpdate(";dt;")..."
     end if
+
+    status = rg2dStatus()
 
     if(button.bUp) then
         ?"Trucking Up"
@@ -180,5 +182,7 @@ function rg2dInnerGameLoopUpdate(dt as float, button) as void
     else if(button.bSelect1) then
         ?"Fire!"
     end if
+
+    return status
 
 end function

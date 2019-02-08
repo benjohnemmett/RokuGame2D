@@ -62,7 +62,7 @@ function rg2dPlayGame() as object
     gameView.bmView.clear(&h000000FF) ' TODO encapsulate this -> gameView.clear(0)'
     rg2dGameInit()
     ''''''''''''''''''''''''''''''''''''''''''''''
-    ' Main Game Loop
+    ' Level Loop
     ''''''''''''''''''''''''''''''''''''''''''''''
     while true
 
@@ -178,31 +178,32 @@ function rg2dPlayGame() as object
 
                 dt = ticks/1000
 
-                rg2dInnerGameLoopUpdate(dt, button)
+                holdTime = holdButtonClock.TotalMilliseconds()
+                status = rg2dInnerGameLoopUpdate(dt, button, holdTime)
 
-                ' Update game state
-                'ship.updateState(dt)
+                if status.level_complete then
+                  ?"Level complete"
+                  exit while ' Exit the inner game loop'
+                end if
+
                 g.pm.runphysics(dt)
-
-                ' Update game display
-                'screen.clear(0)
 
                 g.pm.updateDisplay()
 
-                'compositor.AnimationTick(ticks)
-                'compositor.DrawAll()
-                'updateScore(screen)
                 gameView.redraw()
 
-                'screen.SwapBuffers()
                 clock.Mark()
 
 
             end if  ' if time, Refresh
 
-        end while   ' While True
+        end while   ' end inner game loop
 
-    end while       ' while g.ships_left > 0
+        if status.game_complete then
+          exit while 'exit level loop & return'
+        end if
+
+    end while       ' end level loop
 
     gs.score = g.game_score
     gs.wave = g.game_wave

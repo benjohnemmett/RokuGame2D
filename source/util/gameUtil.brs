@@ -352,3 +352,16 @@ function rg2dStateMachine(initialState as String) as object
   return gs
 
 end function
+
+'' An objec to be passed back from inner game loop to declare the game status
+function rg2dStatus()
+
+    status = {}
+    status.level_complete = false
+    status.game_complete = false
+    status.game_ending  = false
+    status.game_time = invalid
+
+    return status
+
+end function
