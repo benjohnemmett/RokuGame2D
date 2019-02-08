@@ -15,6 +15,7 @@ function rg2dSetGameParameters() as void
     g.menuArray.addItem("Options", "options")
     g.menuArray.addItem("High Scores", "high_scores")
     g.menuArray.addItem("About", "about")
+    g.menuBgColor = &hAACCFFFF
 
 end function
 
@@ -76,6 +77,10 @@ function rg2dLoadSounds() as void
 
 end function
 
+function rg2dLoadFonts() as void
+
+end function
+
 '
 ' Use this to set custom actions when a menu item is selected
 '
@@ -131,7 +136,7 @@ function rg2dGameInit() as void
     end if
 
     ' Create Truck
-    g.truck = g.pm.createPhysObj( g.sWidth/4, g.sHeight*0.9, 49, 36, "pkg:/components/sprites/firetruck_spritesheetII.png")
+    g.truck = g.pm.createPhysObj( g.screenWidth/4, g.screenHeight*0.9, 49, 36, "pkg:/components/sprites/firetruck_spritesheetII.png")
 
     if(g.USING_LB_CODE) then
         LBMakeGroups()

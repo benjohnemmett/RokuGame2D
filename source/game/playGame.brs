@@ -2,21 +2,21 @@ function rg2dPlayGame() as object
     g = GetGlobalAA()
 
     ?"Play Ball!"
-
-    screen = g.screen
+    'screen = g.screen
     port = g.port
-    compositor = g.compositor
+    'compositor = g.compositor
 
-    ' TODO Are these used? m.sWidth is set in main...
-    g.screenWidth  = screen.GetWidth()
-    g.screenHeight = screen.GetHeight()
+    gameView = g.screenMgr.createView("game")
+    g.screenMgr.switchToView("game")
 
     'Load screen
-    screen.clear(0)
+    'screen.clear(0)
+    gameView.bmView.clear(&h000000FF) ' TODO encapsulate this -> gameView.clear(0)'
+    gameView.redraw()
     g.font_registry = CreateObject("roFontRegistry")
     font = g.font_registry.GetDefaultFont()
-    screen.DrawText("Loading...",300, 300, &hFFFFFFFF, font)
-    screen.SwapBuffers()
+    gameView.bmView.DrawText("Loading...",300, 300, &hFFFFFFFF, font)
+    gameView.redraw()
 
     ' Score, (wave) level
     gs = rg2dGameStats(0, 1)
@@ -25,7 +25,7 @@ function rg2dPlayGame() as object
     g.game_sore = 0
 
     game_paused = false
-    sPauseMenu = compositor.NewSprite(300, 200, g.rPauseScreen, 50)
+    sPauseMenu = gameView.NewSprite(300, 200, g.rPauseScreen, 50)
     sPauseMenu.SetDrawableFlag(false)
 
     'Audio
@@ -53,22 +53,13 @@ function rg2dPlayGame() as object
     codes = bslUniversalControlEventCodes()
     myCodes = g.settings.controlCodes
 
-
     clock = CreateObject("roTimespan")
     holdButtonClock = CreateObject("roTimespan")
 
     clock.Mark()
 
-    'g.pm = physModel(compositor)
 
-    '''''''''''''' Header stuff
-    header_level = 50
-
-    scoreTopIndent = 20
-    scoreLeftIndent = 80
-    scoreSpaces = 7
-
-
+    gameView.bmView.clear(&h000000FF) ' TODO encapsulate this -> gameView.clear(0)'
     rg2dGameInit()
     ''''''''''''''''''''''''''''''''''''''''''''''
     ' Main Game Loop
@@ -76,6 +67,7 @@ function rg2dPlayGame() as object
     while true
 
         rg2dLoadLevel(gs.wave)
+
 
         ''''''''''''''''''''''''''''''''''''''''''''''
         ' Enter inner run loop
@@ -167,10 +159,10 @@ function rg2dPlayGame() as object
                             end if
                         end if
 
-                        compositor.DrawAll()
+                        'compositor.DrawAll()
                         'playGameAddPauseMenu(screen) ' TODO, Not sure what this was doing, determine if something is needed here
-                        screen.SwapBuffers()
-
+                        'screen.SwapBuffers()
+                        gameView.redraw()
                     end while
 
                 end if
@@ -193,15 +185,16 @@ function rg2dPlayGame() as object
                 g.pm.runphysics(dt)
 
                 ' Update game display
-                screen.clear(0)
+                'screen.clear(0)
 
                 g.pm.updateDisplay()
 
-                compositor.AnimationTick(ticks)
-                compositor.DrawAll()
+                'compositor.AnimationTick(ticks)
+                'compositor.DrawAll()
                 'updateScore(screen)
+                gameView.redraw()
 
-                screen.SwapBuffers()
+                'screen.SwapBuffers()
                 clock.Mark()
 
 

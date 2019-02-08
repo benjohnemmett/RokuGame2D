@@ -247,6 +247,7 @@ function rg2dScoreBoard() as object
     }
 end function
 
+
 Function rg2dGetRegistryString(key as String, default = "") As String
     sec = CreateObject("roRegistrySection", "PoP")
     if sec.Exists(key)
@@ -255,11 +256,99 @@ Function rg2dGetRegistryString(key as String, default = "") As String
     return default
 End Function
 
+function rg2dSaveRegistryString(key, string) as void
+    'json = FormatJSON(data, 1)
+    sec = CreateObject("roRegistrySection", "PoP")
+    sec.Write(key, string)
+    sec.Flush()
+end function
+
+function rg2dSaveRegistryData(key, data) as void
+    json = FormatJSON(data, 1)
+    sec = CreateObject("roRegistrySection", "PoP")
+    sec.Write(key, json)
+    sec.Flush()
+end function
+
+function rg2dDeleteRegistry(key) as boolean
+  sec = CreateObject("roRegistrySection", "PoP")
+  return sec.delete(key)
+end function
+
 function rg2dLoadRegion(path as String, x1,y1,x2,y2) as object
 
   bm = CreateObject("roBitmap", path)
   rObj = CreateObject("roRegion", bm, x1, y1, x2, y2)
 
   return rObj
+
+end function
+
+'''' Datatype to keep track of state
+' Settable state substate
+'   Should call tick(dt) function on each frame
+'   use setState & setSubState function to transition states
+function rg2dStateMachine(initialState as String) as object
+  gs = {
+    state : initialState,
+    prevState : "None"
+    subState : "ENTRY",
+    framesInState : 0,
+    framesInSubState : 0,
+    totalFrames : 0,
+    timeInState : 0.0,
+    timeInSubState : 0.0,
+    totalTime : 0.0
+  }
+
+  ' Called to change the state & reset state & sub state counters
+  gs.setState = function(newState as String) as void
+
+    if(newState <> m.state) then
+
+      m.prevState = m.state
+      m.state = newState
+
+      m.framesInState = 0
+      m.framesInSubState = 0
+      m.timeInState = 0.0
+      m.timeInSubState = 0.0
+
+      m.subState = "ENTRY"
+    end if
+
+  end function
+
+  ' Called to change the substate & reset substate counters
+  gs.setSubState = function(newSubState as String) as void
+    if(newSubState <> m.subState) then
+      ?"SUBSTATE TO ";newSubState
+      m.subState = newSubState
+      m.framesInSubState = 0
+      m.timeInSubState = 0.0
+    end if
+
+  end function
+
+  '' Call this on each frame, passing in the time passed since the last frame
+  gs.tick = function(dt as float) as void
+    m.timeInState += dt
+    m.timeInSubState += dt
+
+    m.framesInState += 1
+    m.framesInSubState += 1
+  end function
+
+  gs.equals = function(testState as String) as boolean
+    return m.state = testState
+  end function
+
+  ' For debugging'
+  gs.print = function() as void
+    ?"GAME STATE     = ";m.state;" ";m.framesInState
+    ?"GAME SUB STATE = ";m.subState;" ";m.framesInSubState
+  end function
+
+  return gs
 
 end function
