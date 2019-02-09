@@ -1,19 +1,19 @@
-Function physModel(compositor) as object
+Function physModel() as object
     return {
         addPhysObj : function(obj) as void
             m.physObjList[m.numPhysObj] = obj
             m.numPhysObj = m.physObjList.count()
         End Function,
 
-        createPhysObj : function(x,y,w,h,filepath as string) as object
-            if (m.compositor = invalid) then
-                ?"Error in physModel::createPhysObj - No Compositor set in physModel."
-                return invalid
-            end if
-            bMap = CreateObject("roBitmap", filepath)
-            rRegion = CreateObject("roRegion", bMap, 0, 0, w, h)
-            sSprite = m.compositor.NewSprite(x,y, rRegion)
-            pPhysObj = physObj(sSprite,bMap)
+        createPhysObj : function(x,y,w,h) as object
+            'if (m.compositor = invalid) then
+            ''    ?"Error in physModel::createPhysObj - No Compositor set in physModel."
+            ''    return invalid
+            'end if
+            'bMap = CreateObject("roBitmap", filepath)
+            'rRegion = CreateObject("roRegion", bMap, 0, 0, w, h)
+            'sSprite = m.compositor.NewSprite(x,y, rRegion)
+            pPhysObj = physObj()
             pPhysObj.size_x = w
             pPhysObj.size_y = h
             pPhysObj.wallEnable = Invalid
@@ -61,11 +61,11 @@ Function physModel(compositor) as object
             End for
         End Function,
 
-        updateDisplay : function() as void
-            for each o in m.physObjList
-                o.updateDisplay()
-            End for
-        end function,
+''        updateDisplay : function() as void
+''            for each o in m.physObjList
+''                o.updateDisplay()
+''            End for
+''        end function,
 
         '''''''''''''''''''''''''''''''''''''''''''''''''        '''''''''''''''''''''''''''''''''''''''''''''''''
         checkOverlaps : function() as void
@@ -127,7 +127,7 @@ Function physModel(compositor) as object
         numCollisionPairs : 0,
         collisionPairList : [],
         openOverlaps: [], 'Array of all the objects with overlaps that need to be resolved. Set during checkOverlaps(), resolved during runCollisions()
-        compositor : compositor
+''        compositor : compositor
 
     }
 End Function '''' End physModel()
@@ -138,7 +138,7 @@ end function
 
 '''''' A physical object
 ' Implements kinematicObject Interface
-Function physObj(sprite,bmap) as Object
+Function physObj() as Object
     return{
 
         setGravity: function(gx, gy) as void 'TODO consider separating the constant gravity value from the dynamic ax & ay
@@ -374,27 +374,27 @@ Function physObj(sprite,bmap) as Object
             return boundaryAABB(m.x, m.y, m.size_x, m.size_y)
         end function,
 
-        '' From displayable interface
-        updateDisplay : function() as void
-            m.sprite.MoveTo(m.x, m.y)
-        end function,
+        '''' From displayable interface
+        'updateDisplay : function() as void
+        ''    m.sprite.MoveTo(m.x, m.y)
+        'end function,
 
         isPhysObjGroup : function() as boolean
             return false
         end function,
 
-        setSpriteFrame : function(frame) as void
-            m.sprite.setRegion(CreateObject("roRegion", m.bmap, m.size_x*frame, 0, m.size_x, m.size_y))
-        end function,
+        'setSpriteFrame : function(frame) as void
+        ''    m.sprite.setRegion(CreateObject("roRegion", m.bmap, m.size_x*frame, 0, m.size_x, m.size_y))
+        'end function,
 
-        clear : function() as void
-            m.sprite.Remove()
-        end function,
+        'clear : function() as void
+      ''      m.sprite.Remove()
+      ''  end function,
 
-    sprite: sprite,
-    bmap: bmap,
-    x: sprite.getX(),
-    y: sprite.getY(),
+    'sprite: sprite, ' now part of DisplayManager'
+    'bmap: bmap, ' now part of DisplayManager'
+    'x: x, ' Now part of gameObject'
+    'y: x, ' Now part of gameObject'
     vx: 0.0,
     vy: 0.0,
     ax: 0.0,
@@ -414,8 +414,8 @@ Function physObj(sprite,bmap) as Object
     'wall_y_min: 10,
     'wall_x_max: 1280,
     'wall_y_max: 720,
-    size_x: sprite.getRegion().GetWidth(),
-    size_y: sprite.getRegion().GetHeight(),
+    'size_x: sprite.getRegion().GetWidth(), ' SHould only need if collidable'
+    'size_y: sprite.getRegion().GetHeight(),
     isMovable: false, 'Option to consider this object movable in the context of collisions (i.e. is not massive/fixed in place compared to other objects)
     collisionRecoil: 0.5, 'Amount of "bounce" #TODO verify correct terminology here
     overlapState: invalid, 'Overlapping state to hold the overlap of greatest area
@@ -444,18 +444,18 @@ Function physObjGroup() as Object
 
         end function,
 
-        createPhysObj : function(x,y,w,h,filepath as string) as object
+        createPhysObj : function(x,y,w,h) as object
             if (m.physModel = invalid) then
                 ?"Error in physModel::physObjGroup::createPhysObj - No physModel set in physObjGroup."
                 return invalid
-            else if(m.physModel.compositor = invalid) then
-                ?"Error in physModel::physObjGroup::createPhysObj - No compositor set in physObjGroup.physModel"
-                return invalid
+            'else if(m.physModel.compositor = invalid) then
+            ''    ?"Error in physModel::physObjGroup::createPhysObj - No compositor set in physObjGroup.physModel"
+            ''    return invalid
             end if
-            bMap = CreateObject("roBitmap", filepath)
-            rRegion = CreateObject("roRegion", bMap, 0, 0, w, h)
-            sSprite = m.physModel.compositor.NewSprite(x,y, rRegion)
-            pPhysObj = physObj(sSprite,bMap)
+            'bMap = CreateObject("roBitmap", filepath)
+            'rRegion = CreateObject("roRegion", bMap, 0, 0, w, h)
+            'sSprite = m.physModel.compositor.NewSprite(x,y, rRegion)
+            pPhysObj = physObj(x,y)
             pPhysObj.size_x = w
             pPhysObj.size_y = h
 
@@ -492,12 +492,12 @@ Function physObjGroup() as Object
             end while
         end function,
 
-        ''From displayable interface
-        updateDisplay : function() as void
-            for each o in m.physObjList
-                o.updateDisplay()
-            end for
-        end function,
+        ''''From displayable interface
+        'updateDisplay : function() as void
+        ''    for each o in m.physObjList
+      ''          o.updateDisplay()
+      ''      end for
+      ''  end function,
 
         isPhysObjGroup : Function() as boolean 'TODO I don't think this is used
             return true
@@ -659,15 +659,15 @@ function collectiveRotationalPhysObj(x, y, radius, angle) as object
             return boundaryCircular(m.x, m.y, m.radius)
         end function,
 
-        '' From displayable interface
-        updateDisplay : function() as void
-            for each e in m.elementArray
-                e.updateDisplay()
-            end for
-        end function,
+      ''  '' From displayable interface
+        'updateDisplay : function() as void
+        ''    for each e in m.elementArray
+        ''        e.updateDisplay()
+        ''    end for
+        'end function,
 
-        createElement : function(sprite, angle, radius) as object
-            el = physObjFixedRadialElement(sprite, angle, radius)
+        createElement : function(angle, radius) as object
+            el = physObjFixedRadialElement(angle, radius)
             m.addElement(el)
         end function,
 
@@ -723,19 +723,19 @@ function collectiveRotationalPhysObj(x, y, radius, angle) as object
 
 end function '''' end collectiveRotationalPhysObj
 
-function physObjFixedRadialElement(sprite, angle, radius) as object
+function physObjFixedRadialElement(angle, radius) as object
     return {
-        sprite : sprite,
+''        sprite : sprite,
         angle : angle,
         radius : radius,
         visible : true,
         x: invalid, ' Should not me modified direclty
         y: invalid,
-        region: sprite.getRegion(),
-        size_x: sprite.getRegion().getWidth(),
-        size_y: sprite.getRegion().getHeight(),
-        hx : sprite.getRegion().getWidth()/2,
-        hy : sprite.getRegion().getHeight()/2,
+''        region: sprite.getRegion(),
+        size_x: 2*radius,
+        size_y: 2*radius,
+        hx : radius,
+        hy : radius,
 
         updatePosition : function(objX, objY, objAngle) as void
             'get absolute angle
@@ -747,13 +747,13 @@ function physObjFixedRadialElement(sprite, angle, radius) as object
 
         end function,
 
-        updateDisplay : function() as void
-            m.sprite.MoveTo(m.x - m.hx + 0.5, m.y -m.hy + 0.5)
-        end function,
+      ''  updateDisplay : function() as void
+        ''    m.sprite.MoveTo(m.x - m.hx + 0.5, m.y -m.hy + 0.5)
+        ''end function,
 
-        clear : function() as void
-            m.sprite.remove()
-        end function
+        ''clear : function() as void
+        ''    m.sprite.remove()
+        ''end function
     }
 
 end function ''' end physObjFixedRadialElement()
@@ -797,9 +797,9 @@ function fixedBoxCollider(x,y,w,h) as object
   'Nothing to do here'
   end function,
 
-  updateDisplay : function()
-  'Nothing to do here'
-  end function
+  'updateDisplay : function()
+  '''Nothing to do here'
+  'end function
 
 
   }

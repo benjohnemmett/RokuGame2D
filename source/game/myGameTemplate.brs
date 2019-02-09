@@ -136,7 +136,24 @@ function rg2dGameInit() as void
     end if
 
     ' Create Truck
-    g.truck = g.pm.createPhysObj( g.screenWidth/4, g.screenHeight*0.9, 49, 36, "pkg:/components/sprites/firetruck_spritesheetII.png")
+    'g.truck = g.pm.createPhysObj( g.screenWidth/4, g.screenHeight*0.9, 49, 36, "pkg:/components/sprites/firetruck_spritesheetII.png")
+    g.truck = gameObject(100, 100)
+
+    g.truck.update = function(dt) ' Called on every frame by the gameObjectManager'
+      ''?"Truck Update ";dt
+      'm.x += 1
+    end function
+
+    g.truck.addComponent(physObj())
+
+    bmTruck = CreateObject("roBitmap", "pkg:/components/sprites/firetruck_spritesheetII.png")
+    rTruck = CreateObject("roRegion", bmTruck, 0, 0, 49, 36)
+    sTruck = g.gameView.NewSprite(100, 100, rTruck, 1)
+    g.truck.addComponent(DisplayComp(sTruck))
+
+    g.om.addGameObj(g.truck)
+    g.pm.addPhysObj(g.truck)
+    g.dm.addDisplayObj(g.truck)
 
     if(g.USING_LB_CODE) then
         LBMakeGroups()
@@ -161,26 +178,49 @@ end function
 ' Stuff to be done at the start of each update loop goes here.
 function rg2dInnerGameLoopUpdate(dt as float, button, holdTime) as object
     g = GetGlobalAA()
-    if(g.DEBUG) then
-      ?"rg2dInnerGameLoopUpdate(";dt;")..."
+    if(g.DEBUG) AND dt > 0.04 then
+      ?"rg2dInnerGameLoopUpdate long frame ";dt;"..."
     end if
 
     status = rg2dStatus()
 
+    truck_acc = 200
+    truck_v_df = 0.8
+
     if(button.bUp) then
         ?"Trucking Up"
+        g.truck.ay = -truck_acc
 
     else if(button.bDown) then
         ?"Trucking Down"
+        g.truck.ay = truck_acc
 
     else if(button.bRight) then
         ?"Trucking Left"
+        g.truck.ax = truck_acc
 
     else if(button.bLeft) then
         ?"Trucking Right"
+        g.truck.ax = -truck_acc
 
     else if(button.bSelect1) then
         ?"Fire!"
+        an = Animation()
+        an.target = g.truck
+        an.maxTime = 1
+        an.UpdateAnimation = function(dt)
+          ?"animating truck ";m.fn;" ";m.t
+          m.target.x += 1
+          m.target.y += 1
+        end function
+
+        g.am.addAnimation(an)
+    else
+      g.truck.ax = 0
+      g.truck.ay = 0
+      g.truck.vx = g.truck.vx*truck_v_df
+      g.truck.vy = g.truck.vy*truck_v_df
+
     end if
 
     return status

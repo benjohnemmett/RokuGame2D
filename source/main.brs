@@ -21,29 +21,14 @@ function Main() as void
 
     g.port = CreateObject("roMessagePort")
 
-    g.screenMgr = screenManager()
+    g.screenMgr = ScreenManager()
     screen = g.screenMgr.getMainScreen()
-
-    'g.screen = CreateObject("roScreen", true, g.screenWidth, g.screenHeight)
-    'g.screen.SetAlphaEnable(true)
     screen.SetMessagePort(g.port)
-
-    'g.compositor = CreateObject("roCompositor")
-    'g.compositor.SetDrawTo(g.screen, g.menuBgColor)
 
     g.mainView = g.screenMgr.createView("main")
 
-    'g.bmMainScreen = CreateObject("roBitmap", {width:g.screenWidth, height:g.screenWidth, AlphaEnable:True})
-    'g.rgMainScreen = CreateObject("roRegion", g.bmMainScreen, 0, 0, g.screenWidth, g.screenWidth)
-    'g.spMainScreen = g.compositor.NewSprite(0, 0, g.rgMainScreen, 1)
-
-
-    g.pm = physModel(g.compositor)
-
     ' Settings
     g.settings = rg2dGameSettings()
-
-    'g.settings.setControls("H") ' Change the controls to horizontal
     myCodes = g.settings.controlCodes
 
     ' Audio
@@ -59,7 +44,6 @@ function Main() as void
 
     'Load Fonts'
     rg2dLoadFonts()
-
 
     '''''''''''''''''''''''''''''''''
     '''' MAIN Menu
@@ -100,10 +84,10 @@ end function
 
 '' Main Menu helper function
 function rg2dSetupMainScreen() as void
-
+    ?"Setting up main screen"
     g = GetGlobalAA()
-
-    g.mainView.bmView.clear(&h33333333)
+    g.screenMgr.switchToView("main")
+    g.mainView.bgColor = &h33333333
 
     numMenuOptions = g.menuArray.getCount()
     selectedMenuOption = g.menuArray.selectedIndex
@@ -118,6 +102,9 @@ function rg2dSetupMainScreen() as void
     leftIndent = 400
     vertSpace = font.GetOneLineHeight() + 10
 
+
+    g.mainView.redraw()
+
     for t = 0 to (numMenuOptions -1)
         if(t = selectedMenuOption) then
             g.mainView.bmView.DrawText(g.menuArray.getItemName(t),leftIndent + 20,topIndent + t*vertSpace,selColor,font)
@@ -127,6 +114,7 @@ function rg2dSetupMainScreen() as void
 
     end for
 
-    g.mainView.redraw()
+    g.mainView.drawOver()
+
 
 end function

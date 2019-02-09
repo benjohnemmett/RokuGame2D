@@ -5,7 +5,7 @@
 '
 ' mainView.addSprite()' Just like compositor call
 ' mainView.redraw()'
-function screenManager() as Object
+function ScreenManager() as Object
 
   g = GetGlobalAA()
 
@@ -88,9 +88,17 @@ function screenView(parent, x, y, width, height) as object
   sv.spView = sv.parentComp.NewSprite(x, y, sv.rgView, 1)
 
   sv.myComp.SetDrawTo(sv.bmView, 0)
+  sv.bgColor = &h332211FF
 
-  '' Redraw everything in this view & swap main screen buffer
+  '' Clear & redraw all sprites in this view & swap main screen buffer
   sv.redraw = function() as void
+    m.bmView.clear(m.bgColor)
+    m.myComp.DrawAll()
+    m.parent.redraw() ' # TODO maybe should be a request to redraw here instead of command'
+  end function
+
+  '' Redraw all sprites in this view & swap main screen buffer. without clearing first
+  sv.drawOver = function() as void
     m.myComp.DrawAll()
     m.parent.redraw() ' # TODO maybe should be a request to redraw here instead of command'
   end function

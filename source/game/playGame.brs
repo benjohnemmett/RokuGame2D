@@ -6,17 +6,22 @@ function rg2dPlayGame() as object
     port = g.port
     'compositor = g.compositor
 
-    gameView = g.screenMgr.createView("game")
+    g.gameView = g.screenMgr.createView("game")
     g.screenMgr.switchToView("game")
 
     'Load screen
     'screen.clear(0)
-    gameView.bmView.clear(&h000000FF) ' TODO encapsulate this -> gameView.clear(0)'
-    gameView.redraw()
+    g.gameView.bmView.clear(&h000000FF) ' TODO encapsulate this -> gameView.clear(0)'
+    g.gameView.redraw()
     g.font_registry = CreateObject("roFontRegistry")
     font = g.font_registry.GetDefaultFont()
-    gameView.bmView.DrawText("Loading...",300, 300, &hFFFFFFFF, font)
-    gameView.redraw()
+    g.gameView.bmView.DrawText("Loading...",300, 300, &hFFFFFFFF, font)
+    g.gameView.redraw()
+
+    g.dm = DisplayManager(g.gameView)
+    g.am = AnimationManager()
+    g.om = GameObjectManager() ' Anything that needs to run update'
+    g.pm = physModel()
 
     ' Score, (wave) level
     gs = rg2dGameStats(0, 1)
@@ -25,7 +30,7 @@ function rg2dPlayGame() as object
     g.game_sore = 0
 
     game_paused = false
-    sPauseMenu = gameView.NewSprite(300, 200, g.rPauseScreen, 50)
+    sPauseMenu = g.gameView.NewSprite(300, 200, g.rPauseScreen, 50)
     sPauseMenu.SetDrawableFlag(false)
 
     'Audio
@@ -59,7 +64,7 @@ function rg2dPlayGame() as object
     clock.Mark()
 
 
-    gameView.bmView.clear(&h000000FF) ' TODO encapsulate this -> gameView.clear(0)'
+    g.gameView.bmView.clear(&h000000FF) ' TODO encapsulate this -> gameView.clear(0)'
     rg2dGameInit()
     ''''''''''''''''''''''''''''''''''''''''''''''
     ' Level Loop
@@ -162,7 +167,7 @@ function rg2dPlayGame() as object
                         'compositor.DrawAll()
                         'playGameAddPauseMenu(screen) ' TODO, Not sure what this was doing, determine if something is needed here
                         'screen.SwapBuffers()
-                        gameView.redraw()
+                        g.gameView.redraw()
                     end while
 
                 end if
@@ -171,10 +176,7 @@ function rg2dPlayGame() as object
 
             ticks = clock.TotalMilliseconds()
 
-            if (ticks > refreshPeriod)
-
-                ' Do Controls
-
+            if (ticks >= refreshPeriod)
 
                 dt = ticks/1000
 
@@ -186,11 +188,12 @@ function rg2dPlayGame() as object
                   exit while ' Exit the inner game loop'
                 end if
 
-                g.pm.runphysics(dt)
+                g.om.update(dt)  ' run update() on all objects '
+                g.pm.runphysics(dt) ' run physics on physics objects'
+                g.am.updateAnimations(dt) ' Update animations '
+                g.dm.updateDisplays(dt) ' Update display'
 
-                g.pm.updateDisplay()
-
-                gameView.redraw()
+                g.gameView.redraw()
 
                 clock.Mark()
 
