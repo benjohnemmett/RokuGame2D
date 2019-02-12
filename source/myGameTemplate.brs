@@ -31,6 +31,7 @@ function rg2dSetGameParameters() as void
     g.layers.Windometer = 20
     g.layers.Terrain = 10
     g.layers.SlowSnow = 9
+    g.layers.miniPlane = 5
     'Back' 1
 
     'rg2dDeleteRegistry("mouse_msg")
@@ -48,6 +49,10 @@ function rg2dSetGameParameters() as void
     else ' if empty then create a new empty associative array
       g.localData = {}
     end if
+
+    'remove junk
+    g.localData.delete("junk")
+    g.localData.delete("roundunlocked")
 
 
     di = CreateObject("roDeviceInfo")
@@ -166,7 +171,7 @@ function rg2dLoadSprites() as void
     bmTrees = CreateObject("roBitmap", "pkg:/components/sprites/tree_56_90.png")
     g.regions.tree_1_A = CreateObject("roRegion", bmTrees, 0, 0, 56, 90)
 
-    bmIgloos = CreateObject("roBitmap", "pkg:/components/sprites/igloos_III_128_294.png")
+    bmIgloos = CreateObject("roBitmap", "pkg:/components/sprites/igloos_II_128_294.png")
 
     g.iglooSprites = {}
     g.iglooSprites.igloo = []
@@ -210,6 +215,9 @@ function rg2dLoadSprites() as void
     g.rChevronGreyRight = CreateObject("roRegion", bmChevrons, 60, 0, 30, 30)
     g.rChevronGreenRight = CreateObject("roRegion", bmChevrons, 90, 0, 30, 30)
     g.rWindometerText = rg2dLoadRegion("pkg:/components/sprites/windometer_text.png", 0, 0, 124, 19)
+
+
+    g.rMiniPlane = rg2dLoadRegion("pkg:/components/sprites/MiniMousePlane_16_9.png", 0, 0, 16, 9)
 
     g.terrain_ice = createTerrain("pkg:/components/sprites/terrain_ice_288_44.png")
 
@@ -343,7 +351,7 @@ function rg2dMenuItemSelected() as void
           if (stat.tank1misscount = 0) and (g.localData.medals.sharpshooter[select.idx] = false) then
             g.localData.medals.sharpshooter[select.idx] = true
             rg2dPlaySound(g.sounds.metalAward)
-            msg = "You earned a Sharp Shooter Medal for a flawless match!"
+            msg = "You earned a Sharp Shooter Medal for a zero-miss match!"
           end if
 
         end if
@@ -900,6 +908,7 @@ function rg2dLoadLevel(gdef, level as integer) as void
     msg = g.tank1.name + " vs "  + g.tank2.name + "! " + g.mouseController.getRandomMessage("match_start")
     g.mouseController.startPlaneBanner(msg)
 
+
     'g.sMouse = g.compositor.NewSprite(600,g.sHeight-td.getHeightAtXPoint(600)-20,g.rMouseUp,1)
 
     g.tank1.setPosition(100, g.sHeight-td.getHeightAtXPoint(100) - 16)
@@ -923,6 +932,9 @@ function rg2dLoadLevel(gdef, level as integer) as void
     g.explosionGroup = g.pm.createPhysObjGroup()
 
     g.gameTimer.mark() ' Start Game timer'
+
+    g.miniMouse = planeTimer()
+    g.miniMouse.startTimer(g.QUICK_GAME_TIME)
 
 
 end function '  Load level '
@@ -1023,13 +1035,13 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
             ?"Trucking Left"
             'g.wind.offsetWind(10,0)
             'active_player.select_projectile(active_player.projectile_idx+1)
-            inactive_player.takeDamage(10)
+            'inactive_player.takeDamage(10)
         else if(button.bLeft) then
             ?"Trucking Right"
             'g.wind.offsetWind(-10,0)
 
             'active_player.select_projectile(active_player.projectile_idx-1)
-            g.mouseController.startPlaneBanner("TESTING TESTING 1,2,3...")
+            'g.mouseController.startPlaneBanner("TESTING TESTING 1,2,3...")
         end if
 
         ' Start of Turn state transitions'
@@ -1212,6 +1224,9 @@ function rg2dInnerGameLoopUpdate(dt as float, button, button_hold_time) as objec
 
     'Update Mouse'
     g.mouseController.update(dt)
+
+    ' Update minimouse'
+    g.miniMouse.update(dt)
 
     ' If one player is dead, then begin exiting the level'
     if (g.tank1.health <= 0) OR (g.tank2.health <= 0) then
