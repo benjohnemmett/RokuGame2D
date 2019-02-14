@@ -174,7 +174,7 @@ end function
 function projectile(owner as object, region, radius, damage_power, x,y,vx,vy) as object
   g = GetGlobalAA()
 
-  sCirc = g.compositor.NewSprite(x, y, region, g.layers.Projectiles)
+  sCirc = g.compositor.NewSprite(x-region.getWidth()/2, y-region.getHeight()/2, region, g.layers.Projectiles)
 
   ''
   proj = collectiveRotationalPhysObj(x, y, radius, 0)
