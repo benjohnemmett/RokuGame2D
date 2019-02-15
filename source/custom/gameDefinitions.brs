@@ -81,13 +81,13 @@ function getAIPlayerDefForLevel(playerNumber, level as integer) as object
       if level = 1 then
         pdef = PlayerDef(playerNumber, false, "igloo_blue", "Iceman")
       else if level = 2 then
-        pdef = AIRangerPlayerDef(playerNumber, "igloo_green", 1.5, "Green Giant")
+        pdef = AIRangerPlayerDef(playerNumber, "igloo_green", 2, "Green Giant")
       else if level = 3 then
-        pdef = AIRangerPlayerDef(playerNumber, "igloo_red", 1.0, "Rudolph")
+        pdef = AIRangerPlayerDef(playerNumber, "igloo_red", 1.5, "Rudolph")
       else if level = 4 then
-        pdef = AIRangerPlayerDef(playerNumber, "igloo_pink", 0.5, "Popper")
+        pdef = AIRangerPlayerDef(playerNumber, "igloo_pink", 1.0, "Popper")
       else if level = 5 then
-        pdef = AIRangerPlayerDef(playerNumber, "igloo_grey", 0.3, "Ghost")
+        pdef = AIRangerPlayerDef(playerNumber, "igloo_grey", 0.5, "Ghost")
       else if level = 6 then
         pdef = AIRangerPlayerDef(playerNumber, "igloo_black", 0.1, "Jet")
       else
