@@ -256,7 +256,7 @@ function rg2dLoadSounds() as void
     g.sounds.navSingle = CreateObject("roAudioResource", "navsingle")
     g.sounds.matchVictory = CreateObject("roAudioResource", "pkg:/components/audio/SnowBattleVictory.wav")
     g.sounds.metalAward = CreateObject("roAudioResource", "pkg:/components/audio/SnowBattleMedalAward.wav")
-    g.sounds.randomizer = CreateObject("roAudioResource", "pkg:/components/audio/SnowBattle_Randomizer.wav")
+    g.sounds.randomizer = CreateObject("roAudioResource", "pkg:/components/audio/SnowBattle_Randomizer2.wav")
 
     '?"Max Streams ";g.sounds.astroid_blast.maxSimulStreams()
     g.audioStream = 1
