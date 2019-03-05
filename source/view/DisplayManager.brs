@@ -25,6 +25,9 @@ function DisplayManager(view as object) as object
 end function
 
 ' Component to be added to gameObjects'
+'  Requires object to have these fields:
+'   x : x position
+'   y : y position
 function DisplayComp(sprite as object) as object
   dc = {}
 

@@ -55,6 +55,7 @@ function rg2dPlayGame() as object
     button.bPlay = false
     button.bSelect1 = false
     button.bSelect2 = false
+    button.thisPress = invalid
     codes = bslUniversalControlEventCodes()
     myCodes = g.settings.controlCodes
 
@@ -79,10 +80,14 @@ function rg2dPlayGame() as object
         ''''''''''''''''''''''''''''''''''''''''''''''
         while true
 
+
             'Check for button events
             event = port.GetMessage()
             if (type(event) = "roUniversalControlEvent") then
                 id = event.GetInt()
+
+                button.thisPress = id
+
                 if (id = myCodes.RIGHT_PRESSED) then
                     '?"Right Button Down"
                     button.bRight = true
@@ -168,11 +173,11 @@ function rg2dPlayGame() as object
                         'playGameAddPauseMenu(screen) ' TODO, Not sure what this was doing, determine if something is needed here
                         'screen.SwapBuffers()
                         g.gameView.redraw()
-                    end while
+                    end while ' game paused'
 
-                end if
+                end if 'back pressed'
 
-            end if
+            end if ' control event'
 
             ticks = clock.TotalMilliseconds()
 
@@ -197,6 +202,7 @@ function rg2dPlayGame() as object
 
                 clock.Mark()
 
+                button.thisPress = invalid ' reset
 
             end if  ' if time, Refresh
 

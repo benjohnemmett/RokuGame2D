@@ -45,6 +45,7 @@ function ScreenManager() as Object
   end function
 
   sm.redraw = function() as void
+    m.screen.clear(m.menuBgColor)
     m.compositor.DrawAll()
     m.screen.swapBuffers()
   end function
@@ -67,6 +68,23 @@ function ScreenManager() as Object
     End For
 
     return True
+  end function
+
+  sm.getView = function(name as String) as object
+    if m.viewList.DoesExist(name) = False then
+      return invalid
+    end if
+
+    keys = m.viewList.keys()
+    For each k in keys
+      view = m.viewList.Lookup(k)
+      if( k = name ) then
+        return view
+      end if
+    End For
+
+    return invalid
+
   end function
 
   return sm

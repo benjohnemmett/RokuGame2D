@@ -1,25 +1,32 @@
 function GameObjectManager() as object
-  gom = {}
 
-  gom.GameObjectList = []
+  g = GetGlobalAA()
 
-  gom.addGameObj = function(obj as object) as void
-    m.GameObjectList.push(obj)
-  end function
+  if g.DoesExist("GameObjectManager") then
+    gom = g.GameObjectManager
+  else
+    gom = {}
+    gom.GameObjectList = []
 
-  gom.update = function(dt as float)
-    i = 0
-    while i < m.GameObjectList.count()
-        a = m.GameObjectList[i]
+    gom.addGameObj = function(obj as object) as void
+      m.GameObjectList.push(obj)
+    end function
 
-        if a.update <> invalid then
-          a.update(dt) 'Update Display
-        end if
-        i += 1
+    gom.update = function(dt as float)
+      i = 0
+      while i < m.GameObjectList.count()
+          a = m.GameObjectList[i]
 
-    end while
-  end function
+          if a.update <> invalid then
+            a.update(dt) 'Update Display
+          end if
+          i += 1
 
+      end while
+    end function
+    ' Set global game object manager'
+    g.GameObjectManager = gom
+  end if
 
   return gom
 
@@ -55,6 +62,9 @@ function gameObject(x,y) as object
 
     return hasComp
   end function
+
+  gom = GameObjectManager() ' Get singleton gom'
+  gom.addGameObj(go)
 
   return go
 

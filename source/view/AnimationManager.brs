@@ -23,6 +23,10 @@ function AnimationManager() as object
     end while
   end function
 
+  am.animationCount = function() as integer
+    return m.AnimationList.count()
+  end function
+
 
   return am
 
