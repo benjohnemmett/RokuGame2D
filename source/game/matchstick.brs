@@ -43,7 +43,7 @@ function rg2dLoadSprites() as void
     g.rScore[8] = CreateObject("roRegion", bmScore, 8*32, 0, 32, 32)
     g.rScore[9] = CreateObject("roRegion", bmScore, 9*32, 0, 32, 32)
 
-
+    g.bmBasicDeck = CreateObject("roBitmap", "pkg:/components/sprites/BasicDeck_1x7.png")
     g.bmBasicCard = CreateObject("roBitmap", "pkg:/components/sprites/BasicCard_601_400.png")
     g.rBasicCardBack = CreateObject("roRegion", g.bmBasicCard, 0, 0, 300, 400)
     g.rBasicCardFront = CreateObject("roRegion", g.bmBasicCard, 300, 0, 300, 400)
@@ -146,14 +146,38 @@ function rg2dGameInit() as void
 
     g.table = CardTable(tableRows,tableCols)
 
+    basicDeck = deck(gameView, invalid)
+    basicDeck.loadDeckFromImage(g.bmBasicDeck, 300, 400)
+
+    first = true
+    idx = 0
+
     For i=0 to tableRows-1 step 1
       For j=0 to tableCols-1 step 1
-        myCard = card("apple", g.rBasicCardFront, g.rBasicCardBack)
+        myCard = basicDeck.createCardInstance(idx.toStr())
         g.table.setCard(i,j,myCard)
+
+        if first then
+          first = false
+        else
+          idx += 1
+          first = True
+        end if
+
       End For
     End For
 
-    g.tableViewMgr = tableViewController(g.table, gameView, 140, 50, 200, 100)
+    ' Shuffle cards on table '
+    For i=0 to tableRows-1 step 1
+      For j=0 to tableCols-1 step 1
+
+        g.table.swapCards(i,j, rnd(tableRows)-1,rnd(tableCols)-1)
+
+      End For
+    End For
+
+    ' Display table'
+    g.tableViewMgr = tableViewController(g.table, gameView, 140, 50, 1000, 600)
 
     g.om.addGameObj(g.table) ' TODO does this need to be here?8
     g.om.addGameObj(g.tableViewMgr)

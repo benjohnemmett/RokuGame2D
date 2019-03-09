@@ -73,7 +73,21 @@ function CardTable(rows, cols) as object
       End For
     end function
 
-  return ct
+  ' Swap positions of two cards'
+  ct.swapCards = function(r1, c1, r2, c2) as void
+    card1 = m.getCard(r1,c1)
+    card2 = m.getCard(r2,c2)
+
+    m.setCard(r2,c2,card1)
+    m.setCard(r1,c1,card2)
+
+    card1.dirty = true
+    card2.dirty = true
+  end function
+
+
+    return ct
+
 end function
 
 

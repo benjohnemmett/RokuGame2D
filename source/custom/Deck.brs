@@ -36,6 +36,29 @@ function deck(view, backImg) as object
     m.cardDefinitions.addReplace(id, cd)
   end function
 
+  ' load an image with an array of card images, each of cWidth & cHeight.
+  ' Assume first card image is the deck back.'
+  ' Create a card definition for each card'
+  d.loadDeckFromImage = function(bm, cardWidth, cardHeight)
+    rows = int(bm.getHeight()/cardHeight)
+    cols = int(bm.getWidth()/cardWidth)
+
+    m.backImg = CreateObject("roRegion", bm, 0, 0, cardWidth, cardHeight)
+    cardNum = 0
+
+    For r=0 to rows-1 step 1
+      For c=1 to cols-1 step 1
+        ?"Creating card ";cardNum;" From row ";r;" col ";c
+        img = CreateObject("roRegion", bm, cardWidth*c, cardHeight*r, cardWidth, cardHeight)
+        m.defineCard(cardNum.toStr(), img)
+
+        cardNum += 1
+      End For
+    End For
+
+  end function
+
+
   '' create a card object that can be added to a table
   d.createCardInstance = function(id as string) as object
     cd = m.cardDefinitions.lookup(id)
@@ -43,6 +66,8 @@ function deck(view, backImg) as object
     if cd <> invalid then
       c = card(cd.id, cd.frontImg, m.backImg)
     else
+      ?"Count not find card: ";id
+      stop
       c = invalid
     end if
 
