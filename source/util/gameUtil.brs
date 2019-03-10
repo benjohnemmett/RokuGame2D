@@ -315,6 +315,7 @@ function rg2dStateMachine(initialState as String) as object
       m.timeInSubState = 0.0
 
       m.subState = "ENTRY"
+      ?"STATE     = ";m.state;" ";m.framesInState
     end if
 
   end function

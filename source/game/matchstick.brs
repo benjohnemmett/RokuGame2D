@@ -135,6 +135,11 @@ end function
 function rg2dGameInit() as void
     g = GetGlobalAA()
 
+    g.numPlayers = 4
+    g.currentPlayer = 0 ' zero based'
+    g.cardsFlipped = []
+    g.gameState = rg2dStateMachine("START_GAME")
+
     gameView = g.screenMgr.getView("game")
 
     if(g.DEBUG) then
@@ -209,8 +214,16 @@ function rg2dInnerGameLoopUpdate(dt as float, button, holdTime) as object
       ?"rg2dInnerGameLoopUpdate long frame ";dt;"..."
     end if
 
-    status = rg2dStatus()
+    g.gameState.tick(dt)
 
+    status = rg2dStatus()
+    theCard = invalid
+
+    ''''''''''''''''''''''''''''''''''''''''''
+    ''''''''''''''''''''''''''''''''''''''''''
+    ' Control
+    ''''''''''''''''''''''''''''''''''''''''''
+    ''''''''''''''''''''''''''''''''''''''''''
     if(button.bUp) then
         ?"Trucking Up ";button.thisPress
         if button.thisPress <> invalid then
@@ -241,44 +254,149 @@ function rg2dInnerGameLoopUpdate(dt as float, button, holdTime) as object
 
     else if(button.bSelect1) then
 
-      if g.am.animationCount() = 0 then
-        an = Animation()
-        an.state = rg2dStateMachine("ENTER")
-        an.target = g.table.getSelectedCard()
-        an.maxTime = 1
-        an.UpdateAnimation = function(dt)
-          ?"Animating card ";m.t
-          m.state.tick(dt)
+      if button.thisPress <> invalid then
 
-          if m.state.equals("ENTER") then
-            m.target.setXFlipScale(1.1)
-            m.state.setState("SHRINK")
-          else if m.state.equals("SHRINK") then
-            m.target.setXFlipScale(m.target.xflipscale - 0.1)
-            if m.target.xflipscale < 0.1 then
-              m.state.setState("GROW")
-              m.target.flip()
-            end if
-          else if m.state.equals("GROW") then
-            m.target.setXFlipScale(m.target.xflipscale + 0.1)
-            if m.target.xflipscale > 1.0 then
-              m.state.setState("DONE")
-              m.target.setXFlipScale(1.0)
-              m.done = true
-            end if
-          end if
-        end function
+        ' Card selected'
+        if g.gameState.equals("START_TURN") OR g.gameState.equals("ONE_FLIPPED") then
+          theCard = g.table.getSelectedCard()
+          if theCard.flipped = false then
+          ' TODO prevent from selecting the same card twice on a single turn'
+            an = Animation()
+            an.state = rg2dStateMachine("ENTER")
+            an.target = theCard
+            an.target.state.setState("ANIM")
+            an.maxTime = 1
+            an.UpdateAnimation = function(dt)
+              ''?"Animating card ";m.t
+              m.state.tick(dt)
 
-        g.am.addAnimation(an)
-      end if
+              if m.state.equals("ENTER") then
+                m.target.setXFlipScale(1.1)
+                m.state.setState("SHRINK")
+              else if m.state.equals("SHRINK") then
+                m.target.setXFlipScale(m.target.xflipscale - 0.1)
+                if m.target.xflipscale < 0.1 then
+                  m.state.setState("GROW")
+                  m.target.flip()
+                end if
+              else if m.state.equals("GROW") then
+                m.target.setXFlipScale(m.target.xflipscale + 0.1)
+                if m.target.xflipscale > 1.0 then
+                  m.state.setState("DONE")
+                  m.target.setXFlipScale(1.0)
+                  m.target.state.setState("IDLE")
+                  m.done = true
+                end if
+              end if
+            end function
 
-    else
+            g.am.addAnimation(an)
+
+          end if ' if card not flipped'
+
+        end if ' Game state start turn or one_flipped'
+      end if  ' this press '
+
+    else ' button select'
       'g.truck.ax = 0
       'g.truck.ay = 0
       'g.truck.vx = 'g.truck.vx*truck_v_df
       'g.truck.vy = g.truck.vy*truck_v_df
 
     end if
+
+    ''''''''''''''''''''''''''''''''''''''''''
+    ''''''''''''''''''''''''''''''''''''''''''
+    ' State Logic
+    ''''''''''''''''''''''''''''''''''''''''''
+    ''''''''''''''''''''''''''''''''''''''''''
+
+    if g.gameState.equals("START_GAME") then
+      g.gameState.setState("START_TURN")
+
+    else if g.gameState.equals("START_TURN") then
+      if(theCard <> invalid) then
+        g.gameState.setState("ONE_FLIPPED")
+        g.cardsFlipped.push(theCard)
+      end if
+
+    else if g.gameState.equals("ONE_FLIPPED") then
+      if(theCard <> invalid) then
+        g.gameState.setState("TWO_FLIPPED")
+        g.cardsFlipped.push(theCard)
+      end if
+
+    else if g.gameState.equals("TWO_FLIPPED") then
+      For each c in g.cardsFlipped
+        ?"Flipped ";c.id
+      End For
+
+      if g.cardsFlipped[0].id = g.cardsFlipped[1].id then
+        ?"MATCH!!"
+        g.gameState.setState("MATCH_FOUND")
+      else
+        g.gameState.setState("NO_MATCH")
+      end if
+
+    else if g.gameState.equals("MATCH_FOUND") then
+      ' TODO Disable cards '
+      ' TODO  move cards to PLayer match pile
+
+
+      g.cardsFlipped.clear()
+      g.gameState.setState("START_TURN")
+
+      ' TODO check for game over '
+
+    else if g.gameState.equals("NO_MATCH") then
+
+      if g.gameState.subState = "ENTRY" then
+      ?"time in no_match entry ";g.gameState.timeInSubState
+        if g.gameState.timeInSubState > 0.5 then
+          g.gameState.setSubState("FLIP_BACK")
+        end if
+      else if g.gameState.subState = "FLIP_BACK" then
+        g.currentPlayer = (g.currentPlayer + 1) MOD g.numPlayers
+
+        For each c in g.cardsFlipped
+          an = Animation()
+          an.state = rg2dStateMachine("ENTER")
+          an.target = c
+          an.target.state.setState("ANIM")
+          an.maxTime = 1
+          an.UpdateAnimation = function(dt)
+            ''?"Animating card ";m.t
+            m.state.tick(dt)
+
+            if m.state.equals("ENTER") then
+              m.target.setXFlipScale(1.1)
+              m.state.setState("SHRINK")
+            else if m.state.equals("SHRINK") then
+              m.target.setXFlipScale(m.target.xflipscale - 0.1)
+              if m.target.xflipscale < 0.1 then
+                m.state.setState("GROW")
+                m.target.flip()
+              end if
+            else if m.state.equals("GROW") then
+              m.target.setXFlipScale(m.target.xflipscale + 0.1)
+              if m.target.xflipscale > 1.0 then
+                m.state.setState("DONE")
+                m.target.setXFlipScale(1.0)
+                m.target.state.setState("IDLE")
+                m.done = true
+              end if
+            end if
+          end function
+          
+          g.am.addAnimation(an)
+        End For
+
+        g.cardsFlipped.clear()
+        g.gameState.setState("START_TURN")
+      end if ' NO_MATCH substate logic'
+
+    end if ''State logic
+
 
     return status
 

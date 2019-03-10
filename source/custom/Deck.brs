@@ -101,6 +101,7 @@ function card(id as string, frontImg, backImg) as object
   c.flipped = false
   c.xflipscale = 1.0
   c.dirty = True
+  c.state = rg2dStateMachine("IDLE")
 
   c.getShowingSideImage = function()
     if m.flipped then
