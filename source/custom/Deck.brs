@@ -95,6 +95,7 @@ function card(id as string, frontImg, backImg) as object
 
   c = {}
 
+  c.uid = rnd(2^16-1)
   c.id = id
   c.frontImg = frontImg
   c.backImg = backImg
@@ -102,6 +103,7 @@ function card(id as string, frontImg, backImg) as object
   c.xflipscale = 1.0
   c.dirty = True
   c.state = rg2dStateMachine("IDLE")
+  c.state.name = "card"
 
   c.getShowingSideImage = function()
     if m.flipped then

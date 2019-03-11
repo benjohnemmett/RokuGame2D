@@ -298,7 +298,8 @@ function rg2dStateMachine(initialState as String) as object
     totalFrames : 0,
     timeInState : 0.0,
     timeInSubState : 0.0,
-    totalTime : 0.0
+    totalTime : 0.0,
+    name : invalid
   }
 
   ' Called to change the state & reset state & sub state counters
@@ -315,7 +316,9 @@ function rg2dStateMachine(initialState as String) as object
       m.timeInSubState = 0.0
 
       m.subState = "ENTRY"
-      ?"STATE     = ";m.state;" ";m.framesInState
+      if m.name <> invalid then
+        ?">";m.name;" state = ";m.state;" ";m.framesInState
+      end if
     end if
 
   end function
