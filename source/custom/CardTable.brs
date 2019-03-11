@@ -65,9 +65,9 @@ function CardTable(rows, cols) as object
 
   ct.printTable = function() as void
       For r=0 to m.rows-1 step 1
-        str = "[" + r + "] "
+        str = "[" + r.toStr() + "] "
         For c=0 to m.cols-1 step 1
-          str = str + str(m.idTable[r,c]) + " "
+          str = str + "( " + m.idTable[r,c].id + ", " + m.idTable[r,c].flipped.toStr() + ") "
         End For
         ?str
       End For

@@ -182,6 +182,8 @@ function rg2dGameInit() as void
       End For
     End For
 
+    g.table.printTable()
+
     ' Display table'
     g.tableViewMgr = tableViewController(g.table, gameView, 140, 50, 1000, 600)
 
@@ -261,52 +263,39 @@ function rg2dInnerGameLoopUpdate(dt as float, button, holdTime) as object
         if g.gameState.equals("START_TURN") OR g.gameState.equals("ONE_FLIPPED") then
           theCard = g.table.getSelectedCard()
 
+          if theCard = invalid:
+            ?"Selected invalid card -> Skipping"
+            Goto SKIP_THIS_CARD
+          end if
+
           cardAlreadySelected = false
           For each c in g.cardsFlipped
             if c.uid = theCard.uid then
               cardAlreadySelected = true
+              ?"Selected Card already selected -> Skipping card"
               theCard = invalid
-              ?"Skipping card, already selected"
-              exit for
+              Goto SKIP_THIS_CARD
             end if
           end for
 
-          if (cardAlreadySelected = false) then
-           if (theCard.flipped = false)  then
-            ' TODO prevent from selecting the same card twice on a single turn'
-              an = Animation()
-              an.state = rg2dStateMachine("ENTER")
-              an.target = theCard
-              an.target.state.setState("ANIM")
-              an.maxTime = 1
-              an.UpdateAnimation = function(dt)
-                ''?"Animating card ";m.t
-                m.state.tick(dt)
+          if (theCard.inPlay = false)  then
+           ?"Selected Card not in play -> Skipping card"
+           theCard = invalid
+           Goto SKIP_THIS_CARD
+          end if
 
-                if m.state.equals("ENTER") then
-                  m.target.setXFlipScale(1.1)
-                  m.state.setState("SHRINK")
-                else if m.state.equals("SHRINK") then
-                  m.target.setXFlipScale(m.target.xflipscale - 0.1)
-                  if m.target.xflipscale < 0.1 then
-                    m.state.setState("GROW")
-                    m.target.flip()
-                  end if
-                else if m.state.equals("GROW") then
-                  m.target.setXFlipScale(m.target.xflipscale + 0.1)
-                  if m.target.xflipscale > 1.0 then
-                    m.state.setState("DONE")
-                    m.target.setXFlipScale(1.0)
-                    m.target.state.setState("IDLE")
-                    m.done = true
-                  end if
-                end if
-              end function
+        ?"Let's flip this guy!"
+        ' TODO prevent from selecting the same card twice on a single turn'
+        an = Animation()
+        an.state = rg2dStateMachine("ENTER")
+        an.target = theCard
+        an.target.state.setState("ANIM")
+        an.maxTime = 1
+        an.UpdateAnimation = theCard.animFlipFunc
 
-              g.am.addAnimation(an)
+        g.am.addAnimation(an)
 
-            end if ' if card not flipped'
-          end if ' Card not already selected'
+SKIP_THIS_CARD:
 
         end if ' Game state start turn or one_flipped'
       end if  ' this press '
@@ -354,6 +343,9 @@ function rg2dInnerGameLoopUpdate(dt as float, button, holdTime) as object
 
     else if g.gameState.equals("MATCH_FOUND") then
       ' TODO Disable cards '
+      For each c in g.cardsFlipped
+        c.inPlay = false
+      End For
       ' TODO  move cards to PLayer match pile
 
 
@@ -386,29 +378,7 @@ function rg2dInnerGameLoopUpdate(dt as float, button, holdTime) as object
           an.target = c
           an.target.state.setState("ANIM")
           an.maxTime = 1
-          an.UpdateAnimation = function(dt)
-            ''?"Animating card ";m.t
-            m.state.tick(dt)
-
-            if m.state.equals("ENTER") then
-              m.target.setXFlipScale(1.1)
-              m.state.setState("SHRINK")
-            else if m.state.equals("SHRINK") then
-              m.target.setXFlipScale(m.target.xflipscale - 0.1)
-              if m.target.xflipscale < 0.1 then
-                m.state.setState("GROW")
-                m.target.flip()
-              end if
-            else if m.state.equals("GROW") then
-              m.target.setXFlipScale(m.target.xflipscale + 0.1)
-              if m.target.xflipscale > 1.0 then
-                m.state.setState("DONE")
-                m.target.setXFlipScale(1.0)
-                m.target.state.setState("IDLE")
-                m.done = true
-              end if
-            end if
-          end function
+          an.UpdateAnimation = c.animFlipFunc
 
           g.am.addAnimation(an)
         End For

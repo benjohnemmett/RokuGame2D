@@ -103,7 +103,8 @@ function card(id as string, frontImg, backImg) as object
   c.xflipscale = 1.0
   c.dirty = True
   c.state = rg2dStateMachine("IDLE")
-  c.state.name = "card"
+  c.state.name = "card" ' Name given to the state machine for cleaer display purposes'
+  c.inPlay = true ' this card can be selected for a guess'
 
   c.getShowingSideImage = function()
     if m.flipped then
@@ -124,6 +125,33 @@ function card(id as string, frontImg, backImg) as object
   c.setXFlipScale = function(xfs)
     m.dirty = true
     m.xflipscale = xfs
+  end function
+
+  '''' Animation functions
+  '
+  ' set as the UpdateAnimation function
+  c.animFlipFunc = function(dt)
+    ''?"Animating card ";m.t
+    m.state.tick(dt)
+
+    if m.state.equals("ENTER") then
+      m.target.setXFlipScale(1.1)
+      m.state.setState("SHRINK")
+    else if m.state.equals("SHRINK") then
+      m.target.setXFlipScale(m.target.xflipscale - 0.1)
+      if m.target.xflipscale < 0.1 then
+        m.state.setState("GROW")
+        m.target.flip()
+      end if
+    else if m.state.equals("GROW") then
+      m.target.setXFlipScale(m.target.xflipscale + 0.1)
+      if m.target.xflipscale > 1.0 then
+        m.state.setState("DONE")
+        m.target.setXFlipScale(1.0)
+        m.target.state.setState("IDLE")
+        m.done = true
+      end if
+    end if
   end function
 
   return c
