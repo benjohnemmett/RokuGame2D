@@ -43,7 +43,8 @@ function rg2dLoadSprites() as void
     g.rScore[8] = CreateObject("roRegion", bmScore, 8*32, 0, 32, 32)
     g.rScore[9] = CreateObject("roRegion", bmScore, 9*32, 0, 32, 32)
 
-    g.bmBasicDeck = CreateObject("roBitmap", "pkg:/components/sprites/BasicDeck_1x7.png")
+    'g.bmBasicDeck = CreateObject("roBitmap", "pkg:/components/sprites/BasicDeck_1x7.png")
+    g.bmBasicDeck = CreateObject("roBitmap", "pkg:/components/sprites/BasicDeck_1x13.png")
     g.bmBasicCard = CreateObject("roBitmap", "pkg:/components/sprites/BasicCard_601_400.png")
     g.rBasicCardBack = CreateObject("roRegion", g.bmBasicCard, 0, 0, 300, 400)
     g.rBasicCardFront = CreateObject("roRegion", g.bmBasicCard, 300, 0, 300, 400)
@@ -147,8 +148,8 @@ function rg2dGameInit() as void
       ?"rg2dGameInit()..."
     end if
 
-    tableRows = 3
-    tableCols = 4
+    tableRows = 4
+    tableCols = 6
 
     g.table = CardTable(tableRows,tableCols)
 
@@ -185,7 +186,17 @@ function rg2dGameInit() as void
     g.table.printTable()
 
     ' Display table'
-    g.tableViewMgr = tableViewController(g.table, gameView, 140, 50, 1000, 600)
+    WIDTH = 1280
+    HEIGHT = 720
+
+    top_margin = 50
+    bottom_margin = 100
+
+    player_area_width = 200
+    table_width = WIDTH - 2*player_area_width
+    table_height = HEIGHT - (top_margin + bottom_margin)
+
+    g.tableViewMgr = tableViewController(g.table, gameView, player_area_width, top_margin, table_width, table_height)
 
     g.om.addGameObj(g.table) ' TODO does this need to be here?8
     g.om.addGameObj(g.tableViewMgr)
@@ -263,11 +274,13 @@ function rg2dInnerGameLoopUpdate(dt as float, button, holdTime) as object
         if g.gameState.equals("START_TURN") OR g.gameState.equals("ONE_FLIPPED") then
           theCard = g.table.getSelectedCard()
 
+          ' Check that there is a card in this spot'
           if theCard = invalid:
             ?"Selected invalid card -> Skipping"
             Goto SKIP_THIS_CARD
           end if
 
+          ' Check that this card is not already selected'
           cardAlreadySelected = false
           For each c in g.cardsFlipped
             if c.uid = theCard.uid then
@@ -278,22 +291,23 @@ function rg2dInnerGameLoopUpdate(dt as float, button, holdTime) as object
             end if
           end for
 
+          ' Check that this card is in play'
           if (theCard.inPlay = false)  then
            ?"Selected Card not in play -> Skipping card"
            theCard = invalid
            Goto SKIP_THIS_CARD
           end if
 
-        ?"Let's flip this guy!"
-        ' TODO prevent from selecting the same card twice on a single turn'
-        an = Animation()
-        an.state = rg2dStateMachine("ENTER")
-        an.target = theCard
-        an.target.state.setState("ANIM")
-        an.maxTime = 1
-        an.UpdateAnimation = theCard.animFlipFunc
+          ?"Let's flip this guy!"
+          ' TODO prevent from selecting the same card twice on a single turn'
+          an = Animation()
+          an.state = rg2dStateMachine("ENTER")
+          an.target = theCard
+          an.target.state.setState("ANIM")
+          an.maxTime = 1
+          an.UpdateAnimation = theCard.animFlipFunc
 
-        g.am.addAnimation(an)
+          g.am.addAnimation(an)
 
 SKIP_THIS_CARD:
 
