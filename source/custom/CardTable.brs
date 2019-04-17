@@ -90,8 +90,63 @@ function CardTable(rows, cols) as object
 
 end function
 
+' Player Area -> Displays matches which a player has found
+function PlayerArea(rows, cols) as object
+  pa = gameObject(0, 0)
 
-' Not a displayable object but a manager that sets sprites in the appropriate place according to the talbe'
+  pa.rows = rows
+  pa.cols = cols
+
+  pa.selRow = 0
+  pa.selCol = 0
+
+  dim idTable[pa.rows, pa.cols]
+
+  pa.idTable = idTable
+  For r=0 to pa.rows-1 step 1
+    For c=0 to pa.cols-1 step 1
+      pa.idTable[r,c] = invalid
+    End For
+  End For
+
+  pa.setCard = function(r, c, theCard) as void
+    if (r < 0) OR (r >= m.rows ) OR (c < 0) OR (c >= m.cols) then
+      ?"Error: setting card out of bounds requested."
+      return
+    end if
+
+    m.idTable[r, c] = theCard
+  end function
+
+  '' just put the card in the next available spot
+  pa.setCardToNextSpot = function(theCard) as void
+    m.setCard(m.selRow, m.selCol, theCard)
+
+    m.selCol += 1
+
+    if m.selCol >= m.cols then
+      m.selCol = 0
+      m.selRow += 1
+    end if
+
+    if m.selRow >= m.rows then
+      m.selRow = 0
+      m.selCol = 0
+      ?"Out of space in player area, circling back"
+    end if
+
+  end function
+
+
+  pa.getCard = function(r, c) as object
+    return m.idTable[r, c]
+  end function
+
+  return pa
+
+end function
+
+' Not a displayable object but a manager that sets sprites in the appropriate place according to the table'
 function tableViewController(table, view, x, y, width, height)
 
   tvc = gameObject(x,y)
@@ -124,7 +179,8 @@ function tableViewController(table, view, x, y, width, height)
             theCard.y = m.y + r*m.ySpace
 
             theCard.bm = CreateObject("roBitmap", {width:m.cardWidth, height:m.cardHeight, AlphaEnable:true})
-            theCard.bm.clear(&h00000055 + 4095*theCard.x)
+            'theCard.bm.clear(&h00000055 + 4095*theCard.x)
+            theCard.bm.clear(&h00000000)
             theCard.region = CreateObject("roRegion", theCard.bm, 0, 0, m.cardWidth, m.cardHeight)
             theCard.sprite = m.view.NewSprite(theCard.x, theCard.y, theCard.region, 1)
 
@@ -159,14 +215,16 @@ function tableViewController(table, view, x, y, width, height)
               theCardView.bm.clear(&h00000000)
             end if
 
-            xsf_ = m.cardWidth/tableCard.frontImg.getWidth()
-            ysf_ = m.cardHeight/tableCard.frontImg.getHeight()
-            sf = minFloat(xsf_, ysf_)
+            if tableCard.inPlay then ' If in play then draw the card'
+              xsf_ = m.cardWidth/tableCard.frontImg.getWidth()
+              ysf_ = m.cardHeight/tableCard.frontImg.getHeight()
+              sf = minFloat(xsf_, ysf_)
 
-            xsf = sf*tableCard.xflipscale
-            dx = int((m.cardWidth - (tableCard.frontImg.getWidth()*xsf))/2)
+              xsf = sf*tableCard.xflipscale
+              dx = int((m.cardWidth - (tableCard.frontImg.getWidth()*xsf))/2)
 
-            theCardView.bm.DrawScaledObject(dx, 0, xsf, sf, tableCard.getShowingSideImage())
+              theCardView.bm.DrawScaledObject(dx, 0, xsf, sf, tableCard.getShowingSideImage())
+            end if
 
             tableCard.dirty = false
           end if

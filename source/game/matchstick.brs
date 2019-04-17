@@ -54,7 +54,7 @@ function rg2dLoadSprites() as void
 
     'bmTruck = CreateObject("roBitmap", "pkg:/components/sprites/texture_brick01_60p.png")
     'g.rTruck = CreateObject("roRegion", bmTruck, 0, 0, 60, 60)
-    g.rTruck = rg2dLoadRegion("pkg:/components/sprites/texture_brick01_60p.png", 0, 0, 60, 60)
+    g.rPlayerArea = rg2dLoadRegion("pkg:/components/sprites/player_area_300_400.png", 0, 0, 300, 400)
 
     if(g.USING_LB_CODE) then
         LBLoadSprites()
@@ -143,6 +143,7 @@ function rg2dGameInit() as void
     g.gameState.name = "gameState"
 
     gameView = g.screenMgr.getView("game")
+    gameView.bgColor = &h334455FF
 
     if(g.DEBUG) then
       ?"rg2dGameInit()..."
@@ -155,6 +156,8 @@ function rg2dGameInit() as void
 
     basicDeck = deck(gameView, invalid)
     basicDeck.loadDeckFromImage(g.bmBasicDeck, 300, 400)
+
+    g.activeDeck = basicDeck
 
     first = true
     idx = 0
@@ -175,13 +178,15 @@ function rg2dGameInit() as void
     End For
 
     ' Shuffle cards on table '
-    For i=0 to tableRows-1 step 1
-      For j=0 to tableCols-1 step 1
+    if False then
+      For i=0 to tableRows-1 step 1
+        For j=0 to tableCols-1 step 1
 
-        g.table.swapCards(i,j, rnd(tableRows)-1,rnd(tableCols)-1)
+          g.table.swapCards(i,j, rnd(tableRows)-1,rnd(tableCols)-1)
 
+        End For
       End For
-    End For
+    end if
 
     g.table.printTable()
 
@@ -193,13 +198,19 @@ function rg2dGameInit() as void
     bottom_margin = 100
 
     player_area_width = 200
-    table_width = WIDTH - 2*player_area_width
+    player_area_margin = 30
+    table_width = WIDTH - 2*(player_area_width + 2*player_area_margin)
     table_height = HEIGHT - (top_margin + bottom_margin)
 
-    g.tableViewMgr = tableViewController(g.table, gameView, player_area_width, top_margin, table_width, table_height)
+    g.tableViewMgr = tableViewController(g.table, gameView, player_area_width + 2*player_area_margin, top_margin, table_width, table_height)
 
     g.om.addGameObj(g.table) ' TODO does this need to be here?8
     g.om.addGameObj(g.tableViewMgr)
+
+    ' Player area
+    g.playerArea_1 = PlayerArea(4,3)
+    g.playerAreaViewMgr_1 = tableViewController(g.playerArea_1, gameView, player_area_margin, top_margin, player_area_width, table_height/2-player_area_margin)
+    g.om.addGameObj(g.playerAreaViewMgr_1)
 
     if(g.USING_LB_CODE) then
         LBMakeGroups()
@@ -356,15 +367,42 @@ SKIP_THIS_CARD:
       end if
 
     else if g.gameState.equals("MATCH_FOUND") then
-      ' TODO Disable cards '
-      For each c in g.cardsFlipped
-        c.inPlay = false
-      End For
-      ' TODO  move cards to PLayer match pile
 
+      ' Match was found wait for animation to complete
+      if g.gameState.subState = "ENTRY" then
 
-      g.cardsFlipped.clear()
-      g.gameState.setState("START_TURN")
+        doneWithFirstFlipAnim = True
+        For each c in g.cardsFlipped
+          if c.state.equals("ANIM") then
+            doneWithFirstFlipAnim = false
+          end if
+        end for
+
+        if (g.gameState.timeInSubState > 0.5) AND doneWithFirstFlipAnim then
+          g.gameState.setSubState("SHOW_MATCH")
+        end if
+
+      else if g.gameState.subState = "SHOW_MATCH" then
+
+        g.gameState.setSubState("ANIMATE_MATCH")
+
+      else if g.gameState.subState = "ANIMATE_MATCH" then
+        ' Show the match moving over to the player area'
+        For each c in g.cardsFlipped
+          c.inPlay = false
+          c.dirty = true
+        End For
+        ' TODO  move cards to PLayer match pile
+        c = g.cardsFlipped[0]
+        matchCard = g.activeDeck.createCardInstance(c.id)
+        matchCard.flipped = True
+        g.playerArea_1.setCardToNextSpot(matchCard)
+
+        g.cardsFlipped.clear()
+
+        g.gameState.setState("TURN_OVER")
+
+      end if
 
       ' TODO check for game over '
 
@@ -398,9 +436,19 @@ SKIP_THIS_CARD:
         End For
 
         g.cardsFlipped.clear()
-        g.gameState.setState("START_TURN")
+        g.gameState.setState("TURN_OVER")
+
       end if ' NO_MATCH substate logic'
 
+    else if g.gameState.equals("TURN_OVER") then
+      ?"TODO Implement next player turn logic here"
+
+      ?" Check for game over"
+
+      g.gameState.setState("START_TURN")
+
+    else if g.gameState.equals("GAME_OVER") then
+      ?"TODO Implement game over logic here"
     end if ''State logic
 
 

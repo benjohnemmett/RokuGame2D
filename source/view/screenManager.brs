@@ -106,7 +106,7 @@ function screenView(parent, x, y, width, height) as object
   sv.spView = sv.parentComp.NewSprite(x, y, sv.rgView, 1)
 
   sv.myComp.SetDrawTo(sv.bmView, 0)
-  sv.bgColor = &h332211FF
+  sv.bgColor = &hFFFFFFFF
 
   '' Clear & redraw all sprites in this view & swap main screen buffer
   sv.redraw = function() as void
