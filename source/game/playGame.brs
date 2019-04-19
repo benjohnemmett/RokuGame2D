@@ -1,4 +1,4 @@
-function rg2dPlayGame() as object
+function rg2dPlayGame(numPlayers, tableRows, tableCols) as object
     g = GetGlobalAA()
 
     ?"Play Ball!"
@@ -66,7 +66,7 @@ function rg2dPlayGame() as object
 
 
     g.gameView.bmView.clear(&h000000FF) ' TODO encapsulate this -> gameView.clear(0)'
-    rg2dGameInit()
+    rg2dGameInit(numPlayers, tableRows, tableCols)
     ''''''''''''''''''''''''''''''''''''''''''''''
     ' Level Loop
     ''''''''''''''''''''''''''''''''''''''''''''''

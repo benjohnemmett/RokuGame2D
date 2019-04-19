@@ -11,7 +11,8 @@ function rg2dSetGameParameters() as void
     g.highScoreRegister = "GameHighScores"
 
     g.menuArray = rg2dMenuItemList()
-    g.menuArray.addItem("New Game", "new_game")
+    g.menuArray.addItem("Small Game", "new_small_game")
+    g.menuArray.addItem("Big Game", "new_large_game")
     g.menuArray.addItem("Options", "options")
     g.menuArray.addItem("High Scores", "high_scores")
     g.menuArray.addItem("About", "about")
@@ -105,9 +106,13 @@ function rg2dMenuItemSelected() as void
       ?"->";shortName
     end if
 
-    if(shortName = "new_game") then ' New Game
+    if(shortName = "new_small_game") then ' New Game
 
-        stat = rg2dPlayGame()
+        stat = rg2dPlayGame(1, 3, 4)
+
+    else if(shortName = "new_large_game") then ' New Game
+
+        stat = rg2dPlayGame(1, 4, 6)
 
     else if(shortName = "options") then ' Settings
         '?"Going to settings screen"
@@ -133,10 +138,10 @@ end function
 
 
 ' Stuff that needs to be done at the start of each game goes here.
-function rg2dGameInit() as void
+function rg2dGameInit(numPlayers as integer, tableRows as integer, tableCols as integer) as void
     g = GetGlobalAA()
 
-    g.numPlayers = 4
+    g.numPlayers = numPlayers
     g.currentPlayer = 0 ' zero based'
     g.cardsFlipped = []
     g.gameState = rg2dStateMachine("START_GAME")
@@ -149,8 +154,8 @@ function rg2dGameInit() as void
       ?"rg2dGameInit()..."
     end if
 
-    tableRows = 4
-    tableCols = 6
+  ''  tableRows = 4
+  ''  tableCols = 6
 
     g.table = CardTable(tableRows,tableCols)
 
@@ -178,7 +183,7 @@ function rg2dGameInit() as void
     End For
 
     ' Shuffle cards on table '
-    if False then
+    if True then
       For i=0 to tableRows-1 step 1
         For j=0 to tableCols-1 step 1
 
