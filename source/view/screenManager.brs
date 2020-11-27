@@ -45,6 +45,7 @@ function ScreenManager() as Object
   end function
 
   sm.redraw = function() as void
+    m.screen.clear(m.menuBgColor)
     m.compositor.DrawAll()
     m.screen.swapBuffers()
   end function
@@ -69,6 +70,23 @@ function ScreenManager() as Object
     return True
   end function
 
+  sm.getView = function(name as String) as object
+    if m.viewList.DoesExist(name) = False then
+      return invalid
+    end if
+
+    keys = m.viewList.keys()
+    For each k in keys
+      view = m.viewList.Lookup(k)
+      if( k = name ) then
+        return view
+      end if
+    End For
+
+    return invalid
+
+  end function
+
   return sm
 
 end function
@@ -79,6 +97,8 @@ function screenView(parent, x, y, width, height) as object
 
   sv = {}
 
+  sv.allSprites = createObject("roArray",1,true)
+
   sv.parent = parent
   sv.parentComp = parent.getCompositor()
   sv.myComp = CreateObject("roCompositor")
@@ -88,13 +108,18 @@ function screenView(parent, x, y, width, height) as object
   sv.spView = sv.parentComp.NewSprite(x, y, sv.rgView, 1)
 
   sv.myComp.SetDrawTo(sv.bmView, 0)
-  sv.bgColor = &h332211FF
+  sv.bgColor = &hFFFFFFFF
 
   '' Clear & redraw all sprites in this view & swap main screen buffer
   sv.redraw = function() as void
     m.bmView.clear(m.bgColor)
     m.myComp.DrawAll()
     m.parent.redraw() ' # TODO maybe should be a request to redraw here instead of command'
+  end function
+
+  ' Just Clear bmView'
+  sv.clear = function() as void
+    m.bmView.clear(m.bgColor)
   end function
 
   '' Redraw all sprites in this view & swap main screen buffer. without clearing first
@@ -106,7 +131,23 @@ function screenView(parent, x, y, width, height) as object
   '' Create a new sprite & add it to this view
   sv.NewSprite = function(x, y, reg, layer) as Object
     sp = m.myComp.NewSprite(x, y, reg, layer)
+    m.allSprites.push(sp)
     return sp
+  end function
+
+  ' call remove() on all sprites & delete from the list.
+  sv.DeleteAllSprites = function() as void
+
+    sp = m.allSprites.pop()
+
+    while sp <> invalid
+      sp.remove()
+      sp = m.allSprites.pop()
+    End While
+
+  ''  m.myComp = invalid
+  ''  m.myComp = CreateObject("roCompositor")
+
   end function
 
   sv.hide = function() as void

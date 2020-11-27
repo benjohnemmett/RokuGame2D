@@ -19,12 +19,24 @@ function DisplayManager(view as object) as object
     end while
   end function
 
+  dm.reset = function() as void
+    For each o in m.DisplayObjList
+      o.reset()
+    End For
+
+    m.DisplayObjList.clear()
+
+  end function
+
 
   return dm
 
 end function
 
 ' Component to be added to gameObjects'
+'  Requires object to have these fields:
+'   x : x position
+'   y : y position
 function DisplayComp(sprite as object) as object
   dc = {}
 
@@ -39,6 +51,14 @@ function DisplayComp(sprite as object) as object
         ?"Warning: Display object has no sprite."
     end if
   end function
+
+  dc.reset = function() as void
+    if m.sprite <> invalid then
+      m.sprite.remove()
+    end if
+
+  end function
+
 
   return dc
 

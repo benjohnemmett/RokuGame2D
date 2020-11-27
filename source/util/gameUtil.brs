@@ -65,11 +65,11 @@ end function
 function rg2dPlaySound(sound) as void
     g = GetGlobalAA()
     if(g.settings.soundEffects = "On") then
-        '?"Audio Stream ";g.audioStream
-        sound.trigger(80, g.audioStream)
+        ''?"Audio Stream ";g.audioStream
+        sound.trigger(100, g.audioStream)
         g.audioStream = (g.audioStream + 1) mod g.maxAudioStreams
     end if
-    '?"Next Audio Stream ";g.audioStream
+    ''?"Next Audio Stream ";g.audioStream
 
 end function
 
@@ -89,6 +89,7 @@ function rg2dGameControlCodes(mode as string) as object
             SELECT2_PRESSED : 17,   ' Green Button
             BACK_PRESSED : codes.BUTTON_BACK_PRESSED,
             PLAY_PRESSED : codes.BUTTON_PLAY_PRESSED,
+            REPLAY_PRESSED : codes.button_instant_replay_pressed,
 
             UP_RELEASED : codes.BUTTON_UP_RELEASED,
             DOWN_RELEASED : codes.BUTTON_DOWN_RELEASED,
@@ -99,6 +100,7 @@ function rg2dGameControlCodes(mode as string) as object
             SELECT2_RELEASED : 17,   ' Green Button
             BACK_RELEASED : codes.BUTTON_BACK_RELEASED,
             PLAY_RELEASED : codes.BUTTON_PLAY_RELEASED,
+            REPLAY_RELEASED : codes.button_instant_replay_released,
 
             MENU_UP_A : codes.BUTTON_UP_PRESSED,
             MENU_DOWN_A : codes.BUTTON_DOWN_PRESSED,
@@ -108,6 +110,7 @@ function rg2dGameControlCodes(mode as string) as object
             MENU_DOWN_B : codes.BUTTON_LEFT_PRESSED,
             MENU_LEFT_B : codes.BUTTON_UP_PRESSED,
             MENU_RIGHT_B : codes.BUTTON_DOWN_PRESSED,
+            codes : codes,
 
         }
     else
@@ -123,6 +126,7 @@ function rg2dGameControlCodes(mode as string) as object
             SELECT2_PRESSED : 17,   ' Green Button
             BACK_PRESSED : codes.BUTTON_BACK_PRESSED,
             PLAY_PRESSED : codes.BUTTON_PLAY_PRESSED,
+            REPLAY_PRESSED : codes.button_instant_replay_pressed,
 
             UP_RELEASED : codes.BUTTON_RIGHT_RELEASED,
             DOWN_RELEASED : codes.BUTTON_LEFT_RELEASED,
@@ -133,6 +137,7 @@ function rg2dGameControlCodes(mode as string) as object
             SELECT2_RELEASED : 117,   ' Green Button
             BACK_RELEASED : codes.BUTTON_BACK_RELEASED,
             PLAY_RELEASED : codes.BUTTON_PLAY_RELEASED,
+            REPLAY_RELEASED : codes.button_instant_replay_released,
 
             MENU_UP_A : codes.BUTTON_UP_PRESSED,
             MENU_DOWN_A : codes.BUTTON_DOWN_PRESSED,
@@ -142,6 +147,7 @@ function rg2dGameControlCodes(mode as string) as object
             MENU_DOWN_B : codes.BUTTON_LEFT_PRESSED,
             MENU_LEFT_B : codes.BUTTON_UP_PRESSED,
             MENU_RIGHT_B : codes.BUTTON_DOWN_PRESSED,
+            codes : codes,
 
         }
 
@@ -204,7 +210,7 @@ function rg2dScoreBoard() as object
         end function,
 
         saveScoreBoard : function() as void
-            '?"Saving High Scores"
+            ''?"Saving High Scores"
             g = GetGlobalAA()
 
             json = FormatJSON({topGames: m.topGames}, 1)
@@ -214,7 +220,7 @@ function rg2dScoreBoard() as object
         end function,
 
         loadScoreBoard : function() as void
-            '?"Loading High Scores"
+            ''?"Loading High Scores"
             g = GetGlobalAA()
 
             json = rg2dGetRegistryString(g.highScoreRegister)
@@ -227,16 +233,16 @@ function rg2dScoreBoard() as object
                 end if
 
             else
-                '?"- No high scores registry found"
+                ''?"- No high scores registry found"
             end if
 
         end function,
 
         ' For debugging
         printHighScores : function() as void
-            ?"--- High Scores ---"
+            '?"--- High Scores ---"
             for each g in m.topGames
-                ?" * ";g.playerName;"   ";g.wave;"   ";g.score
+                '?" * ";g.playerName;"   ";g.wave;"   ";g.score
             end for
 
         end function,
@@ -298,7 +304,8 @@ function rg2dStateMachine(initialState as String) as object
     totalFrames : 0,
     timeInState : 0.0,
     timeInSubState : 0.0,
-    totalTime : 0.0
+    totalTime : 0.0,
+    name : invalid
   }
 
   ' Called to change the state & reset state & sub state counters
@@ -315,6 +322,9 @@ function rg2dStateMachine(initialState as String) as object
       m.timeInSubState = 0.0
 
       m.subState = "ENTRY"
+      if m.name <> invalid then
+        '?">";m.name;" state = ";m.state;" ";m.framesInState
+      end if
     end if
 
   end function
@@ -322,7 +332,7 @@ function rg2dStateMachine(initialState as String) as object
   ' Called to change the substate & reset substate counters
   gs.setSubState = function(newSubState as String) as void
     if(newSubState <> m.subState) then
-      ?"SUBSTATE TO ";newSubState
+      '?"SUBSTATE TO ";newSubState
       m.subState = newSubState
       m.framesInSubState = 0
       m.timeInSubState = 0.0
@@ -345,8 +355,8 @@ function rg2dStateMachine(initialState as String) as object
 
   ' For debugging'
   gs.print = function() as void
-    ?"GAME STATE     = ";m.state;" ";m.framesInState
-    ?"GAME SUB STATE = ";m.subState;" ";m.framesInSubState
+    '?"GAME STATE     = ";m.state;" ";m.framesInState
+    '?"GAME SUB STATE = ";m.subState;" ";m.framesInSubState
   end function
 
   return gs
