@@ -55,7 +55,7 @@ function rg2dMenuItemList() as object
         end function,
 
         getSelectedItemShortName : function() as string
-            return m.itemShortNameList.GetEntry(m.selectedIndex)
+            return m.itemShortNameList[m.selectedIndex]
         end function,
 
     }
