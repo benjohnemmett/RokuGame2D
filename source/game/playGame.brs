@@ -23,7 +23,7 @@ function rg2dPlayGame() as object
     g.om = GameObjectManager() ' Anything that needs to run update'
     g.pm = physModel()
 
-    ' Score, (wave) level
+    ' Score, level
     gs = rg2dGameStats(0, 1)
 
     level_state = "Normal"
@@ -71,8 +71,7 @@ function rg2dPlayGame() as object
     ''''''''''''''''''''''''''''''''''''''''''''''
     while true
 
-        rg2dLoadLevel(gs.wave)
-
+        rg2dLoadLevel(gs.level)
 
         ''''''''''''''''''''''''''''''''''''''''''''''
         ' Enter inner run loop
@@ -147,8 +146,8 @@ function rg2dPlayGame() as object
                             '   Exit game
                             'TODO add a confirmation message here
                                 sPauseMenu.SetDrawableFlag(false)
-                                gs.score = g.game_score
-                                gs.wave = g.game_wave
+                                gs.score = g.gameScore
+                                gs.level = g.gameLevel
                                 return gs
 
                             else if (id = myCodes.PLAY_PRESSED)  then
@@ -164,9 +163,6 @@ function rg2dPlayGame() as object
                             end if
                         end if
 
-                        'compositor.DrawAll()
-                        'playGameAddPauseMenu(screen) ' TODO, Not sure what this was doing, determine if something is needed here
-                        'screen.SwapBuffers()
                         g.gameView.redraw()
                     end while
 
@@ -188,15 +184,14 @@ function rg2dPlayGame() as object
                   exit while ' Exit the inner game loop'
                 end if
 
-                g.om.update(dt)  ' run update() on all objects '
-                g.pm.runphysics(dt) ' run physics on physics objects'
-                g.am.updateAnimations(dt) ' Update animations '
-                g.dm.updateDisplays(dt) ' Update display'
+                g.om.update(dt)  ' run update() on all objects
+                g.pm.runphysics(dt) ' run physics on physics objects
+                g.am.updateAnimations(dt) ' Update animations
+                g.dm.updateDisplays(dt) ' Update display
 
                 g.gameView.redraw()
 
                 clock.Mark()
-
 
             end if  ' if time, Refresh
 
@@ -208,19 +203,17 @@ function rg2dPlayGame() as object
 
     end while       ' end level loop
 
-    gs.score = g.game_score
-    gs.wave = g.game_wave
+    gs.score = g.gameScore
+    gs.level = g.gameLevel
     return gs
 
 end function
 
 
 ''''''''''''''''' Level Gen
-function rg2dSetupLevel(waveNum, screen) as void
+function rg2dSetupLevel(levelNum, screen) as void
 
     g = GetGlobalAA()
-
-
 
 end function
 
@@ -229,7 +222,7 @@ function rg2dUpdateScore(screen) as void
     g = GetGlobalAA()
 
     ' SCORE
-    score = g.game_score ' TODO add clever way to handle displaying extremely high scores... "You maniac!" Message or something
+    score = g.gameScore
     if score > 9999999 then
         score = 9999999
     end if
@@ -252,18 +245,18 @@ function rg2dUpdateScore(screen) as void
     v = int(score)
     g.scoreSprites[0].setRegion(g.rScore[v])
 
-    'WAVE
-    wave = g.game_wave
-    if wave > 99 then
-        wave = 99
+    'Level`
+    level = g.gameLevel
+    if level > 99 then
+        level = 99
     end if
 
-    if( wave > 10) then
-        v = int(wave/10)
+    if( level > 10) then
+        v = int(level/10)
         g.waveSprites[1].setRegion(g.rScore[v])
     end if
 
-    v = int(wave) mod 10
+    v = int(level) mod 10
     g.waveSprites[0].setRegion(g.rScore[v])
 
     'Num Ships
@@ -279,6 +272,5 @@ function rg2dUpdateScore(screen) as void
 
     v = int(nShips) mod 10
     g.numShipSprites[0].setRegion(g.rScore[v])
-
 
 end function

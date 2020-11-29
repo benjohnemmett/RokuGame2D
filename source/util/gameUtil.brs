@@ -155,10 +155,10 @@ function rg2dGameControlCodes(mode as string) as object
 
 end function
 
-function rg2dGameStats(score, wave) as object
+function rg2dGameStats(score, level) as object
     return {
         score: score,
-        wave: wave,
+        level: level,
         playerName: "Wildcard"
     }
 end function
@@ -242,7 +242,7 @@ function rg2dScoreBoard() as object
         printHighScores : function() as void
             '?"--- High Scores ---"
             for each g in m.topGames
-                '?" * ";g.playerName;"   ";g.wave;"   ";g.score
+                '?" * ";g.playerName;"   ";g.level;"   ";g.score
             end for
 
         end function,
@@ -252,7 +252,6 @@ function rg2dScoreBoard() as object
 
     }
 end function
-
 
 Function rg2dGetRegistryString(key as String, default = "") As String
     sec = CreateObject("roRegistrySection", "PoP")
@@ -363,7 +362,7 @@ function rg2dStateMachine(initialState as String) as object
 
 end function
 
-'' An objec to be passed back from inner game loop to declare the game status
+' An object to be returned from inner game loop to declare the game status
 function rg2dStatus()
 
     status = {}
