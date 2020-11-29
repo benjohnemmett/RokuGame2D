@@ -7,10 +7,10 @@ function rg2dGameSettings() as object
 
         setControls : function(mode as string) as void
             if(mode = "V") then
-                m.controlCodes = gameControlCodes("V")
+                m.controlCodes = rg2dGameControlCodes("V")
                 m.controls = "V"
             else
-                m.controlCodes = gameControlCodes("H")
+                m.controlCodes = rg2dGameControlCodes("H")
                 m.controls = "H"
             end if
         end function

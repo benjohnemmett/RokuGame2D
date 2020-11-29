@@ -92,6 +92,9 @@ function rg2dMenuItemSelected() as void
       ?"Menu Item Selected ...";
     end if
 
+
+    screen = g.screenMgr.getMainScreen()
+
     selectedMenuOption = g.menuArray.selectedIndex
 
     shortName = g.menuArray.getSelectedItemShortName()
@@ -107,19 +110,19 @@ function rg2dMenuItemSelected() as void
     else if(shortName = "options") then ' Settings
         '?"Going to settings screen"
         'rg2dPlaySound(m.sounds.warp_out)
-        stat = rg2dOpenSettingsScreen(m.screen, m.port)
+        stat = rg2dOpenSettingsScreen(screen, m.port)
         'rg2dPlaySound(m.sounds.warp_in)
 
     else if(shortName = "high_scores") then
 
         'rg2dPlaySound(m.sounds.warp_out)
-        stat = rg2dOpenHighScoresScreen(m.screen, m.port)
+        stat = rg2dOpenHighScoresScreen(screen, m.port)
         'rg2dPlaySound(m.sounds.warp_in)
 
     else if(shortName = "about") then
 
         'rg2dPlaySound(m.sounds.warp_out)
-        stat = rg2dOpenCreditScreen(m.screen, m.port)
+        stat = rg2dOpenCreditScreen(screen, m.port)
         'rg2dPlaySound(m.sounds.warp_in)
     end if
 
