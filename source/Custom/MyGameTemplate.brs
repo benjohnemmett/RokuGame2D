@@ -1,11 +1,8 @@
-' TODO should these all be subs, not returning anything? Any advantage to subs?
-
 ' Set global game parameters here.
 function rg2dSetGameParameters() as void
 
     g = GetGlobalAA()
 
-    g.USING_LB_CODE = false
     g.DEBUG = True
 
     g.highScoreRegister = "GameHighScores"
@@ -50,10 +47,6 @@ function rg2dLoadSprites() as void
     'bmTruck = CreateObject("roBitmap", "pkg:/components/sprites/texture_brick01_60p.png")
     'g.rTruck = CreateObject("roRegion", bmTruck, 0, 0, 60, 60)
     g.rTruck = rg2dLoadRegion("pkg:/components/sprites/texture_brick01_60p.png", 0, 0, 60, 60)
-
-    if(g.USING_LB_CODE) then
-        LBLoadSprites()
-    end if
 
 end function
 
@@ -158,10 +151,6 @@ function rg2dGameInit() as void
     g.pm.addPhysObj(g.truck)
     g.dm.addDisplayObj(g.truck)
 
-    if(g.USING_LB_CODE) then
-        LBMakeGroups()
-    end if
-
 end function
 
 
@@ -172,10 +161,6 @@ function rg2dLoadLevel(level as integer) as void
     if(g.DEBUG) then
       ?"rg2dLoadLevel()..."
     end if
-    if(g.USING_LB_CODE) then
-        LBLoadLevel(level)
-    end if
-
 end function
 
 ' Stuff to be done at the start of each update loop goes here.
