@@ -2,15 +2,12 @@ function rg2dPlayGame() as object
     g = GetGlobalAA()
 
     ?"Play Ball!"
-    'screen = g.screen
     port = g.port
-    'compositor = g.compositor
 
     g.gameView = g.screenMgr.createView("game")
     g.screenMgr.switchToView("game")
 
     'Load screen
-    'screen.clear(0)
     g.gameView.bmView.clear(&h000000FF) ' TODO encapsulate this -> gameView.clear(0)'
     g.gameView.redraw()
     g.font_registry = CreateObject("roFontRegistry")
@@ -144,7 +141,6 @@ function rg2dPlayGame() as object
                             id = event.GetInt()
                             if (id = myCodes.BACK_PRESSED) then
                             '   Exit game
-                            'TODO add a confirmation message here
                                 sPauseMenu.SetDrawableFlag(false)
                                 gs.score = g.gameScore
                                 gs.level = g.gameLevel
@@ -206,71 +202,5 @@ function rg2dPlayGame() as object
     gs.score = g.gameScore
     gs.level = g.gameLevel
     return gs
-
-end function
-
-
-''''''''''''''''' Level Gen
-function rg2dSetupLevel(levelNum, screen) as void
-
-    g = GetGlobalAA()
-
-end function
-
-''' Display game stats
-function rg2dUpdateScore(screen) as void
-    g = GetGlobalAA()
-
-    ' SCORE
-    score = g.gameScore
-    if score > 9999999 then
-        score = 9999999
-    end if
-
-    place = 1000000
-    ip = 6 ' zero-based
-
-    '?"Score Update";score
-    while place >= 10
-
-        v = int(score/place)
-        g.scoreSprites[ip].setRegion(g.rScore[v])
-        score -= v*place
-
-        place = place /10
-        ip -= 1
-
-    end while
-
-    v = int(score)
-    g.scoreSprites[0].setRegion(g.rScore[v])
-
-    'Level`
-    level = g.gameLevel
-    if level > 99 then
-        level = 99
-    end if
-
-    if( level > 10) then
-        v = int(level/10)
-        g.waveSprites[1].setRegion(g.rScore[v])
-    end if
-
-    v = int(level) mod 10
-    g.waveSprites[0].setRegion(g.rScore[v])
-
-    'Num Ships
-    nShips = g.ships_left + 1
-    if nShips > 99 then
-        nShips = 99
-    end if
-
-    if( nShips > 10) then
-        v = int(nShips/10)
-        g.numShipSprites[1].setRegion(g.rScore[v])
-    end if
-
-    v = int(nShips) mod 10
-    g.numShipSprites[0].setRegion(g.rScore[v])
 
 end function

@@ -49,7 +49,7 @@ function gameObject(x,y) as object
     For each c in m.compTypeList
       if c = compType then
         hasComp = true
-        ' TODO how do you break out of a for loop?'
+        Exit For
       end if
     End For
 
