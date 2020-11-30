@@ -147,12 +147,14 @@ function rg2dGameInit() as void
     sTruck = g.gameView.NewSprite(100, 100, rTruck, 1)
     g.truck.addComponent(DisplayComp(sTruck))
 
+    g.truck.isAnimating = False
+
     g.om.addGameObj(g.truck)
     g.pm.addPhysObj(g.truck)
     g.dm.addDisplayObj(g.truck)
 
-end function
 
+end function
 
 '''''''''' OUTER LOOP STUFF
 ' Stuff to be done at the start of each level goes here.
@@ -193,16 +195,29 @@ function rg2dInnerGameLoopUpdate(dt as float, button, holdTime) as object
 
     else if(button.bSelect1) then
         ?"Fire!"
-        an = Animation()
-        an.target = g.truck
-        an.maxTime = 1
-        an.UpdateAnimation = function(dt)
-          ?"animating truck ";m.fn;" ";m.t
-          m.target.x += 1
-          m.target.y += 1
-        end function
+        if (g.truck.isAnimating = false)
 
-        g.am.addAnimation(an)
+          ?"Animating!"
+          an = Animation()
+          an.target = g.truck
+          an.maxTime = 1
+          an.UpdateAnimation = function(dt)
+            ?"animating truck ";m.nf;" ";m.t
+            m.target.x += 1
+            m.target.y += 1
+          end function
+
+          an.AnimationHasEnded = function() as void
+            m.target.isAnimating = false
+          end function
+
+          g.AnimationManager.addAnimation(an)
+
+          g.truck.isAnimating = true
+        else
+          ?"Already Animating, not starting a new one"
+        end if
+
     else
       g.truck.ax = 0
       g.truck.ay = 0

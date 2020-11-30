@@ -16,7 +16,7 @@ function rg2dPlayGame() as object
     g.gameView.redraw()
 
     g.dm = DisplayManager(g.gameView)
-    g.am = AnimationManager()
+    g.AnimationManager = AnimationManager()
     g.om = GameObjectManager() ' Anything that needs to run update'
     g.pm = physModel()
 
@@ -182,7 +182,7 @@ function rg2dPlayGame() as object
 
                 g.om.update(dt)  ' run update() on all objects
                 g.pm.runphysics(dt) ' run physics on physics objects
-                g.am.updateAnimations(dt) ' Update animations
+                g.AnimationManager.updateAnimations(dt) ' Update animations
                 g.dm.updateDisplays(dt) ' Update display
 
                 g.gameView.redraw()

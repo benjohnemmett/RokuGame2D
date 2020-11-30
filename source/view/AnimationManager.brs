@@ -13,6 +13,7 @@ function AnimationManager() as object
         a = m.AnimationList[i]
 
         if (a.done) OR (a.nf >= a.maxFrames) OR (a.t >= a.maxTime) then
+            a.AnimationHasEnded()
             m.AnimationList.delete(i) ' remove object
         else
             a.preUpdateAnimation(dt) ' Update frame count & time
@@ -51,6 +52,10 @@ function Animation() as object
 
   an.UpdateAnimation = function(dt) as void
     ?"Warning: No UpdateAnimation function defined."
+  end function
+
+  an.AnimationHasEnded = function() as void
+    ?"Animation Ended"
   end function
 
   return an
