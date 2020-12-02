@@ -40,13 +40,11 @@ function rg2dLoadSprites() as void
     g.rScore[8] = CreateObject("roRegion", bmScore, 8*32, 0, 32, 32)
     g.rScore[9] = CreateObject("roRegion", bmScore, 9*32, 0, 32, 32)
 
-
     bmPauseScreen = CreateObject("roBitmap", "pkg:/components/sprites/Pause_Menu_Screen.png")
     g.rPauseScreen = CreateObject("roRegion", bmPauseScreen, 0, 0, 640, 200)
 
-    'bmTruck = CreateObject("roBitmap", "pkg:/components/sprites/texture_brick01_60p.png")
-    'g.rTruck = CreateObject("roRegion", bmTruck, 0, 0, 60, 60)
-    g.rTruck = rg2dLoadRegion("pkg:/components/sprites/texture_brick01_60p.png", 0, 0, 60, 60)
+    'g.rBrick = rg2dLoadRegion("pkg:/components/sprites/texture_brick01_60p.png", 0, 0, 60, 60)
+
 
 end function
 
@@ -71,6 +69,15 @@ function rg2dLoadSounds() as void
 end function
 
 function rg2dLoadFonts() as void
+
+    g = GetGlobalAA()
+
+    g.fontRegistry = CreateObject("roFontRegistry")
+    g.font28 = g.fontRegistry.GetDefaultFont(28, false, false)
+
+    g.colors = {}
+    g.colors.white = &hFFFFFFFF
+    g.colors.blue = &h0000FFFF
 
 end function
 
@@ -132,7 +139,6 @@ function rg2dGameInit() as void
     end if
 
     ' Create Truck
-    'g.truck = g.pm.createPhysObj( g.screenWidth/4, g.screenHeight*0.9, 49, 36, "pkg:/components/sprites/firetruck_spritesheetII.png")
     g.truck = gameObject(100, 100)
 
     g.truck.update = function(dt) ' Called on every frame by the gameObjectManager'
@@ -153,6 +159,15 @@ function rg2dGameInit() as void
     g.pm.addPhysObj(g.truck)
     g.dm.addDisplayObj(g.truck)
 
+    'g.bmScoreBoard = CreateObject("roBitmap", {width:128, height:32, AlphaEnable:false, name:"ScoreBitmap"})
+    'g.rScoreBoard = CreateObject("roRegion", g.bmScoreBoard, 0, 0, 128, 32)
+    'g.sScoreBoard = g.gameView.NewSprite(640, 32, g.rScoreBoard, 1)
+    'g.bmScoreBoard.clear(g.colors.blue)
+    'g.bmScoreBoard.DrawText("0000", 0, 0, g.colors.white, g.font28)
+
+    g.ScoreBoard = rg2dTextBox(128, 32, 640, 32, g.gameView)
+    g.ScoreBoard.SetTextAlignHorizontal("right")
+    g.ScoreBoard.SetText("0")
 
 end function
 
@@ -179,6 +194,7 @@ function rg2dInnerGameLoopUpdate(dt as float, button, holdTime) as object
 
     if(button.bUp) then
         ?"Trucking Up"
+        ?" - Hold time ";holdTime
         g.truck.ay = -truck_acc
 
     else if(button.bDown) then
