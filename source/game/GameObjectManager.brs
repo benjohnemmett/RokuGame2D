@@ -29,7 +29,6 @@ function GameObjectManager() as object
     end while
   end function
 
-
   return gom
 
 end function

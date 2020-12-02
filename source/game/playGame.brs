@@ -26,7 +26,7 @@ function rg2dPlayGame() as object
     gs = rg2dGameStats(0, 1)
 
     level_state = "Normal"
-    g.game_sore = 0
+    g.gameScore = 0
 
     game_paused = false
     sPauseMenu = g.gameView.NewSprite(300, 200, g.rPauseScreen, 50)

@@ -161,7 +161,7 @@ function rg2dGameInit() as void
 
     g.ScoreBoard = rg2dTextBox(128, 32, 640, 32, g.gameView)
     g.ScoreBoard.SetTextAlignHorizontal("right")
-    g.ScoreBoard.SetText("0")
+    g.ScoreBoard.SetText(strI(g.gameScore))
 
 end function
 
@@ -183,7 +183,7 @@ function rg2dInnerGameLoopUpdate(dt as float, button, holdTime) as object
 
     status = rg2dStatus()
 
-    truck_acc = 200
+    truck_acc = 300
     truck_v_df = 0.8
 
     if(button.bUp) then
@@ -204,7 +204,11 @@ function rg2dInnerGameLoopUpdate(dt as float, button, holdTime) as object
         g.truck.ax = -truck_acc
 
     else if(button.bSelect1) then
-        ?"Fire!"
+        ?"Fire! thisPress -> ";button.thisPress
+        if button.thisPress <> invalid
+          IncrementScore(100)
+        end if
+
         if (g.truck.isAnimating = false)
 
           ?"Animating!"
@@ -224,8 +228,6 @@ function rg2dInnerGameLoopUpdate(dt as float, button, holdTime) as object
           g.AnimationManager.addAnimation(an)
 
           g.truck.isAnimating = true
-        else
-          ?"Already Animating, not starting a new one"
         end if
 
     else
