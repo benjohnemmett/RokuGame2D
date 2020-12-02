@@ -3,6 +3,15 @@ function GameObjectManager() as object
 
   gom.GameObjectList = []
 
+  gom.reset = function() as void
+
+    For each o in m.GameObjectList
+      o.reset()
+    End For
+
+    m.GameObjectList.clear()
+  end function
+
   gom.addGameObj = function(obj as object) as void
     m.GameObjectList.push(obj)
   end function
@@ -13,7 +22,7 @@ function GameObjectManager() as object
         a = m.GameObjectList[i]
 
         if a.update <> invalid then
-          a.update(dt) 'Update Display
+          a.update(dt)
         end if
         i += 1
 
@@ -54,6 +63,13 @@ function gameObject(x,y) as object
     End For
 
     return hasComp
+  end function
+
+  go.reset = function() as void
+
+    ?" - GameObj Reset "
+    m.compTypeList.clear()
+    'm.compTypeList = invalid
   end function
 
   return go

@@ -2,6 +2,8 @@ function rg2dPlayGame() as object
     g = GetGlobalAA()
 
     ?"Play Ball!"
+    exit_game = false
+
     port = g.port
 
     g.gameView = g.screenMgr.createView("game")
@@ -52,6 +54,11 @@ function rg2dPlayGame() as object
     button.bPlay = false
     button.bSelect1 = false
     button.bSelect2 = false
+    button.bInfo = false
+    button.bFastForward = false
+    button.bRewind = false
+    button.bReplay = false
+    button.thisPress = invalid
     codes = bslUniversalControlEventCodes()
     myCodes = g.settings.controlCodes
 
@@ -79,6 +86,7 @@ function rg2dPlayGame() as object
             event = port.GetMessage()
             if (type(event) = "roUniversalControlEvent") then
                 id = event.GetInt()
+                button.thisPress = id
                 if (id = myCodes.RIGHT_PRESSED) then
                     '?"Right Button Down"
                     button.bRight = true
@@ -103,6 +111,23 @@ function rg2dPlayGame() as object
                     '?"Blue Button Down"
                     button.bSelect1 = true
                     holdButtonClock.Mark()
+                else if (id = myCodes.codes.button_info_pressed) then
+                    ?"Info Button Pressed"
+                    button.bInfo = true
+                    holdButtonClock.Mark()
+                else if (id = myCodes.codes.button_fast_forward_pressed) then
+                    ?"Fast Forward Button Pressed"
+                    button.bFastForward = true
+                    holdButtonClock.Mark()
+                else if (id = myCodes.codes.button_rewind_pressed) then
+                    ?"Rewind Button Pressed"
+                    button.bRewind = true
+                    holdButtonClock.Mark()
+                else if (id = myCodes.REPLAY_PRESSED) then
+                    ?"Rewind Button Pressed"
+                    button.bReplay = true
+                    holdButtonClock.Mark()
+
                 else if (id = myCodes.RIGHT_RELEASED) then
                     '?"Right Button Released"
                     button.bRight = false
@@ -124,6 +149,19 @@ function rg2dPlayGame() as object
                 else if (id = myCodes.SELECT1A_RELEASED) or (id = myCodes.SELECT1B_RELEASED)  then
                     '?"Blue Button Released"
                     button.bSelect1 = false
+                else if (id = myCodes.codes.button_info_released) then
+                    ?"Info Button Released"
+                    button.bInfo = false
+                else if (id = myCodes.codes.button_fast_forward_released) then
+                    ?"Fast Forward Button Released"
+                    button.bFastForward = false
+                else if (id = myCodes.codes.button_rewind_released) then
+                    ?"Rewind Button Released"
+                    button.bRewind = false
+                else if (id = myCodes.REPLAY_RELEASED) then
+                    ?"Replay Button Released"
+                    button.bReplay = false
+
                 else if (id = myCodes.BACK_PRESSED) or (id = myCodes.PLAY_PRESSED) then
 
                     'Pause game
@@ -144,7 +182,9 @@ function rg2dPlayGame() as object
                                 sPauseMenu.SetDrawableFlag(false)
                                 gs.score = g.gameScore
                                 gs.level = g.gameLevel
-                                return gs
+
+                                exit_game = true
+                                exit while
 
                             else if (id = myCodes.PLAY_PRESSED)  then
                                 game_paused = false
@@ -175,7 +215,7 @@ function rg2dPlayGame() as object
                 holdTime = holdButtonClock.TotalMilliseconds()
                 status = rg2dInnerGameLoopUpdate(dt, button, holdTime)
 
-                if status.level_complete then
+                if status.level_complete or exit_game then
                   ?"Level complete"
                   exit while ' Exit the inner game loop'
                 end if
@@ -189,15 +229,26 @@ function rg2dPlayGame() as object
 
                 clock.Mark()
 
+                button.thisPress = invalid ' reset
+
             end if  ' if time, Refresh
 
         end while   ' end inner game loop
 
-        if status.game_complete then
+        if status.game_complete or exit_game then
           exit while 'exit level loop & return'
         end if
 
     end while       ' end level loop
+
+    rg2dGameExit()
+
+    g.dm.reset()
+    g.dm = invalid
+    g.am = invalid
+    g.om.reset()
+    g.om = invalid
+    g.pm = invalid
 
     gs.score = g.gameScore
     gs.level = g.gameLevel

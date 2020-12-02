@@ -159,12 +159,6 @@ function rg2dGameInit() as void
     g.pm.addPhysObj(g.truck)
     g.dm.addDisplayObj(g.truck)
 
-    'g.bmScoreBoard = CreateObject("roBitmap", {width:128, height:32, AlphaEnable:false, name:"ScoreBitmap"})
-    'g.rScoreBoard = CreateObject("roRegion", g.bmScoreBoard, 0, 0, 128, 32)
-    'g.sScoreBoard = g.gameView.NewSprite(640, 32, g.rScoreBoard, 1)
-    'g.bmScoreBoard.clear(g.colors.blue)
-    'g.bmScoreBoard.DrawText("0000", 0, 0, g.colors.white, g.font28)
-
     g.ScoreBoard = rg2dTextBox(128, 32, 640, 32, g.gameView)
     g.ScoreBoard.SetTextAlignHorizontal("right")
     g.ScoreBoard.SetText("0")
@@ -244,4 +238,9 @@ function rg2dInnerGameLoopUpdate(dt as float, button, holdTime) as object
 
     return status
 
+end function
+
+' Handle Game Ending
+function rg2dGameExit() as void
+  ?"Game ending now..."
 end function

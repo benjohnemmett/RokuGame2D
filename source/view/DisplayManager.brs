@@ -53,6 +53,8 @@ function DisplayComp(sprite as object) as object
   end function
 
   dc.reset = function() as void
+
+    ?" - DisplayComp Reset "
     if m.sprite <> invalid then
       m.sprite.remove()
     end if
