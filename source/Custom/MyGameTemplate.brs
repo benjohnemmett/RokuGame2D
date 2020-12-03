@@ -26,19 +26,7 @@ function rg2dLoadSprites() as void
       ?"Loading Sprites..."
     end if
 
-    bmScore = CreateObject("roBitmap", "pkg:/components/sprites/Numbers_Spritesheet_32.png")
-
-    g.rScore = []
-    g.rScore[0] = CreateObject("roRegion", bmScore, 0*32, 0, 32, 32)
-    g.rScore[1] = CreateObject("roRegion", bmScore, 1*32, 0, 32, 32)
-    g.rScore[2] = CreateObject("roRegion", bmScore, 2*32, 0, 32, 32)
-    g.rScore[3] = CreateObject("roRegion", bmScore, 3*32, 0, 32, 32)
-    g.rScore[4] = CreateObject("roRegion", bmScore, 4*32, 0, 32, 32)
-    g.rScore[5] = CreateObject("roRegion", bmScore, 5*32, 0, 32, 32)
-    g.rScore[6] = CreateObject("roRegion", bmScore, 6*32, 0, 32, 32)
-    g.rScore[7] = CreateObject("roRegion", bmScore, 7*32, 0, 32, 32)
-    g.rScore[8] = CreateObject("roRegion", bmScore, 8*32, 0, 32, 32)
-    g.rScore[9] = CreateObject("roRegion", bmScore, 9*32, 0, 32, 32)
+    'bmSwirl = CreateObject("roBitmap", "pkg:/components/sprites/Swirl_ss_6_32x32.png")
 
     bmPauseScreen = CreateObject("roBitmap", "pkg:/components/sprites/Pause_Menu_Screen.png")
     g.rPauseScreen = CreateObject("roRegion", bmPauseScreen, 0, 0, 640, 200)
@@ -59,7 +47,6 @@ function rg2dLoadSounds() as void
     end if
 
     g.sounds ={}
-    'g.sounds.ship_engines = CreateObject("roAudioResource", "pkg:/assets/ship_engines.wav")
     g.sounds.navSingle = CreateObject("roAudioResource", "navsingle")
 
     '?"Max Streams ";g.sounds.astroid_blast.maxSimulStreams()
@@ -162,6 +149,19 @@ function rg2dGameInit() as void
     g.ScoreBoard = rg2dTextBox(128, 32, 640, 32, g.gameView)
     g.ScoreBoard.SetTextAlignHorizontal("right")
     g.ScoreBoard.SetText(strI(g.gameScore))
+
+    bmSwirl = CreateObject("roBitmap", "pkg:/components/sprites/Swirl_ss_6_32x32.png")
+    rSwirl = CreateObject("roRegion", bmSwirl, 0, 0, 32, 32)
+    sSwirl = g.gameView.NewSprite(100, 100, rSwirl, 1)
+
+    g.swirl = gameObject(640, 360)
+    g.swirl.addComponent(DisplayComp(sSwirl))
+    g.swirl.animate = True
+    g.swirl.animationOffsetX = 32
+    g.swirl.framePeriod = 0.120
+
+    g.om.addGameObj(g.swirl)
+    g.dm.addDisplayObj(g.swirl)
 
 end function
 

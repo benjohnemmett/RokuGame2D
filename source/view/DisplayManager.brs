@@ -43,10 +43,28 @@ function DisplayComp(sprite as object) as object
   dc.compType = "DisplayComp"
 
   dc.sprite = sprite
+  dc.region = sprite.GetRegion()
+  dc.region.SetWrap(True)
+
+  dc.animate = False
+  dc.animationOffsetX = 0
+  dc.animationOffsetY = 0
+  dc.animationOffsetWidth = 0
+  dc.animationOffsetHeight = 0
+  dc.timeSinceLastAnimation = 0
+  dc.framePeriod = 0.033
 
   dc.updateDisplay = function(dt) as void
     if(m.sprite <> invalid) then
       m.sprite.MoveTo(m.x, m.y) ' Requires x & y from gameObj. This component will not stand on it's own
+
+      if(m.animate) then
+        m.timeSinceLastAnimation += dt
+        if (m.timeSinceLastAnimation > m.framePeriod) then
+          m.timeSinceLastAnimation = 0
+          m.sprite.OffsetRegion(m.animationOffsetX, m.animationOffsetY, m.animationOffsetWidth, m.animationOffsetHeight)
+        end if
+      end if
     else
         ?"Warning: Display object has no sprite."
     end if

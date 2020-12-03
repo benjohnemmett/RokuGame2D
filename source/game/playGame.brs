@@ -211,6 +211,7 @@ function rg2dPlayGame() as object
             if (ticks >= refreshPeriod)
 
                 dt = ticks/1000
+                clock.Mark()
 
                 holdTime = holdButtonClock.TotalMilliseconds()
                 status = rg2dInnerGameLoopUpdate(dt, button, holdTime)
@@ -227,7 +228,6 @@ function rg2dPlayGame() as object
 
                 g.gameView.redraw()
 
-                clock.Mark()
 
                 button.thisPress = invalid ' reset
 
