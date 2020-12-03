@@ -65,9 +65,16 @@ function DisplayComp(sprite as object) as object
           m.sprite.OffsetRegion(m.animationOffsetX, m.animationOffsetY, m.animationOffsetWidth, m.animationOffsetHeight)
         end if
       end if
+
+      m.postUpdateDisplay(dt)
+
     else
         ?"Warning: Display object has no sprite."
     end if
+  end function
+
+  dc.postUpdateDisplay = function(dt) as void
+    'Customizable function
   end function
 
   dc.reset = function() as void

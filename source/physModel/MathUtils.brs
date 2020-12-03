@@ -28,6 +28,24 @@ function minInt(a,b) as Integer
     end if
 End Function
 
+function maxInt(a,b) as Integer
+    if(a > b)
+        Return a
+    else
+        Return b
+    end if
+End Function
+
+function ClampInt(a, min, max) as Integer 
+  if (a < min)
+    return min
+  else if (a > max)
+    return max
+  else
+    return a
+  end if
+end function
+
 function pi() as float
     return atn(1)*4
 end function
@@ -51,12 +69,12 @@ End Function
 function pow(x,n) as float
     v = x
     for i = 2 to n
-        v *= x   
+        v *= x
     end for
     return v
 end function
 
-function vec2d(x,y) as object 
+function vec2d(x,y) as object
     return {
         x : x,
         y : y
@@ -67,7 +85,7 @@ function rotateVec2d(v2d, angle) as object
 
     x = cos(angle) * v2d.x - sin(angle) * v2d.y
     y = sin(angle) * v2d.x + cos(angle) * v2d.y
-    
+
     return vec2d(x,y)
 
 end function

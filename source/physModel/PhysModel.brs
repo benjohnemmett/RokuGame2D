@@ -148,6 +148,10 @@ Function physObj() as Object
 
         runKinematics: function(dt as float) as void
 
+            if (m.isMovable = false) then
+              return
+            end if
+
             'https://gamedev.stackexchange.com/questions/15708/how-can-i-implement-gravity
             m.x  = m.x + dt * (m.vx  + dt * (m.ax + m.gx)/2)
             m.y  = m.y + dt * (m.vy  + dt * (m.ay + m.gy)/2)
@@ -374,52 +378,29 @@ Function physObj() as Object
             return boundaryAABB(m.x, m.y, m.size_x, m.size_y)
         end function,
 
-        '''' From displayable interface
-        'updateDisplay : function() as void
-        ''    m.sprite.MoveTo(m.x, m.y)
-        'end function,
-
         isPhysObjGroup : function() as boolean
             return false
         end function,
 
-        'setSpriteFrame : function(frame) as void
-        ''    m.sprite.setRegion(CreateObject("roRegion", m.bmap, m.size_x*frame, 0, m.size_x, m.size_y))
-        'end function,
-
-        'clear : function() as void
-      ''      m.sprite.Remove()
-      ''  end function,
-
-    'sprite: sprite, ' now part of DisplayManager'
-    'bmap: bmap, ' now part of DisplayManager'
-    'x: x, ' Now part of gameObject'
-    'y: x, ' Now part of gameObject'
-    vx: 0.0,
-    vy: 0.0,
-    ax: 0.0,
-    ay: 0.0,
-    gx: 0.0,
-    gy: 0.0,
-    minX: 0.0,
-    maxX: invalid,
-    minY: 0.0,
-    maxY: invalid,
-    maxVx: 1000,    'Velocity magnitude which cannot be exceeded
-    maxVy: 1000,
-    zeroVx: 1.0,     'Velocity magnitude under which, velocity is rounded to 0.0
-    zeroVy: 1.0,
-    wallEnable: invalid, ' -1 no walls, 0 inelastic walls, 1 perfectly elastic walls, (0 to 1 is in between)
-    'wall_x_min: 10,
-    'wall_y_min: 10,
-    'wall_x_max: 1280,
-    'wall_y_max: 720,
-    'size_x: sprite.getRegion().GetWidth(), ' SHould only need if collidable'
-    'size_y: sprite.getRegion().GetHeight(),
-    isMovable: false, 'Option to consider this object movable in the context of collisions (i.e. is not massive/fixed in place compared to other objects)
-    collisionRecoil: 0.5, 'Amount of "bounce" #TODO verify correct terminology here
-    overlapState: invalid, 'Overlapping state to hold the overlap of greatest area
-    ttl : invalid ' Default to infinite ttl (invalid)
+        vx: 0.0,
+        vy: 0.0,
+        ax: 0.0,
+        ay: 0.0,
+        gx: 0.0,
+        gy: 0.0,
+        minX: 0.0,
+        maxX: invalid,
+        minY: 0.0,
+        maxY: invalid,
+        maxVx: 1000,    'Velocity magnitude which cannot be exceeded
+        maxVy: 1000,
+        zeroVx: 1.0,     'Velocity magnitude under which, velocity is rounded to 0.0
+        zeroVy: 1.0,
+        wallEnable: invalid, ' -1 no walls, 0 inelastic walls, 1 perfectly elastic walls, (0 to 1 is in between)
+        isMovable: false, 'Option to consider this object movable in the context of collisions (i.e. is not massive/fixed in place compared to other objects)
+        collisionRecoil: 0.5, 'Amount of "bounce" #TODO verify correct terminology here
+        overlapState: invalid, 'Overlapping state to hold the overlap of greatest area
+        ttl : invalid ' Default to infinite ttl (invalid)
     }
 End Function'''' End physObj()
 
@@ -448,13 +429,8 @@ Function physObjGroup() as Object
             if (m.physModel = invalid) then
                 ?"Error in physModel::physObjGroup::createPhysObj - No physModel set in physObjGroup."
                 return invalid
-            'else if(m.physModel.compositor = invalid) then
-            ''    ?"Error in physModel::physObjGroup::createPhysObj - No compositor set in physObjGroup.physModel"
-            ''    return invalid
             end if
-            'bMap = CreateObject("roBitmap", filepath)
-            'rRegion = CreateObject("roRegion", bMap, 0, 0, w, h)
-            'sSprite = m.physModel.compositor.NewSprite(x,y, rRegion)
+
             pPhysObj = physObj(x,y)
             pPhysObj.size_x = w
             pPhysObj.size_y = h
@@ -491,13 +467,6 @@ Function physObjGroup() as Object
 
             end while
         end function,
-
-        ''''From displayable interface
-        'updateDisplay : function() as void
-        ''    for each o in m.physObjList
-      ''          o.updateDisplay()
-      ''      end for
-      ''  end function,
 
         isPhysObjGroup : Function() as boolean 'TODO I don't think this is used
             return true
@@ -654,17 +623,11 @@ function collectiveRotationalPhysObj(x, y, radius, angle) as object
             m.overlapState = invalid
 
         end function,
+
         '' From the collidable interface
         getBoundaryDefinition : function() as object
             return boundaryCircular(m.x, m.y, m.radius)
         end function,
-
-      ''  '' From displayable interface
-        'updateDisplay : function() as void
-        ''    for each e in m.elementArray
-        ''        e.updateDisplay()
-        ''    end for
-        'end function,
 
         createElement : function(angle, radius) as object
             el = physObjFixedRadialElement(angle, radius)
@@ -707,10 +670,6 @@ function collectiveRotationalPhysObj(x, y, radius, angle) as object
         zeroVx: 1.0,     'Velocity magnitude under which, velocity is rounded to 0.0
         zeroVy: 1.0,
         wallEnable: 0.0, ' -1 no walls, 0 inelastic walls, 1 perfectly elastic walls, (0 to 1 is in between)
-        'wall_x_min: 10,
-        'wall_y_min: 10,
-        'wall_x_max: 1280,
-        'wall_y_max: 720,
         size_x: invalid,
         size_y: invalid,
         radius : radius
@@ -725,13 +684,11 @@ end function '''' end collectiveRotationalPhysObj
 
 function physObjFixedRadialElement(angle, radius) as object
     return {
-''        sprite : sprite,
         angle : angle,
         radius : radius,
         visible : true,
         x: invalid, ' Should not me modified direclty
         y: invalid,
-''        region: sprite.getRegion(),
         size_x: 2*radius,
         size_y: 2*radius,
         hx : radius,
@@ -746,14 +703,6 @@ function physObjFixedRadialElement(angle, radius) as object
              m.y = objy + m.radius*sin(absAngle)
 
         end function,
-
-      ''  updateDisplay : function() as void
-        ''    m.sprite.MoveTo(m.x - m.hx + 0.5, m.y -m.hy + 0.5)
-        ''end function,
-
-        ''clear : function() as void
-        ''    m.sprite.remove()
-        ''end function
     }
 
 end function ''' end physObjFixedRadialElement()
@@ -796,11 +745,6 @@ function fixedBoxCollider(x,y,w,h) as object
   runKinematics : function(dt) ' TODO This is called when the collider is part of a phys obj group. Find a way to not need this...'
   'Nothing to do here'
   end function,
-
-  'updateDisplay : function()
-  '''Nothing to do here'
-  'end function
-
 
   }
 
