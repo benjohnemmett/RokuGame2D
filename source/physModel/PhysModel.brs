@@ -74,13 +74,10 @@ Function physModel() as object
             end if
 
             for each cp in m.collisionPairList
-
-               ' ?cp.obj1
-                '?cp.obj2
                 if cp.obj1.isPhysObjGroup() then
                     if cp.obj2.isPhysObjGroup() then
                         ' Both are groups
-                        checkOverlapGroupGroup(cp.obj1, cp.obj2, cp.overlapCallback, m)' TODO Not a big fan of this double function call
+                        checkOverlapGroupGroup(cp.obj1, cp.obj2, cp.overlapCallback, m)
                     else
                         ' obj1 group, obj2 single
                         checkOverlapGroupObj(cp.obj1, cp.obj2, cp.overlapCallback, m)
@@ -100,17 +97,8 @@ Function physModel() as object
 
         'Calls resolveCollision on each object with an open overlap
         resolveCollisions : function(openOverlaps) as void
-            for each o in m.openOverlaps
-                '?"resolving collision for ";o
-
-                if(o.collisionCallback <> invalid) then
-                    stat = o.collisionCallback(obj1,obj2)
-                    if (stat <> 0) AND (stat <> invalid) then
-                        return
-                    end if
-                end if
-
-                o.resolveCollision()
+            for each objectWithOverlap in m.openOverlaps
+                objectWithOverlap.resolveCollision()
             end for
             m.openOverlaps.clear()
         end function,
@@ -140,7 +128,6 @@ end function
 ' Implements kinematicObject Interface
 Function physObj() as Object
     return{
-
         setGravity: function(gx, gy) as void 'TODO consider separating the constant gravity value from the dynamic ax & ay
             m.gx = gx
             m.gy = gy
@@ -431,7 +418,9 @@ Function physObjGroup() as Object
                 return invalid
             end if
 
-            pPhysObj = physObj(x,y)
+            pPhysObj = physObj()
+            pPhysObj.x = x
+            pPhysObj.y = y
             pPhysObj.size_x = w
             pPhysObj.size_y = h
 

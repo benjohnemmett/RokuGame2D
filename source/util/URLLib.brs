@@ -38,7 +38,7 @@ Function URLLibHandleUrlEvent(event as Object)
     ?"URL EVENT, huh... I'll handle this."
 
     requestId = event.GetSourceIdentity().ToStr()
-    ?" requestId = ";reqestId
+    ?" requestId = ";requestId
     xfer = g.pendingXfers[requestId]
     ?" xfer = ";xfer
     if xfer <> invalid then

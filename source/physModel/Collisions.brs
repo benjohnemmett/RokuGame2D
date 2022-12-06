@@ -1,7 +1,6 @@
 ''''' Class for holding an object associated with an overlapping area
 ' obj -> the object overlapping
 ' area -> the amount of area overlapping
-' xDirection -> boolean indicating that x is the dominant direction of the collision
 ' callback -> callback function to call when resolving the collision
 Function overlapState(_obj, _area, _callback) as object
     return {
